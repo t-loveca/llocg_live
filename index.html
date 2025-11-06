@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ライブ成功率シミュレータ (LoveLive! OCG)</title>
+<title>ライブ成功率シミュレーター</title>
 <style>
   :root{--bg:#fafafa;--card:#ffffff;--ink:#1b1f24;--sub:#60666d;--accent:#ff6a00;--muted:#e9ecef;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
@@ -32,19 +32,17 @@
   .ghost{background:#fff;color:var(--ink);border:1px solid #ddd;padding:10px 14px;border-radius:10px}
   .result{background:#fff;border:1px dashed #ddd;border-radius:12px;padding:12px;margin-top:8px}
   .muted{background:var(--muted);}
-  .cols{display:grid;gap:8px;grid-template-columns:1fr 1fr;}
-  @media (max-width:720px){ .g3{grid-template-columns:1fr;} .cols{grid-template-columns:1fr;} }
-  .small{font-size:12px}
-  .mono{font-family:ui-monospace,Consolas,Menlo,monospace}
   .divider{height:1px;background:#eee;margin:8px 0}
   .table{width:100%;border-collapse:collapse;font-size:13px}
   .table th,.table td{border:1px solid #eee;padding:6px 8px;text-align:right}
   .table th{background:#f7f7f7;text-align:center}
+  .small{font-size:12px}
+  .mono{font-family:ui-monospace,Consolas,Menlo,monospace}
 </style>
 </head>
 <body>
   <header><div class="inner">
-    <h1>ライブ成功率シミュレータ</h1>
+    <h1>ライブ成功率 シミュレーター</h1>
     <span class="note">LoveLive! OCG</span>
   </div></header>
 
@@ -59,25 +57,15 @@
     <!-- ライブカード -->
     <section class="card" id="liveCard">
       <h2>ライブカード（最大3枚）</h2>
-      <div class="note">要求ハートは枚数を合計して成功率を計算します</div>
+      <div class="note">各ライブカードの要求ハート数を指定</div>
       <div class="grid g3" id="liveArea"></div>
     </section>
 
     <!-- ブレードデッキ -->
     <section class="card">
       <h2>ブレードデッキ構成</h2>
-      <div class="note">ブレードでめくるデッキの内訳</div>
+      <div class="note">エールでめくるデッキの内訳</div>
       <div class="grid g3" id="deckArea"></div>
-      <!-- 
-      <div class="row">
-        <div class="label"><span class="chip">ランダム除外</span></div>
-        <div class="count">
-          <div class="steppers"><button class="icon" data-stepp="deck_exclude" data-d="-1">−</button></div>
-          <input type="number" id="deck_exclude" value="0" min="0" max="200" step="1">
-          <div class="steppers"><button class="icon" data-stepp="deck_exclude" data-d="1">＋</button></div>
-        </div>
-      </div>
-       -->
       <div class="totals" id="deckTotals"></div>
     </section>
 
@@ -97,7 +85,7 @@
   </div>
 
 <script>
-/* ===== 定義 ===== */
+/* ===== カテゴリ定義 ===== */
 const COLORS = [
   {key:'01', name:'桃',  emo:'💗'},
   {key:'02', name:'赤',  emo:'❤️'},
@@ -107,11 +95,11 @@ const COLORS = [
   {key:'06', name:'紫',  emo:'💜'},
 ];
 const ALL = {key:'ALL', name:'', badge:'ALL'};
-const ANY = {key:'00', name:'無', emo:'🖤'};
-const NONE = {key:'NONE', name:'ブレードなし', badge:'–'};
-const SU = {key:'SU', name:'スコアアップ', badge:'♪'};
-const DEFAULT_ITERS = 20000;
+const ANY = {key:'00',  name:'無', emo:'🖤'};
+const NONE= {key:'NONE',name:'BHなし', badge:'–'};
+const SU  = {key:'SU',  name:'スコアアップ', badge:'♪'};
 
+/* ===== UI部品 ===== */
 function makeStepper(id, value=0, min=0, max=999, step=1){
   return `<div class="count">
     <div class="steppers"><button class="icon" data-stepp="${id}" data-d="-${step}">−</button></div>
@@ -122,11 +110,10 @@ function makeStepper(id, value=0, min=0, max=999, step=1){
 function colorChip(c){return `<span class="chip">${c.emo} ${c.name}</span>`}
 function badgeChip(b){return `<span class="chip"><span class="mono">${b}</span></span>`}
 
-/* ===== UI構築 ===== */
 const stageArea = document.getElementById('stageArea');
 const liveArea  = document.getElementById('liveArea');
 const deckArea  = document.getElementById('deckArea');
-const deckTotals = document.getElementById('deckTotals');
+const deckTotals= document.getElementById('deckTotals');
 
 function stageBlock(i){
   const hearts = COLORS.map(c=>`
@@ -135,15 +122,15 @@ function stageBlock(i){
   const all = `
     <div class="row"><div class="label">${badgeChip(ALL.badge)} ${ALL.name}</div>${makeStepper(`s${i}_${ALL.key}`,0,0,20,1)}</div>`;
   const blades = `
-    <div class="row"><div class="label"><span class="chip">ブレード数</span></div>${makeStepper(`s${i}_BLD`,0,0,20,1)}</div>`;
+    <div class="row"><div class="label"><span class="chip">ブレード数</span></div>${makeStepper(`s${i}_BLD`,0,0,60,1)}</div>`;
   return `<div class="card muted"><h3 style="margin:0 0 6px 0;font-size:14px;">メンバー ${i+1}</h3><div class="grid">${hearts+all+blades}</div></div>`;
 }
 function liveBlock(i){
   const req = COLORS.map(c=>`
-    <div class="row"><div class="label">${colorChip(c)}</div>${makeStepper(`l${i}_req_${c.key}`,0,0,20,1)}</div>
+    <div class="row"><div class="label">${colorChip(c)}</div>${makeStepper(`l${i}_req_${c.key}`,0,0,40,1)}</div>
   `).join('');
   const any = `
-    <div class="row"><div class="label"><span class="chip">${ANY.emo} ${ANY.name}</span></div>${makeStepper(`l${i}_req_${ANY.key}`,0,0,20,1)}</div>`;
+    <div class="row"><div class="label"><span class="chip">${ANY.emo} ${ANY.name}</span></div>${makeStepper(`l${i}_req_${ANY.key}`,0,0,40,1)}</div>`;
   return `<div class="card muted"><h3 style="margin:0 0 6px 0;font-size:14px;">ライブ ${i+1}</h3><div class="grid">${req+any}</div></div>`;
 }
 function deckBlock(){
@@ -153,13 +140,13 @@ function deckBlock(){
     {label:`${badgeChip(SU.badge)} ${SU.name}`, id:`d_${SU.key}`},
     {label:`${badgeChip('–')} ${NONE.name}`, id:`d_${NONE.key}`},
   ].map(r=>`
-    <div class="row"><div class="label">${r.label}</div>${makeStepper(r.id,0,0,60,1)}</div>
+    <div class="row"><div class="label">${r.label}</div>${makeStepper(r.id,0,0,100,1)}</div>
   `).join('');
   return rows;
 }
 stageArea.innerHTML = [0,1,2].map(stageBlock).join('');
-liveArea.innerHTML = [0,1,2].map(liveBlock).join('');
-deckArea.innerHTML = deckBlock();
+liveArea.innerHTML  = [0,1,2].map(liveBlock).join('');
+deckArea.innerHTML  = deckBlock();
 
 /* +- ボタン */
 document.addEventListener('click',(e)=>{
@@ -168,20 +155,19 @@ document.addEventListener('click',(e)=>{
   const input = document.getElementById(id); if(!input) return;
   const min = Number(input.min||'-Infinity'); const max = Number(input.max||'Infinity');
   let v = Number(input.value||0)+delta; v = Math.max(min, Math.min(max, v)); input.value = v;
-  if(id.startsWith('d_') || id==='deck_exclude') updateDeckTotals();
+  if(id.startsWith('d_')) updateDeckTotals();
 });
 
-/* 合計表示（デッキ） */
+/* ===== 合計表示（デッキ） ===== */
+function num(id){ return Number(document.getElementById(id)?.value||0); }
 function getDeckCounts(){
   const counts={ALL:0,SU:0,NONE:0}; COLORS.forEach(c=>counts[c.key]=num(`d_${c.key}`));
   counts.ALL=num(`d_${ALL.key}`); counts.SU=num(`d_${SU.key}`); counts.NONE=num(`d_${NONE.key}`); return counts;
 }
 function updateDeckTotals(){
-  const counts = getDeckCounts();
-  const total = Object.values(counts).reduce((a,b)=>a+b,0);
+  const counts=getDeckCounts();
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
   const heartTotal = counts['ALL'] + COLORS.reduce((s,c)=>s+counts[c.key],0);
-  const ex = num('deck_exclude');
-  const after = Math.max(0, total - ex);
   deckTotals.innerHTML = `
     <span>合計 <b>${total}</b> 枚</span>
     <span>ハート総数 <b>${heartTotal}</b>（♪となしを除く）</span>
@@ -190,7 +176,6 @@ function updateDeckTotals(){
 updateDeckTotals();
 
 /* ===== 入力取得 ===== */
-function num(id){ return Number(document.getElementById(id)?.value||0); }
 function getStage(){
   return [0,1,2].map(i=>{
     const hearts={}; COLORS.forEach(c=>hearts[c.key]=num(`s${i}_${c.key}`));
@@ -205,96 +190,119 @@ function getLives(){
   });
 }
 
-/* ===== 判定ロジック ===== */
-function aggregateRequirements(lives){
-  const req={'00':0}; COLORS.forEach(c=>req[c.key]=0);
-  for(const L of lives){ for(const k of Object.keys(req)){ req[k]+=(L.req[k]||0); } }
-  return req;
-}
-function aggregateHearts(stage,draw){
-  const have={'ALL':0}; COLORS.forEach(c=>have[c.key]=0);
-  for(const m of stage){ for(const c of COLORS){ have[c.key]+=(m.hearts[c.key]||0);} have.ALL+=(m.hearts.ALL||0);}
-  for(const c of COLORS){ have[c.key]+=(draw[c.key]||0);} have.ALL+=(draw.ALL||0);
-  return have;
-}
-function canSatisfy(req,have){
-  let all=have.ALL; const leftover={};
+/* ===== 充足判定 ===== */
+function canSatisfy(req, have){
+  let all = have.ALL|0;
+  const leftover = {};
   for(const c of COLORS.map(x=>x.key)){
-    const need=req[c]||0, own=have[c]||0;
-    if(own>=need){ leftover[c]=own-need; }
-    else{ const d=need-own; if(all<d) return false; all-=d; leftover[c]=0; }
+    const need = req[c]|0, own = have[c]|0;
+    if(own >= need){ leftover[c] = own - need; }
+    else{
+      const d = need - own;
+      if(all < d) return false;
+      all -= d; leftover[c] = 0;
+    }
   }
-  const remColored=Object.values(leftover).reduce((a,b)=>a+b,0);
-  return remColored+all>=(req['00']||0);
+  const remColored = Object.values(leftover).reduce((a,b)=>a+b,0);
+  return remColored + all >= (req['00']|0);
 }
 
-/* ===== 抽選ヘルパ ===== */
-function rng(){ return Math.random(); }
-
-/* 山からk枚ランダム除外（色に依存しない無作為除去） */
-function excludeRandom(deckCounts, k){
-  const remain={...deckCounts}; const keys=Object.keys(remain);
-  let total=keys.reduce((a,b)=>a+remain[b],0); const n=Math.min(k,total);
-  for(let i=0;i<n;i++){
-    let r=Math.floor(rng()*total)+1;
-    for(const k of keys){ r-=remain[k]; if(r<=0){ remain[k]--; total--; break; } }
-  }
-  return remain;
+/* ===== 組合せ logC(n,k) ===== */
+const logFact = [0];
+function ensureLogFact(n){ for(let i=logFact.length;i<=n;i++) logFact[i]=logFact[i-1]+Math.log(i); }
+const logCcache = new Map();
+function logC(n,k){
+  if(k<0||k>n) return -Infinity;
+  const key=n+'_'+k; if(logCcache.has(key)) return logCcache.get(key);
+  ensureLogFact(n); const r = logFact[n]-logFact[k]-logFact[n-k]; logCcache.set(key,r); return r;
 }
+function logSumExp(a,b){ if(a===-Infinity) return b; if(b===-Infinity) return a; const m=Math.max(a,b); return m+Math.log(Math.exp(a-m)+Math.log1p(Math.exp((b-m))))-Math.log(1); } // safe: but simplerに再定義
+function logSum(a,b){ if(a===-Infinity) return b; if(b===-Infinity) return a; const m=Math.max(a,b); return m + Math.log(Math.exp(a-m)+Math.exp(b-m)); }
 
-/* ブレード抽選（without replacement） */
-function drawBladeCounts(deckCounts, draws){
-  const remain={...deckCounts}; const keys=Object.keys(remain);
-  const out={}; keys.forEach(k=>out[k]=0);
-  let total=keys.reduce((a,k)=>a+remain[k],0); const n=Math.min(draws,total);
-  for(let i=0;i<n;i++){
-    let r=Math.floor(rng()*total)+1;
-    for(const k of keys){ r-=remain[k]; if(r<=0){ out[k]++; remain[k]--; total--; break; } }
-  }
-  return out;
-}
+/* ===== 厳密計算（多変量超幾何の合算） ===== */
+function computeExact(){
+  const stage = getStage();
+  const lives = getLives();
+  const deck  = getDeckCounts();
 
-/* ===== シミュレーション ===== */
-function simulate(){
-  const stage=getStage(), lives=getLives(), deck=getDeckCounts();
-  const req=aggregateRequirements(lives);
-  const blades=stage.reduce((a,m)=>a+(m.blades||0),0);
-  const deckTotal=Object.values(deck).reduce((a,b)=>a+b,0);
-  const ex=num('deck_exclude');
+  // 総要求
+  const req = {'00':0}; COLORS.forEach(c=>req[c.key]=0);
+  for(const L of lives){ for(const k in req){ req[k] += (L.req[k]||0); } }
+
+  const totalReq = Object.values(req).reduce((a,b)=>a+b,0);
+  const n = stage.reduce((a,m)=>a+(m.blades||0),0); // 抽出枚数
+
+  const N_by = {}; COLORS.forEach(c=>N_by[c.key]=deck[c.key]|0);
+  N_by['ALL']=deck['ALL']|0;
+  const N_colorAll = COLORS.reduce((s,c)=>s+N_by[c.key],0) + N_by['ALL'];
+  const N_SU = deck['SU']|0, N_NONE=deck['NONE']|0;
+  const N_total = N_colorAll + N_SU + N_NONE;
 
   const errors=[];
-  //if(blades<=0) errors.push('ブレード総数が0です。');
-  //if(deckTotal<=0) errors.push('デッキ枚数が0です。');
-  //if(ex<0) errors.push('除外枚数は0以上にしてください。');
-  if(ex>deckTotal) errors.push(`除外枚数(${ex})がデッキ枚数(${deckTotal})を超えています。`);
-  if(blades > Math.max(0, deckTotal - ex)) errors.push(`ブレード総数(${blades})が除外後の山枚数(${deckTotal-ex})を超えています。`);
+  if(N_total<=0) errors.push('デッキ枚数が0です。');
+  if(n > N_total) errors.push(`ブレード総数(${n})がデッキ枚数(${N_total})を超えています。`);
+  if(totalReq===0) errors.push('ライブカードの要求が全て0です。');
   if(errors.length) return {ok:false,errors};
 
-  const iters=DEFAULT_ITERS;
-  let success=0;
-  const sumDrawn={ALL:0,SU:0,NONE:0}; COLORS.forEach(c=>sumDrawn[c.key]=0);
+  // 盤面ハート（固定）
+  const haveBase = {'ALL':0}; COLORS.forEach(c=>haveBase[c.key]=0);
+  for(const m of stage){ for(const c of COLORS){ haveBase[c.key] += (m.hearts[c.key]|0); } haveBase.ALL += (m.hearts.ALL|0); }
 
-  for(let t=0;t<iters;t++){
-    const afterEx = excludeRandom(deck, ex);
-    const drawn=drawBladeCounts(afterEx,blades);
-    for(const k in sumDrawn) sumDrawn[k]+= (drawn[k]||0);
-    const have=aggregateHearts(stage,drawn);
-    if(canSatisfy(req,have)) success++;
+  // n=0の処理：期待枚数は0、成功可否は盤面のみで判定
+  if(n===0){
+    const have = {...haveBase};
+    const p = canSatisfy(req, have) ? 1 : 0;
+    const exp = {};
+    [...COLORS.map(c=>c.key),'ALL','SU','NONE'].forEach(k=>exp[k]=0);
+    exp['00']=0;
+    return {ok:true, p, blades:n, deckTotal:N_total, expected:exp};
   }
 
-  const p=success/iters, se=Math.sqrt(p*(1-p)/iters);
-  const ciLo=Math.max(0,p-1.96*se), ciHi=Math.min(1,p+1.96*se);
-  const exp={}; for(const k in sumDrawn) exp[k]=sumDrawn[k]/iters;
+  const trackKeys = [...COLORS.map(c=>c.key), 'ALL']; // 7カテゴリ
+  const N_other = N_total - trackKeys.reduce((s,k)=>s+(N_by[k]|0),0); // SU+NONE
+  const logDen = logC(N_total, n);
 
-  return {ok:true,iters,p,blades,deckTotalAfter:deckTotal-ex,ci:[ciLo,ciHi],expected:exp};
+  let logSumSucc = -Infinity;
+  const x = {}; trackKeys.forEach(k=>x[k]=0);
+
+  function dfs(idx, taken, logW){
+    if(idx===trackKeys.length){
+      const x_other = n - taken;
+      if(x_other<0 || x_other> N_other) return;
+      const logW2 = logW + logC(N_other, x_other);
+
+      const have = {'ALL': haveBase.ALL + (x['ALL']|0)};
+      COLORS.forEach(c=>{ have[c.key] = haveBase[c.key] + (x[c.key]|0); });
+      if(canSatisfy(req, have)) logSumSucc = logSum(logSumSucc, logW2);
+      return;
+    }
+    const k = trackKeys[idx];
+    const N_k = N_by[k]|0;
+    const maxPick = Math.min(N_k, n - taken);
+    for(let t=0; t<=maxPick; t++){
+      x[k]=t;
+      dfs(idx+1, taken + t, logW + logC(N_k, t));
+    }
+  }
+  dfs(0, 0, 0);
+
+  const p = (logSumSucc===-Infinity) ? 0 : Math.exp(logSumSucc - logDen);
+
+  // 期待個数（厳密） E[X_i]=n*N_i/N
+  const exp = {};
+  trackKeys.forEach(k=>{ exp[k] = n * (N_by[k]|0) / N_total; });
+  exp['SU']   = n * N_SU   / N_total;
+  exp['NONE'] = n * N_NONE / N_total;
+  exp['00']   = 0;
+
+  return {ok:true, p, blades:n, deckTotal:N_total, expected:exp};
 }
 
 /* ===== 表示 ===== */
 const resultsEl=document.getElementById('results');
 const breakdownEl=document.getElementById('breakdown');
-
-function pct(x){ return (x*100).toFixed(2)+'%'; }
-function fmt(x,d=3){ return Number(x).toFixed(d); }
+const pct = x => (x*100).toFixed(2)+'%';
+const fmt = (x,d=6)=> Number(x).toFixed(d);
 
 function renderBreakdown(exp){
   const rows = [
@@ -302,12 +310,13 @@ function renderBreakdown(exp){
     [`${ALL.badge} ${ALL.name}`,  exp.ALL],
     [`${SU.badge} ${SU.name}`,    exp.SU],
     [`– ${NONE.name}`,            exp.NONE]
+
   ];
   breakdownEl.style.display='block';
   breakdownEl.innerHTML = `
-    <div><b>エールでめくれるカード</b></div>
-    <table class="table" aria-label="期待個数">
-      <thead><tr><th style="text-align:left">名称</th><th>期待枚数</th></tr></thead>
+    <div><b>エールでめくれる期待枚数</b></div>
+    <table class="table" aria-label="期待枚数">
+      <thead><tr><th style="text-align:left">ブレードハート</th><th>期待枚数</th></tr></thead>
       <tbody>
         ${rows.map(r=>`<tr><td style="text-align:left">${r[0]}</td><td>${fmt(r[1],2)}</td></tr>`).join('')}
       </tbody>
@@ -324,16 +333,15 @@ function renderResult(r){
     <div>
       <div><b>成功確率</b></div>
       <div style="font-size:24px;font-weight:800">${pct(r.p)}</div>
-      <div class="note small">95%CI: ${pct(r.ci[0])} 〜 ${pct(r.ci[1])}｜試行: ${r.iters.toLocaleString()}</div>
     </div>
     <div class="divider"></div>
-    <div class="totals small"><span>ブレード総数 <b>${r.blades}</b></span><span>デッキ枚数 <b>${r.deckTotalAfter}</b> 枚</span></div>
+    <div class="totals small"><span>エール総数 <b>${r.blades}</b></span><span>デッキ枚数 <b>${r.deckTotal}</b></span></div>
   `;
   renderBreakdown(r.expected);
 }
 
 /* ===== イベント ===== */
-document.getElementById('runBtn').addEventListener('click',()=>{ renderResult(simulate()); });
+document.getElementById('runBtn').addEventListener('click',()=>{ renderResult(computeExact()); });
 document.getElementById('clearBtn').addEventListener('click',()=>{
   document.querySelectorAll('input[type="number"]').forEach(inp=>{ inp.value=0; });
   updateDeckTotals();
@@ -343,4 +351,3 @@ document.getElementById('clearBtn').addEventListener('click',()=>{
 </script>
 </body>
 </html>
-```
