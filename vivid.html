@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VIVID WORLD 確率計算ツール</title>
     <style>
         :root {
@@ -15,28 +15,33 @@
             --border-color: #e0e0e0;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 20px;
+            padding: 10px;
             margin: 0;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 900px;
+            width: 100%;
+            max-width: 800px;
             margin: 0 auto;
             background: var(--card-bg);
-            padding: 30px;
+            padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(48, 79, 254, 0.15);
+            box-shadow: 0 2px 10px rgba(48, 79, 254, 0.1);
             border-top: 6px solid var(--primary-color);
         }
 
         h1 {
-            font-size: 24px;
-            margin: 0 0 10px 0;
+            font-size: 20px;
+            margin: 5px 0 15px 0;
             color: var(--primary-color);
             text-align: center;
             letter-spacing: 0.05em;
@@ -45,122 +50,139 @@
         p.description {
             text-align: center;
             color: #666;
-            font-size: 14px;
-            margin-bottom: 25px;
+            font-size: 12px;
+            margin-bottom: 20px;
         }
 
         /* コントロールパネル */
         .control-panel {
             background: #e8eaf6;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary-color);
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            justify-content: space-around;
-            align-items: center;
+            gap: 15px;
+            justify-content: space-between;
         }
 
         .control-group {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            flex: 1 1 45%; /* 2列配置 */
+            min-width: 120px;
+            align-items: flex-start;
         }
 
         label {
+            font-size: 12px;
             font-weight: bold;
             color: #2c3e50;
-            white-space: nowrap;
+            margin-bottom: 4px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
         }
 
         input[type="number"] {
             padding: 8px;
-            border: 2px solid #c5cae9;
+            border: 1px solid #c5cae9;
             border-radius: 6px;
-            width: 70px;
+            width: 100%;
             font-size: 16px;
             text-align: center;
             outline: none;
-            transition: border-color 0.3s;
+            background: #fff;
+            -moz-appearance: textfield; /* Firefox用 */
+        }
+        /* スピンボタンを消す */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
         }
 
-        input[type="number"]:focus {
-            border-color: var(--secondary-color);
+        .unit-label {
+            font-size: 12px;
+            margin-left: 5px;
+            white-space: nowrap;
+            color: #666;
         }
 
         h2 {
-            font-size: 18px;
-            margin-top: 30px;
+            font-size: 16px;
+            margin-top: 25px;
+            margin-bottom: 10px;
             color: var(--secondary-color);
             border-bottom: 2px solid #e8eaf6;
-            padding-bottom: 8px;
+            padding-bottom: 5px;
         }
 
-        /* テーブルレイアウト */
+        /* テーブルレイアウト - スマホ対応 */
         .table-wrapper {
-            overflow-x: auto; /* 横スクロール対応 */
-            border-radius: 8px;
+            width: 100%;
             border: 1px solid var(--border-color);
-            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px; /* 最低幅を確保して崩れを防ぐ */
+            table-layout: fixed;
         }
 
         th {
             background-color: #e8eaf6;
             color: var(--primary-color);
-            padding: 12px;
+            padding: 10px 5px;
+            font-size: 12px;
             font-weight: bold;
             text-align: center;
-            white-space: nowrap;
-            border-bottom: 2px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            line-height: 1.2;
         }
 
         td {
-            padding: 10px 5px;
+            padding: 8px 2px;
             border-bottom: 1px solid var(--border-color);
             text-align: center;
             vertical-align: middle;
         }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
+        /* 列幅調整 */
+        .col-heart { width: 45%; }
+        .col-niji  { width: 15%; }
+        .col-count { width: 20%; }
+        .col-del   { width: 20%; }
 
         /* ハートチェックボックス */
         .heart-container {
             display: flex;
             justify-content: center;
-            gap: 8px;
             flex-wrap: wrap;
+            gap: 4px;
         }
 
         .heart-check {
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            background-color: #f5f5f5;
-            opacity: 0.4;
+            background-color: #f9f9f9;
+            opacity: 0.3;
             filter: grayscale(100%);
-            transition: all 0.2s ease;
-            user-select: none;
             border: 1px solid #ddd;
-        }
-
-        .heart-check:hover {
-            opacity: 0.7;
-            transform: scale(1.05);
+            transition: opacity 0.1s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .heart-check.checked {
@@ -169,65 +191,68 @@
             background-color: #fff;
             border-color: var(--accent-color);
             transform: scale(1.1);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .heart-check input {
-            display: none;
-        }
+        .heart-check input { display: none; }
 
-        /* 虹ヶ咲フラグ */
+        /* 虹ヶ咲トグル */
         .niji-label {
-            display: inline-flex;
+            display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 12px;
+            justify-content: center;
+            font-size: 10px;
             font-weight: bold;
             color: #555;
             cursor: pointer;
+            height: 100%;
         }
         
         .niji-label input {
             margin-top: 4px;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             accent-color: var(--primary-color);
-            cursor: pointer;
+        }
+
+        /* 枚数入力 */
+        .card-count {
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 50px;
         }
 
         /* ボタン類 */
         .btn {
             cursor: pointer;
-            padding: 10px 20px;
             border: none;
             border-radius: 6px;
             font-weight: bold;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: opacity 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
+        .btn:active { transform: scale(0.98); }
 
         .btn-add {
             background-color: #7e57c2;
             color: white;
             width: 100%;
-            margin-top: 15px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 14px;
             border: 1px dashed #b39ddb;
-            display: block;
-        }
-        .btn-add:hover {
-            background-color: #673ab7;
-            border-style: solid;
         }
 
         .btn-remove {
             background-color: #ef5350;
             color: white;
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-        .btn-remove:hover {
-            background-color: #d32f2f;
+            padding: 6px 0;
+            width: 80%;
+            font-size: 11px;
+            border-radius: 4px;
         }
 
         .btn-calc {
@@ -235,79 +260,80 @@
             color: white;
             font-size: 18px;
             width: 100%;
-            padding: 16px;
-            margin-top: 30px;
-            letter-spacing: 0.1em;
+            padding: 15px;
+            margin-top: 20px;
+            letter-spacing: 0.05em;
             border-radius: 8px;
-        }
-        .btn-calc:hover {
-            box-shadow: 0 6px 20px rgba(98, 0, 234, 0.3);
-            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(98, 0, 234, 0.3);
         }
 
         .deck-status {
-            margin-top: 15px;
+            margin-top: 10px;
             text-align: right;
             font-weight: bold;
             color: var(--secondary-color);
-            font-size: 15px;
+            font-size: 14px;
         }
-        .deck-status.error {
-            color: #d32f2f;
-        }
+        .deck-status.error { color: #d32f2f; }
 
         /* 結果エリア */
         .result-area {
-            margin-top: 30px;
-            padding: 25px;
+            margin-top: 20px;
+            padding: 20px 15px;
             background: linear-gradient(to bottom right, #e8eaf6, #f3e5f5);
             border-radius: 12px;
             border: 2px solid #c5cae9;
             text-align: center;
             display: none;
-            animation: fadeIn 0.5s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .result-title {
-            font-size: 16px;
+            font-size: 14px;
             color: #555;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-weight: bold;
         }
 
         .result-percent {
-            font-size: 42px;
+            font-size: 48px;
             font-weight: 800;
             background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            line-height: 1.2;
+            margin-bottom: 15px;
+            line-height: 1.1;
         }
 
         .expectation-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
+            grid-template-columns: repeat(3, 1fr); /* 3列固定 */
+            gap: 8px;
+            margin-top: 15px;
             border-top: 1px solid #d1c4e9;
-            padding-top: 20px;
+            padding-top: 15px;
         }
         
         .exp-item {
             background: #fff;
-            padding: 10px 5px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 8px 2px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        .exp-icon { font-size: 22px; margin-bottom: 5px; }
-        .exp-val { font-weight: bold; font-size: 16px; color: #333; }
-        .exp-label { font-size: 10px; color: #777; }
+        .exp-icon { font-size: 20px; line-height: 1; margin-bottom: 2px; }
+        .exp-val { font-weight: bold; font-size: 15px; color: #333; }
+        .exp-label { font-size: 10px; color: #888; }
 
+        /* スマートフォン向けの微調整 */
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .container { padding: 12px; }
+            .heart-check { width: 26px; height: 26px; font-size: 1.2rem; }
+            .btn-calc { font-size: 16px; padding: 12px; }
+            .result-percent { font-size: 36px; }
+        }
     </style>
 </head>
 <body>
@@ -315,19 +341,24 @@
 <div class="container">
     <h1>VIVID WORLD 確率計算</h1>
     <p class="description">
-        エールで「虹ヶ咲」メンバーによる全6色達成確率を計算します。<br>
+        エールで「虹ヶ咲」メンバーによる全6色達成確率を計算します。
     </p>
 
     <div class="control-panel">
         <div class="control-group">
-            <label>エール枚数 (ブレード数)</label>
-            <input type="number" id="yellCount" value="3" min="1" max="40">
+            <label>エール枚数</label>
+            <div class="input-wrapper">
+                <input type="number" id="yellCount" value="3" min="1" max="40" inputmode="numeric">
+                <span class="unit-label">枚</span>
+            </div>
         </div>
 
         <div class="control-group">
             <label>デッキ内のライブカード</label>
-            <input type="number" id="liveCardCount" value="12" min="0" max="60" onchange="updateDeckCount()">
-            <span style="font-size: 0.9em; margin-left: 5px;">枚 (対象外)</span>
+            <div class="input-wrapper">
+                <input type="number" id="liveCardCount" value="12" min="0" max="60" inputmode="numeric" onchange="updateDeckCount()">
+                <span class="unit-label">枚(対象外)</span>
+            </div>
         </div>
     </div>
 
@@ -336,30 +367,30 @@
         <table id="cardTable">
             <thead>
                 <tr>
-                    <th width="50%">ハートの色 (虹ヶ咲のみ有効)</th>
-                    <th width="15%">虹ヶ咲</th>
-                    <th width="20%">枚数</th>
-                    <th width="15%">操作</th>
+                    <th class="col-heart">ハート<br><span style="font-size:10px; font-weight:normal;">(虹ヶ咲のみ)</span></th>
+                    <th class="col-niji">虹</th>
+                    <th class="col-count">枚数</th>
+                    <th class="col-del"></th>
                 </tr>
             </thead>
             <tbody>
                 </tbody>
         </table>
     </div>
-    <button class="btn btn-add" onclick="addCardRow()">＋ メンバーカードを追加</button>
+    <button class="btn btn-add" onclick="addCardRow()">＋ 行を追加</button>
 
     <div class="deck-status" id="deckStatus">デッキ合計: 12枚</div>
 
     <button class="btn btn-calc" onclick="calculateExact()">計算を実行</button>
 
     <div class="result-area" id="resultArea">
-        <div class="result-title">スコア＋1 条件達成率 (6色コンプリート)</div>
+        <div class="result-title">スコア＋1 条件達成率</div>
         <div class="result-percent" id="resultPercent">--%</div>
         
-        <div style="text-align: left; font-size: 14px; font-weight: bold; color: #555; margin-bottom: 10px; padding-left: 5px;">▼ 各色の期待個数 (平均出現数)</div>
+        <div style="text-align: left; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 5px; padding-left: 5px;">▼ 各色の期待個数</div>
         <div class="expectation-grid" id="expectationGrid">
             </div>
-        <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right;">計算上の全パターン数: <span id="totalCases"></span>通り</div>
+        <div style="margin-top: 10px; font-size: 10px; color: #999; text-align: right;">全パターン数: <span id="totalCases"></span></div>
     </div>
 </div>
 
@@ -406,15 +437,15 @@
         const tdNiji = document.createElement('td');
         tdNiji.innerHTML = `
             <label class="niji-label">
+                <span>対象</span>
                 <input type="checkbox" class="niji-flag" ${isNiji ? 'checked' : ''} onchange="toggleHeartOpacity(this)">
-                対象
             </label>
         `;
         tr.appendChild(tdNiji);
 
         // 枚数
         const tdCount = document.createElement('td');
-        tdCount.innerHTML = `<input type="number" class="card-count" value="${count}" min="1" max="4" onchange="updateDeckCount()">`;
+        tdCount.innerHTML = `<input type="number" class="card-count" value="${count}" min="1" max="4" inputmode="numeric" onchange="updateDeckCount()">`;
         tr.appendChild(tdCount);
 
         // 削除ボタン
@@ -431,8 +462,6 @@
 
     function removeRow(btn) {
         const row = btn.closest('tr');
-        // 行が1つしかない場合は削除させない、あるいは削除して空にするか
-        // 今回は削除可能にして、必要なら追加してもらう形式
         row.remove();
         updateDeckCount();
     }
@@ -446,7 +475,7 @@
         }
     }
 
-    // 虹ヶ咲フラグがOFFのときはハートを薄くする（計算対象外であることを示す）
+    // 虹ヶ咲フラグがOFFのときはハートを薄くする
     function toggleHeartOpacity(checkbox) {
         const row = checkbox.closest('tr');
         const heartContainer = row.querySelector('.heart-container');
@@ -454,8 +483,7 @@
             heartContainer.style.opacity = '1';
             heartContainer.style.pointerEvents = 'auto';
         } else {
-            heartContainer.style.opacity = '0.3';
-            // 視覚的に無効化
+            heartContainer.style.opacity = '0.15'; // 薄くする
         }
     }
 
@@ -515,7 +543,7 @@
         const deckSize = deck.length;
 
         if (deckSize < yellCount) {
-            alert("デッキ枚数がエール枚数より少ないため計算できません。\nカードを追加するかエール枚数を減らしてください。");
+            alert("デッキ枚数がエール枚数より少ないため計算できません。");
             return;
         }
 
@@ -526,9 +554,7 @@
 
         for (let i = 0; i < deckSize; i++) {
             const cardMask = deck[i].mask;
-            
             // j枚選んでいる状態から、このカードを選んで j+1枚にする遷移
-            // 重複利用を防ぐため、jは大きい方から回す
             for (let j = yellCount - 1; j >= 0; j--) {
                 for (let m = 0; m < 64; m++) {
                     if (currentDP[j][m] > 0n) {
@@ -540,29 +566,24 @@
         }
 
         // 計算結果
-        // 全事象: yellCount枚選ぶすべての組み合わせの和 (nCk)
         let totalCombinations = 0n;
         for (let m = 0; m < 64; m++) {
             totalCombinations += currentDP[yellCount][m];
         }
 
-        // 成功事象: maskが63 (111111 -> 全色揃っている) の組み合わせ
+        // 成功事象: maskが63 (全色揃っている) の組み合わせ
         const successCombinations = currentDP[yellCount][63];
 
-        // 確率計算
+        // 確率計算 (精度確保)
         let probability = 0;
         if (totalCombinations > 0n) {
-            // 精度確保のため10000倍して計算
             const precision = 10000n;
             const probabilityBigInt = (successCombinations * precision * 100n) / totalCombinations;
             probability = Number(probabilityBigInt) / Number(precision);
         }
 
-        // --- 2. 期待個数の計算 (厳密解) ---
-        // 各色ごとの期待値 = (デッキ内のその色の総数 / デッキ枚数) * エール枚数
-        // ※ 虹ヶ咲フラグがONのカードのみが持つ色が対象
-        let colorCounts = [0, 0, 0, 0, 0, 0]; // ピンク, 赤, 黄, 緑, 青, 紫
-        
+        // --- 2. 期待個数の計算 ---
+        let colorCounts = [0, 0, 0, 0, 0, 0];
         deck.forEach(card => {
             if (card.isNiji) {
                 card.colorSet.forEach(cIdx => {
@@ -583,9 +604,11 @@
         const totalCases = document.getElementById('totalCases');
 
         resultArea.style.display = 'block';
+        
+        // 小数第2位まで
         resultPercent.textContent = `${probability.toFixed(2)}%`;
         
-        // 期待値グリッド生成
+        // 期待値グリッド
         let gridHtml = '';
         expectedValues.forEach((val, idx) => {
             const h = HEARTS[idx];
@@ -599,13 +622,15 @@
         });
         expectationGrid.innerHTML = gridHtml;
 
-        // 全通り数表示（BigIntの整形）
+        // 全通り数表示
         let totalStr = totalCombinations.toString();
-        if (totalStr.length > 15) {
-            // 指数表記風に短縮
+        if (totalStr.length > 12) {
             totalStr = totalStr[0] + "." + totalStr.substring(1, 3) + "e+" + (totalStr.length - 1);
         }
         totalCases.textContent = totalStr;
+        
+        // 結果エリアへスクロール
+        resultArea.scrollIntoView({behavior: 'smooth', block: 'nearest'});
     }
 </script>
 
