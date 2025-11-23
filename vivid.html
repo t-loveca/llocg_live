@@ -13,6 +13,7 @@
             --card-bg: #ffffff;
             --text-color: #333;
             --border-color: #e0e0e0;
+            --btn-bg: #eee;
         }
 
         * {
@@ -63,15 +64,14 @@
             border-left: 4px solid var(--secondary-color);
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
             justify-content: space-between;
         }
 
         .control-group {
             display: flex;
             flex-direction: column;
-            flex: 1 1 45%; /* 2列配置 */
-            min-width: 120px;
+            flex: 1 1 300px; /* 幅確保 */
             align-items: flex-start;
         }
 
@@ -79,36 +79,59 @@
             font-size: 12px;
             font-weight: bold;
             color: #2c3e50;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
-        .input-wrapper {
+        /* 数値入力グループ (+ - ボタン付き) */
+        .number-input-group {
             display: flex;
             align-items: center;
             width: 100%;
+            max-width: 200px; /* 最大幅制限 */
         }
 
+        .btn-spin {
+            width: 40px;
+            height: 40px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-spin:active { background-color: var(--primary-color); }
+        
+        .btn-minus { border-radius: 6px 0 0 6px; }
+        .btn-plus { border-radius: 0 6px 6px 0; }
+
         input[type="number"] {
-            padding: 8px;
+            flex: 1;
+            height: 40px;
+            padding: 5px;
             border: 1px solid #c5cae9;
-            border-radius: 6px;
-            width: 100%;
+            border-left: none;
+            border-right: none;
             font-size: 16px;
             text-align: center;
             outline: none;
             background: #fff;
-            -moz-appearance: textfield; /* Firefox用 */
+            -moz-appearance: textfield;
+            min-width: 50px;
         }
-        /* スピンボタンを消す */
         input[type="number"]::-webkit-inner-spin-button, 
         input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
+            -webkit-appearance: none; margin: 0; 
         }
 
         .unit-label {
             font-size: 12px;
-            margin-left: 5px;
+            margin-left: 8px;
             white-space: nowrap;
             color: #666;
         }
@@ -122,7 +145,7 @@
             padding-bottom: 5px;
         }
 
-        /* テーブルレイアウト - スマホ対応 */
+        /* テーブルレイアウト */
         .table-wrapper {
             width: 100%;
             border: 1px solid var(--border-color);
@@ -148,17 +171,17 @@
         }
 
         td {
-            padding: 8px 2px;
+            padding: 8px 4px;
             border-bottom: 1px solid var(--border-color);
             text-align: center;
             vertical-align: middle;
         }
 
         /* 列幅調整 */
-        .col-heart { width: 45%; }
+        .col-heart { width: 40%; }
         .col-niji  { width: 15%; }
-        .col-count { width: 20%; }
-        .col-del   { width: 20%; }
+        .col-count { width: 30%; } /* 枚数欄を広めに */
+        .col-del   { width: 15%; }
 
         /* ハートチェックボックス */
         .heart-container {
@@ -170,12 +193,12 @@
 
         .heart-check {
             cursor: pointer;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background-color: #f9f9f9;
             opacity: 0.3;
@@ -207,22 +230,32 @@
             cursor: pointer;
             height: 100%;
         }
-        
         .niji-label input {
             margin-top: 4px;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             accent-color: var(--primary-color);
         }
 
-        /* 枚数入力 */
-        .card-count {
-            padding: 5px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        /* テーブル内の数値入力（小型） */
+        .cell-input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
-            max-width: 50px;
+        }
+        .cell-input-group .btn-spin {
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            background-color: #9fa8da; /* 少し薄めの色 */
+        }
+        .cell-input-group input {
+            height: 28px;
+            font-size: 14px;
+            padding: 0;
+            width: 40px;
+            min-width: 30px;
         }
 
         /* ボタン類 */
@@ -250,7 +283,8 @@
             background-color: #ef5350;
             color: white;
             padding: 6px 0;
-            width: 80%;
+            width: 100%;
+            max-width: 50px;
             font-size: 11px;
             border-radius: 4px;
         }
@@ -306,7 +340,7 @@
 
         .expectation-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3列固定 */
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin-top: 15px;
             border-top: 1px solid #d1c4e9;
@@ -330,9 +364,7 @@
         @media (max-width: 480px) {
             body { padding: 8px; }
             .container { padding: 12px; }
-            .heart-check { width: 26px; height: 26px; font-size: 1.2rem; }
-            .btn-calc { font-size: 16px; padding: 12px; }
-            .result-percent { font-size: 36px; }
+            .heart-check { width: 26px; height: 26px; font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -346,18 +378,20 @@
 
     <div class="control-panel">
         <div class="control-group">
-            <label>エール枚数</label>
-            <div class="input-wrapper">
-                <input type="number" id="yellCount" value="3" min="1" max="40" inputmode="numeric">
-                <span class="unit-label">枚</span>
+            <label>エール枚数 (ブレード)</label>
+            <div class="number-input-group">
+                <button class="btn-spin btn-minus" onclick="stepValue(this, -1)">-</button>
+                <input type="number" id="yellCount" value="3" min="1" max="40" inputmode="numeric" readonly>
+                <button class="btn-spin btn-plus" onclick="stepValue(this, 1)">+</button>
             </div>
         </div>
 
         <div class="control-group">
             <label>デッキ内のライブカード</label>
-            <div class="input-wrapper">
-                <input type="number" id="liveCardCount" value="12" min="0" max="60" inputmode="numeric" onchange="updateDeckCount()">
-                <span class="unit-label">枚(対象外)</span>
+            <div class="number-input-group">
+                <button class="btn-spin btn-minus" onclick="stepValue(this, -1)">-</button>
+                <input type="number" id="liveCardCount" value="12" min="0" max="60" inputmode="numeric" readonly>
+                <button class="btn-spin btn-plus" onclick="stepValue(this, 1)">+</button>
             </div>
         </div>
     </div>
@@ -407,9 +441,24 @@
 
     // 初期化：デフォルトで1行だけ追加する
     window.onload = function() {
-        addCardRow(true, [0], 4); // 例として虹ヶ咲ON、ピンク、4枚で初期化
+        addCardRow(true, [0], 4); // 桃4枚で初期化
         updateDeckCount();
     };
+
+    // 数値の増減 (+-ボタン用)
+    function stepValue(btn, step) {
+        const input = btn.parentElement.querySelector('input');
+        const min = parseInt(input.getAttribute('min')) || 0;
+        const max = parseInt(input.getAttribute('max')) || 100;
+        let val = parseInt(input.value) || 0;
+        
+        val += step;
+        if (val < min) val = min;
+        if (val > max) val = max;
+        
+        input.value = val;
+        updateDeckCount(); // 値変更時にデッキ枚数再計算
+    }
 
     // 行追加関数
     function addCardRow(isNiji = true, colors = [], count = 4) {
@@ -443,9 +492,15 @@
         `;
         tr.appendChild(tdNiji);
 
-        // 枚数
+        // 枚数 (ボタン付き)
         const tdCount = document.createElement('td');
-        tdCount.innerHTML = `<input type="number" class="card-count" value="${count}" min="1" max="4" inputmode="numeric" onchange="updateDeckCount()">`;
+        tdCount.innerHTML = `
+            <div class="cell-input-group">
+                <button class="btn-spin btn-minus" onclick="stepValue(this, -1)">-</button>
+                <input type="number" class="card-count" value="${count}" min="1" max="4" readonly>
+                <button class="btn-spin btn-plus" onclick="stepValue(this, 1)">+</button>
+            </div>
+        `;
         tr.appendChild(tdCount);
 
         // 削除ボタン
@@ -483,7 +538,7 @@
             heartContainer.style.opacity = '1';
             heartContainer.style.pointerEvents = 'auto';
         } else {
-            heartContainer.style.opacity = '0.15'; // 薄くする
+            heartContainer.style.opacity = '0.15';
         }
     }
 
@@ -543,7 +598,7 @@
         const deckSize = deck.length;
 
         if (deckSize < yellCount) {
-            alert("デッキ枚数がエール枚数より少ないため計算できません。");
+            alert("デッキ枚数がエール枚数より少ないため計算できません。\nカードを追加するかエール枚数を減らしてください。");
             return;
         }
 
