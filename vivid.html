@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIVID WORLD 確率計算ツール</title>
+    <style>
+        :root {
+            --primary-color: #6200ea; /* 濃い紫 */
+            --secondary-color: #304ffe; /* 濃い青 */
+            --accent-color: #00b0ff; /* 水色 */
+            --bg-color: #f3e5f5; /* 薄い紫背景 */
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(48, 79, 254, 0.15);
+            border-top: 6px solid var(--primary-color);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+            text-align: center;
+            letter-spacing: 0.05em;
+        }
+
+        p.description {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* コントロールパネル */
+        .control-panel {
+            background: #e8eaf6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--secondary-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+
+        input[type="number"] {
+            padding: 8px;
+            border: 2px solid #c5cae9;
+            border-radius: 6px;
+            width: 70px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--secondary-color);
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 30px;
+            color: var(--secondary-color);
+            border-bottom: 2px solid #e8eaf6;
+            padding-bottom: 8px;
+        }
+
+        /* テーブルレイアウト */
+        .table-wrapper {
+            overflow-x: auto; /* 横スクロール対応 */
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* 最低幅を確保して崩れを防ぐ */
+        }
+
+        th {
+            background-color: #e8eaf6;
+            color: var(--primary-color);
+            padding: 12px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 10px 5px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ハートチェックボックス */
+        .heart-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .heart-check {
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+            opacity: 0.4;
+            filter: grayscale(100%);
+            transition: all 0.2s ease;
+            user-select: none;
+            border: 1px solid #ddd;
+        }
+
+        .heart-check:hover {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+
+        .heart-check.checked {
+            opacity: 1.0;
+            filter: grayscale(0%);
+            background-color: #fff;
+            border-color: var(--accent-color);
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .heart-check input {
+            display: none;
+        }
+
+        /* 虹ヶ咲フラグ */
+        .niji-label {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+        }
+        
+        .niji-label input {
+            margin-top: 4px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* ボタン類 */
+        .btn {
+            cursor: pointer;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-add {
+            background-color: #7e57c2;
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+            border: 1px dashed #b39ddb;
+            display: block;
+        }
+        .btn-add:hover {
+            background-color: #673ab7;
+            border-style: solid;
+        }
+
+        .btn-remove {
+            background-color: #ef5350;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .btn-remove:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn-calc {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            color: white;
+            font-size: 18px;
+            width: 100%;
+            padding: 16px;
+            margin-top: 30px;
+            letter-spacing: 0.1em;
+            border-radius: 8px;
+        }
+        .btn-calc:hover {
+            box-shadow: 0 6px 20px rgba(98, 0, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .deck-status {
+            margin-top: 15px;
+            text-align: right;
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 15px;
+        }
+        .deck-status.error {
+            color: #d32f2f;
+        }
+
+        /* 結果エリア */
+        .result-area {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(to bottom right, #e8eaf6, #f3e5f5);
+            border-radius: 12px;
+            border: 2px solid #c5cae9;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .result-title {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .result-percent {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .expectation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+            border-top: 1px solid #d1c4e9;
+            padding-top: 20px;
+        }
+        
+        .exp-item {
+            background: #fff;
+            padding: 10px 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .exp-icon { font-size: 22px; margin-bottom: 5px; }
+        .exp-val { font-weight: bold; font-size: 16px; color: #333; }
+        .exp-label { font-size: 10px; color: #777; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>VIVID WORLD 確率計算</h1>
+    <p class="description">
+        エールで「虹ヶ咲」メンバーによる全6色達成確率を計算します。<br>
+    </p>
+
+    <div class="control-panel">
+        <div class="control-group">
+            <label>エール枚数 (ブレード数)</label>
+            <input type="number" id="yellCount" value="3" min="1" max="40">
+        </div>
+
+        <div class="control-group">
+            <label>デッキ内のライブカード</label>
+            <input type="number" id="liveCardCount" value="12" min="0" max="60" onchange="updateDeckCount()">
+            <span style="font-size: 0.9em; margin-left: 5px;">枚 (対象外)</span>
+        </div>
+    </div>
+
+    <h2>メンバーカード構成</h2>
+    <div class="table-wrapper">
+        <table id="cardTable">
+            <thead>
+                <tr>
+                    <th width="50%">ハートの色 (虹ヶ咲のみ有効)</th>
+                    <th width="15%">虹ヶ咲</th>
+                    <th width="20%">枚数</th>
+                    <th width="15%">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+    <button class="btn btn-add" onclick="addCardRow()">＋ メンバーカードを追加</button>
+
+    <div class="deck-status" id="deckStatus">デッキ合計: 12枚</div>
+
+    <button class="btn btn-calc" onclick="calculateExact()">計算を実行</button>
+
+    <div class="result-area" id="resultArea">
+        <div class="result-title">スコア＋1 条件達成率 (6色コンプリート)</div>
+        <div class="result-percent" id="resultPercent">--%</div>
+        
+        <div style="text-align: left; font-size: 14px; font-weight: bold; color: #555; margin-bottom: 10px; padding-left: 5px;">▼ 各色の期待個数 (平均出現数)</div>
+        <div class="expectation-grid" id="expectationGrid">
+            </div>
+        <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right;">計算上の全パターン数: <span id="totalCases"></span>通り</div>
+    </div>
+</div>
+
+<script>
+    // ハート定義
+    const HEARTS = [
+        { color: 'pink', label: '💗', name: '桃' },
+        { color: 'red', label: '❤️', name: '赤' },
+        { color: 'yellow', label: '💛', name: '黄' },
+        { color: 'green', label: '💚', name: '緑' },
+        { color: 'blue', label: '💙', name: '青' },
+        { color: 'purple', label: '💜', name: '紫' }
+    ];
+
+    // 初期化：デフォルトで1行だけ追加する
+    window.onload = function() {
+        addCardRow(true, [0], 4); // 例として虹ヶ咲ON、ピンク、4枚で初期化
+        updateDeckCount();
+    };
+
+    // 行追加関数
+    function addCardRow(isNiji = true, colors = [], count = 4) {
+        const tbody = document.querySelector('#cardTable tbody');
+        const tr = document.createElement('tr');
+
+        // ハート選択セル
+        let heartHtml = '<div class="heart-container">';
+        HEARTS.forEach((h, index) => {
+            const isChecked = colors.includes(index) ? 'checked' : '';
+            heartHtml += `
+                <label class="heart-check ${isChecked}" title="${h.name}">
+                    ${h.label}
+                    <input type="checkbox" value="${index}" onchange="toggleHeart(this)" ${isChecked ? 'checked' : ''}>
+                </label>
+            `;
+        });
+        heartHtml += '</div>';
+        
+        const tdHeart = document.createElement('td');
+        tdHeart.innerHTML = heartHtml;
+        tr.appendChild(tdHeart);
+
+        // 虹ヶ咲フラグ
+        const tdNiji = document.createElement('td');
+        tdNiji.innerHTML = `
+            <label class="niji-label">
+                <input type="checkbox" class="niji-flag" ${isNiji ? 'checked' : ''} onchange="toggleHeartOpacity(this)">
+                対象
+            </label>
+        `;
+        tr.appendChild(tdNiji);
+
+        // 枚数
+        const tdCount = document.createElement('td');
+        tdCount.innerHTML = `<input type="number" class="card-count" value="${count}" min="1" max="4" onchange="updateDeckCount()">`;
+        tr.appendChild(tdCount);
+
+        // 削除ボタン
+        const tdAction = document.createElement('td');
+        tdAction.innerHTML = `<button class="btn btn-remove" onclick="removeRow(this)">削除</button>`;
+        tr.appendChild(tdAction);
+
+        tbody.appendChild(tr);
+        
+        // 初期状態のスタイル適用
+        toggleHeartOpacity(tr.querySelector('.niji-flag'));
+        updateDeckCount();
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        // 行が1つしかない場合は削除させない、あるいは削除して空にするか
+        // 今回は削除可能にして、必要なら追加してもらう形式
+        row.remove();
+        updateDeckCount();
+    }
+
+    function toggleHeart(input) {
+        const label = input.parentElement;
+        if (input.checked) {
+            label.classList.add('checked');
+        } else {
+            label.classList.remove('checked');
+        }
+    }
+
+    // 虹ヶ咲フラグがOFFのときはハートを薄くする（計算対象外であることを示す）
+    function toggleHeartOpacity(checkbox) {
+        const row = checkbox.closest('tr');
+        const heartContainer = row.querySelector('.heart-container');
+        if (checkbox.checked) {
+            heartContainer.style.opacity = '1';
+            heartContainer.style.pointerEvents = 'auto';
+        } else {
+            heartContainer.style.opacity = '0.3';
+            // 視覚的に無効化
+        }
+    }
+
+    function updateDeckCount() {
+        const liveCount = parseInt(document.getElementById('liveCardCount').value) || 0;
+        let memberCount = 0;
+        document.querySelectorAll('.card-count').forEach(input => {
+            memberCount += parseInt(input.value) || 0;
+        });
+        const total = liveCount + memberCount;
+        const statusEl = document.getElementById('deckStatus');
+        statusEl.textContent = `デッキ合計: ${total}枚`;
+        
+        if(total < 1) {
+            statusEl.classList.add('error');
+        } else {
+            statusEl.classList.remove('error');
+        }
+    }
+
+    // 厳密計算ロジック (動的計画法)
+    function calculateExact() {
+        const yellCount = parseInt(document.getElementById('yellCount').value);
+        const liveCount = parseInt(document.getElementById('liveCardCount').value);
+        
+        // デッキ情報の構築
+        let deck = [];
+
+        // ライブカード (mask=0)
+        for(let i=0; i<liveCount; i++) {
+            deck.push({ mask: 0, isNiji: false, colorSet: [] });
+        }
+
+        // メンバーカード
+        const rows = document.querySelectorAll('#cardTable tbody tr');
+        rows.forEach(row => {
+            const count = parseInt(row.querySelector('.card-count').value) || 0;
+            const isNiji = row.querySelector('.niji-flag').checked;
+            
+            let mask = 0;
+            let colorSet = [];
+            
+            if (isNiji) {
+                const colorChecks = row.querySelectorAll('.heart-check input:checked');
+                colorChecks.forEach(chk => {
+                    const colorIdx = parseInt(chk.value);
+                    mask |= (1 << colorIdx); // ビットを立てる
+                    colorSet.push(colorIdx);
+                });
+            }
+
+            for(let i=0; i<count; i++) {
+                deck.push({ mask: mask, isNiji: isNiji, colorSet: colorSet });
+            }
+        });
+
+        const deckSize = deck.length;
+
+        if (deckSize < yellCount) {
+            alert("デッキ枚数がエール枚数より少ないため計算できません。\nカードを追加するかエール枚数を減らしてください。");
+            return;
+        }
+
+        // --- 1. 確率の厳密計算 (DP) ---
+        // dp[j][mask] = j枚選んだときに、色が mask (0~63) の状態になる組み合わせ数 (BigInt)
+        let currentDP = Array.from({ length: yellCount + 1 }, () => new Array(64).fill(0n));
+        currentDP[0][0] = 1n;
+
+        for (let i = 0; i < deckSize; i++) {
+            const cardMask = deck[i].mask;
+            
+            // j枚選んでいる状態から、このカードを選んで j+1枚にする遷移
+            // 重複利用を防ぐため、jは大きい方から回す
+            for (let j = yellCount - 1; j >= 0; j--) {
+                for (let m = 0; m < 64; m++) {
+                    if (currentDP[j][m] > 0n) {
+                        const nextMask = m | cardMask;
+                        currentDP[j + 1][nextMask] += currentDP[j][m];
+                    }
+                }
+            }
+        }
+
+        // 計算結果
+        // 全事象: yellCount枚選ぶすべての組み合わせの和 (nCk)
+        let totalCombinations = 0n;
+        for (let m = 0; m < 64; m++) {
+            totalCombinations += currentDP[yellCount][m];
+        }
+
+        // 成功事象: maskが63 (111111 -> 全色揃っている) の組み合わせ
+        const successCombinations = currentDP[yellCount][63];
+
+        // 確率計算
+        let probability = 0;
+        if (totalCombinations > 0n) {
+            // 精度確保のため10000倍して計算
+            const precision = 10000n;
+            const probabilityBigInt = (successCombinations * precision * 100n) / totalCombinations;
+            probability = Number(probabilityBigInt) / Number(precision);
+        }
+
+        // --- 2. 期待個数の計算 (厳密解) ---
+        // 各色ごとの期待値 = (デッキ内のその色の総数 / デッキ枚数) * エール枚数
+        // ※ 虹ヶ咲フラグがONのカードのみが持つ色が対象
+        let colorCounts = [0, 0, 0, 0, 0, 0]; // ピンク, 赤, 黄, 緑, 青, 紫
+        
+        deck.forEach(card => {
+            if (card.isNiji) {
+                card.colorSet.forEach(cIdx => {
+                    colorCounts[cIdx]++;
+                });
+            }
+        });
+
+        let expectedValues = colorCounts.map(count => {
+            if (deckSize === 0) return 0;
+            return (count / deckSize) * yellCount;
+        });
+
+        // --- 結果表示 ---
+        const resultArea = document.getElementById('resultArea');
+        const resultPercent = document.getElementById('resultPercent');
+        const expectationGrid = document.getElementById('expectationGrid');
+        const totalCases = document.getElementById('totalCases');
+
+        resultArea.style.display = 'block';
+        resultPercent.textContent = `${probability.toFixed(2)}%`;
+        
+        // 期待値グリッド生成
+        let gridHtml = '';
+        expectedValues.forEach((val, idx) => {
+            const h = HEARTS[idx];
+            gridHtml += `
+                <div class="exp-item">
+                    <span class="exp-icon">${h.label}</span>
+                    <div class="exp-val">${val.toFixed(2)}</div>
+                    <div class="exp-label">個</div>
+                </div>
+            `;
+        });
+        expectationGrid.innerHTML = gridHtml;
+
+        // 全通り数表示（BigIntの整形）
+        let totalStr = totalCombinations.toString();
+        if (totalStr.length > 15) {
+            // 指数表記風に短縮
+            totalStr = totalStr[0] + "." + totalStr.substring(1, 3) + "e+" + (totalStr.length - 1);
+        }
+        totalCases.textContent = totalStr;
+    }
+</script>
+
+</body>
+</html>
