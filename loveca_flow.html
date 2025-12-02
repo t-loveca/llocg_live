@@ -15,7 +15,11 @@
             --header-bg: #2c3e50;
             --header-text: #fff;
             --card-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            --snap-width: 90vw; /* カードの幅 */
+            --snap-width: 90vw;
+            
+            /* カード種別カラー */
+            --color-member: #2c3e50; /* 濃い紺 */
+            --color-live: #e91e63;   /* ピンク */
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Meiryo, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -45,13 +49,11 @@
         .level-container {
             display: flex; flex-direction: row; 
             overflow-x: auto; 
-            /* カードを中央に配置するためのパディング計算 */
             padding: 0 calc((100vw - var(--snap-width)) / 2); 
             gap: 15px;
             width: 100%;
             scroll-snap-type: x mandatory; 
             -webkit-overflow-scrolling: touch;
-            /* スクロールバー非表示 */
             scrollbar-width: none; 
         }
         .level-container::-webkit-scrollbar { display: none; }
@@ -71,7 +73,7 @@
             box-shadow: var(--card-shadow); 
             overflow: hidden;
             display: flex; flex-direction: column;
-            border: 2px solid transparent; /* 枠線用スペース */
+            border: 2px solid transparent; 
         }
 
         /* 勝敗色 */
@@ -137,10 +139,14 @@
             display: flex; justify-content: center; align-items: center; font-weight: bold; color: #555;
         }
 
-        /* カード入力グリッド (コンパクト化) */
+        /* カード入力グリッド */
         .grid-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
         .input-group { display: flex; flex-direction: column; }
-        .input-label { font-size: 0.6rem; text-align: center; color: #888; margin-bottom: 1px; }
+        
+        .input-label { font-size: 0.65rem; text-align: center; margin-bottom: 1px; font-weight: bold; }
+        .input-label.member { color: var(--color-member); }
+        .input-label.live { color: var(--color-live); }
+
         .card-input {
             width: 100%; border: 1px solid #ddd; border-radius: 4px; font-size: 0.75rem; 
             text-align: center; padding: 0; height: 30px; background: rgba(255,255,255,0.9);
@@ -192,6 +198,7 @@
             flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc;
             background: #fff; font-weight: bold; font-size: 0.9rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #333;
         }
 
     </style>
@@ -223,7 +230,6 @@
 <script>
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
-    // スクロール位置保存用
     let scrollPositions = {};
 
     window.onload = function() {
@@ -241,14 +247,13 @@
         const prevOppMembers = parentData ? [...parentData.opp.members] : [...emptyArr];
         const prevSelfStats = parentData ? parentData.self.stats : 0;
         const prevOppStats = parentData ? parentData.opp.stats : 0;
-        // パターン名の引き継ぎ
         const prevPatternName = parentData ? parentData.patternName : "";
 
         return {
             id: createId(),
             turn: turnNum,
             pattern: patternId,
-            patternName: prevPatternName, // 引き継ぎ
+            patternName: prevPatternName,
             collapsed: false,
             opp: { 
                 score: 0, stats: prevOppStats, noLive: true, 
@@ -278,7 +283,6 @@
         const suffix = String.fromCharCode(65 + parent.children.length);
         const newPattern = parent.pattern + suffix;
         
-        // createNode内でparentDataとしてparentを渡すことで名前も引き継ぐ
         parent.children.push(createNode(parent.turn + 1, newPattern, parent));
         parent.collapsed = false;
         render();
@@ -323,7 +327,6 @@
         const path = findNode(rootNodes, id);
         if(!path) return;
         
-        // player='' はルート直下プロパティ (memo, patternName)
         if (player === '') {
             path.node[field] = val;
         } else if(idx !== null) {
@@ -332,7 +335,6 @@
             path.node[player][field] = val;
         }
         
-        // 勝敗に関わる変更のみ再描画、それ以外はデータ更新のみで描画スキップ（フォーカス外れ防止）
         if(['score', 'stats', 'noLive'].includes(field)) {
             render();
         }
@@ -343,7 +345,6 @@
         if(!path) return;
         let v = parseInt(path.node[player][field]) || 0;
         v += delta;
-        // マイナス抑止
         if(v < 0) v = 0; 
         
         path.node[player][field] = v;
@@ -400,7 +401,7 @@
     // --- Rendering ---
 
     function render() {
-        saveScroll(); // 描画前に位置保存
+        saveScroll(); 
 
         const rootEl = document.getElementById('flow-root');
         rootEl.innerHTML = '';
@@ -449,7 +450,7 @@
         document.getElementById('self-deck-name').value = meta.selfDeck;
         document.getElementById('opp-deck-name').value = meta.oppDeck;
 
-        restoreScroll(); // 描画後に復元
+        restoreScroll();
     }
 
     function buildCardHtml(node, wins, isFinished) {
@@ -493,10 +494,21 @@
                 </div>
             `;
             
+            // 色分け用のクラスを適用
             const cardsHtml = `
                 <div class="grid-row">
-                    ${[0,1,2].map(i => `<div class="input-group"><div class="input-label">${isSelf?'ライブ':'メンバー'}${i+1}</div><input type="text" class="card-input" value="${isSelf?data.lives[i]:data.members[i]}" onchange="updateVal('${id}','${player}','${isSelf?'lives':'members'}',this.value,${i})"></div>`).join('')}
-                    ${[0,1,2].map(i => `<div class="input-group"><div class="input-label">${isSelf?'メンバー':'ライブ'}${i+1}</div><input type="text" class="card-input" value="${isSelf?data.members[i]:data.lives[i]}" onchange="updateVal('${id}','${player}','${isSelf?'members':'lives'}',this.value,${i})"></div>`).join('')}
+                    ${[0,1,2].map(i => {
+                        // 1列目 (自分:ライブ / 相手:メンバー)
+                        const labelText = isSelf ? `ライブ${i+1}` : `メンバー${i+1}`;
+                        const labelClass = isSelf ? 'live' : 'member';
+                        return `<div class="input-group"><div class="input-label ${labelClass}">${labelText}</div><input type="text" class="card-input" value="${isSelf?data.lives[i]:data.members[i]}" onchange="updateVal('${id}','${player}','${isSelf?'lives':'members'}',this.value,${i})"></div>`;
+                    }).join('')}
+                    ${[0,1,2].map(i => {
+                        // 2列目 (自分:メンバー / 相手:ライブ)
+                        const labelText = isSelf ? `メンバー${i+1}` : `ライブ${i+1}`;
+                        const labelClass = isSelf ? 'member' : 'live';
+                        return `<div class="input-group"><div class="input-label ${labelClass}">${labelText}</div><input type="text" class="card-input" value="${isSelf?data.members[i]:data.lives[i]}" onchange="updateVal('${id}','${player}','${isSelf?'members':'lives'}',this.value,${i})"></div>`;
+                    }).join('')}
                 </div>
             `;
 
