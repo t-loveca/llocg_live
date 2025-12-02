@@ -15,7 +15,9 @@
             --header-bg: #2c3e50;
             --header-text: #fff;
             --card-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            --snap-width: 90vw;
+            /* カード幅を少し狭めて左右に矢印スペースを確保 */
+            --snap-width: 86vw; 
+            --arrow-size: 32px;
             
             /* カード種別カラー */
             --color-member: #2c3e50;
@@ -45,18 +47,54 @@
         /* ツリー構造 */
         #flow-root { display: flex; flex-direction: column; width: 100%; gap: 20px; }
 
+        /* 分岐スクロールエリアのラッパー */
+        .level-scroll-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 上揃え */
+        }
+
+        /* 左右ナビゲーション矢印 */
+        .nav-arrow {
+            position: absolute;
+            /* カードの高さの中央付近に配置したいが、高さ可変のためtop固定かJS制御。
+               ここでは簡易的に固定位置（カード中央付近）に配置 */
+            top: 250px; 
+            z-index: 10;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: var(--arrow-size);
+            height: var(--arrow-size);
+            display: none; /* JSで制御 */
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: #555;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            user-select: none;
+            /* 画面端に寄せる */
+        }
+        .nav-arrow.left { left: 4px; }
+        .nav-arrow.right { right: 4px; }
+        .nav-arrow:active { background: #eee; transform: scale(0.95); }
+
         /* レベル（横並びコンテナ） */
         .level-container {
             display: flex; flex-direction: row; 
             overflow-x: auto; 
+            /* カードを中央に配置するためのパディング */
             padding: 0 calc((100vw - var(--snap-width)) / 2); 
             gap: 15px;
             width: 100%;
             scroll-snap-type: x mandatory; 
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; 
+            scrollbar-width: none; /* Firefox */
         }
-        .level-container::-webkit-scrollbar { display: none; }
+        .level-container::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
         
         .node-wrapper {
             display: flex; flex-direction: column; align-items: center;
@@ -104,7 +142,7 @@
         .pattern-input {
             background: rgba(255,255,255,0.15); border: none; color: #fff; 
             font-size: 0.9rem; padding: 4px 8px; border-radius: 4px; width: 100%;
-            min-width: 0; /* Flexbox内での縮小対応 */
+            min-width: 0;
         }
         .pattern-input::placeholder { color: rgba(255,255,255,0.6); }
         
@@ -182,7 +220,7 @@
         .winner-banner.self { background: #e6f2ff; color: var(--self-border); border-bottom: 4px solid var(--self-border); }
         .winner-banner.opp { background: #fff0f0; color: var(--opp-border); border-bottom: 4px solid var(--opp-border); }
 
-        /* 矢印 */
+        /* 矢印 (次ターンへ) */
         .connector-arrow { color: #ccc; font-size: 1.5rem; margin-top: -5px; line-height: 1; z-index: -1; }
 
         /* 固定フッター */
@@ -231,13 +269,12 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'lovecaflow_data_v2'; // Key changed to ensure clean state
+    const STORAGE_KEY = 'lovecaflow_data_v4';
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
     let scrollPositions = {};
 
     window.onload = function() {
-        // Load from LocalStorage
         const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData) {
             try {
@@ -277,7 +314,6 @@
     function createNode(turnNum, patternId, parentData = null) {
         const emptyArr = ["", "", ""];
         
-        // 引き継ぎ
         const prevSelfMembers = parentData ? [...parentData.self.members] : [...emptyArr];
         const prevOppMembers = parentData ? [...parentData.opp.members] : [...emptyArr];
         const prevSelfStats = parentData ? parentData.self.stats : 0;
@@ -289,7 +325,7 @@
             turn: turnNum,
             pattern: patternId,
             patternName: prevPatternName,
-            // collapsed property removed implicitly by not using it
+            collapsed: false,
             opp: { 
                 score: 0, stats: prevOppStats, noLive: true, 
                 members: prevOppMembers, lives: [...emptyArr] 
@@ -302,8 +338,6 @@
             children: []
         };
     }
-
-    // --- Actions ---
 
     function addRootTurn() {
         const pattern = String.fromCharCode(65 + rootNodes.length); 
@@ -344,8 +378,6 @@
         render();
     }
 
-    // --- Updates ---
-
     function findNode(nodes, id, parent = null) {
         for(let i=0; i<nodes.length; i++) {
             if(nodes[i].id === id) return { node: nodes[i], siblings: nodes, parent: parent };
@@ -368,10 +400,7 @@
         }
         
         saveData();
-
-        if(['score', 'stats', 'noLive'].includes(field)) {
-            render();
-        }
+        if(['score', 'stats', 'noLive'].includes(field)) render();
     }
 
     function modNum(id, player, field, delta) {
@@ -380,7 +409,6 @@
         let v = parseInt(path.node[player][field]) || 0;
         v += delta;
         if(v < 0) v = 0; 
-        
         path.node[player][field] = v;
         saveData();
         render();
@@ -391,8 +419,6 @@
         meta.oppDeck = document.getElementById('opp-deck-name').value;
         saveData();
     }
-
-    // --- Logic ---
 
     function calcPathWins(node, parentWins) {
         let sWins = parentWins ? parentWins.self : 0;
@@ -411,8 +437,6 @@
         return { self: sWins, opp: oWins };
     }
 
-    // --- Scroll Management ---
-    
     function saveScroll() {
         scrollPositions = {};
         document.querySelectorAll('.level-container').forEach(el => {
@@ -427,6 +451,8 @@
             const id = el.getAttribute('data-parent-id');
             if(id && scrollPositions[id] !== undefined) {
                 el.scrollLeft = scrollPositions[id];
+                // 矢印表示状態を更新
+                updateArrowState(el);
             }
         });
         if(scrollPositions['window-y'] !== undefined) {
@@ -434,19 +460,62 @@
         }
     }
 
-    // --- Rendering ---
+    function scrollContainer(btn, direction) {
+        const wrapper = btn.closest('.level-scroll-wrapper');
+        const container = wrapper.querySelector('.level-container');
+        if(container) {
+            const amount = container.clientWidth * 0.85; 
+            container.scrollBy({ left: amount * direction, behavior: 'smooth' });
+            // scrollイベントリスナーで矢印は自動更新される
+        }
+    }
+
+    function updateArrowState(container) {
+        const wrapper = container.parentElement;
+        const leftArrow = wrapper.querySelector('.nav-arrow.left');
+        const rightArrow = wrapper.querySelector('.nav-arrow.right');
+        
+        if(!leftArrow || !rightArrow) return;
+
+        // 遊びを持たせる
+        const sl = container.scrollLeft;
+        const sw = container.scrollWidth;
+        const cw = container.clientWidth;
+
+        // 左にスクロール余地があるか（=左にカードがあるか）
+        if (sl > 5) {
+            leftArrow.style.display = 'flex';
+        } else {
+            leftArrow.style.display = 'none';
+        }
+
+        // 右にスクロール余地があるか（=右にカードがあるか）
+        if (sw - sl - cw > 5) {
+            rightArrow.style.display = 'flex';
+        } else {
+            rightArrow.style.display = 'none';
+        }
+    }
 
     function render() {
         saveScroll(); 
-
         const rootEl = document.getElementById('flow-root');
         rootEl.innerHTML = '';
 
         function renderLevel(nodes, parentWins = {self:0, opp:0}, parentId = 'root') {
             if(!nodes || nodes.length === 0) return null;
+            
+            const scrollWrapper = document.createElement('div');
+            scrollWrapper.className = 'level-scroll-wrapper';
+
             const container = document.createElement('div');
             container.className = 'level-container';
             container.setAttribute('data-parent-id', parentId);
+            
+            // スクロールイベント監視
+            container.onscroll = function() {
+                updateArrowState(container);
+            };
 
             nodes.forEach(node => {
                 const wrapper = document.createElement('div');
@@ -463,7 +532,7 @@
                 else if(sDiff > 0 && oDiff > 0) statusClass = 'status-draw';
 
                 const card = document.createElement('div');
-                card.className = `turn-card ${statusClass}`; // Collapsed class removed
+                card.className = `turn-card ${statusClass}`;
                 card.innerHTML = buildCardHtml(node, currentWins, isFinished);
                 wrapper.appendChild(card);
 
@@ -477,7 +546,27 @@
                 }
                 container.appendChild(wrapper);
             });
-            return container;
+
+            // 矢印要素を追加（初期状態はCSSでnone, restoreScrollまたはonscrollで表示）
+            if (nodes.length > 1) {
+                const leftBtn = document.createElement('div');
+                leftBtn.className = 'nav-arrow left';
+                leftBtn.textContent = '◀';
+                leftBtn.onclick = function() { scrollContainer(this, -1); };
+
+                const rightBtn = document.createElement('div');
+                rightBtn.className = 'nav-arrow right';
+                rightBtn.textContent = '▶';
+                rightBtn.onclick = function() { scrollContainer(this, 1); };
+
+                scrollWrapper.appendChild(leftBtn);
+                scrollWrapper.appendChild(container);
+                scrollWrapper.appendChild(rightBtn);
+            } else {
+                scrollWrapper.appendChild(container);
+            }
+
+            return scrollWrapper;
         }
         
         const tree = renderLevel(rootNodes);
@@ -487,6 +576,9 @@
         document.getElementById('opp-deck-name').value = meta.oppDeck;
 
         restoreScroll();
+        
+        // 初回描画時に矢印状態を更新するために、全てのコンテナに対してチェックを行う
+        document.querySelectorAll('.level-container').forEach(el => updateArrowState(el));
     }
 
     function buildCardHtml(node, wins, isFinished) {
@@ -497,9 +589,9 @@
             const sName = meta.selfDeck || "自分";
             const oName = meta.oppDeck || "相手";
             if (wins.self >= 3) {
-                winnerHtml = `<div class="winner-banner self">${sName} WIN!</div>`; // Removed icon
+                winnerHtml = `<div class="winner-banner self">${sName} WIN!</div>`;
             } else {
-                winnerHtml = `<div class="winner-banner opp">${oName} WIN!</div>`; // Removed icon
+                winnerHtml = `<div class="winner-banner opp">${oName} WIN!</div>`;
             }
         }
 
