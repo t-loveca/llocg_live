@@ -18,8 +18,8 @@
             --snap-width: 90vw;
             
             /* カード種別カラー */
-            --color-member: #2c3e50; /* 濃い紺 */
-            --color-live: #e91e63;   /* ピンク */
+            --color-member: #2c3e50;
+            --color-live: #e91e63;
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Meiryo, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -90,15 +90,24 @@
             padding: 8px 12px;
             display: flex; justify-content: space-between; align-items: center;
         }
+        .header-left {
+            display: flex; align-items: center; flex: 1; overflow: hidden;
+        }
         .turn-badge {
             background: #fff; color: #333; font-weight: 900; font-size: 0.8rem;
             padding: 2px 6px; border-radius: 4px; margin-right: 8px; white-space: nowrap;
         }
+        .pattern-id {
+            font-size: 0.75rem; color: rgba(255,255,255,0.8); font-family: monospace; 
+            margin-right: 6px; font-weight: bold;
+        }
         .pattern-input {
             background: rgba(255,255,255,0.15); border: none; color: #fff; 
             font-size: 0.9rem; padding: 4px 8px; border-radius: 4px; width: 100%;
+            min-width: 0; /* Flexbox内での縮小対応 */
         }
         .pattern-input::placeholder { color: rgba(255,255,255,0.6); }
+        
         .header-actions { display: flex; gap: 8px; margin-left: 8px; }
         .btn-mini {
             background: rgba(255,255,255,0.2); border: none; color: #fff; 
@@ -173,16 +182,6 @@
         .winner-banner.self { background: #e6f2ff; color: var(--self-border); border-bottom: 4px solid var(--self-border); }
         .winner-banner.opp { background: #fff0f0; color: var(--opp-border); border-bottom: 4px solid var(--opp-border); }
 
-        /* 折りたたみ状態 */
-        .turn-card.collapsed { width: auto; min-width: 120px; }
-        .turn-card.collapsed .card-body, 
-        .turn-card.collapsed .card-footer, 
-        .turn-card.collapsed .winner-banner,
-        .turn-card.collapsed .memo-area { display: none; }
-        .turn-card.collapsed .card-header { justify-content: center; padding: 12px; }
-        .turn-card.collapsed .header-actions, .turn-card.collapsed .pattern-input { display: none; }
-        .turn-card.collapsed .turn-badge { margin: 0; }
-
         /* 矢印 */
         .connector-arrow { color: #ccc; font-size: 1.5rem; margin-top: -5px; line-height: 1; z-index: -1; }
 
@@ -199,6 +198,9 @@
             background: #fff; font-weight: bold; font-size: 0.9rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             color: #333;
+        }
+        .btn-ctrl.warn {
+            background: #fff0f0; color: #c82333; border-color: #ffcccc;
         }
 
     </style>
@@ -223,19 +225,52 @@
 
 <div class="controls">
     <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(this)">
+    <button class="btn-ctrl warn" onclick="resetData()">リセット</button>
     <button class="btn-ctrl" onclick="document.getElementById('import-file').click()">読込</button>
     <button class="btn-ctrl" onclick="exportData()">保存</button>
 </div>
 
 <script>
+    const STORAGE_KEY = 'lovecaflow_data_v2'; // Key changed to ensure clean state
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
     let scrollPositions = {};
 
     window.onload = function() {
-        if(rootNodes.length === 0) addRootTurn();
+        // Load from LocalStorage
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            try {
+                const parsed = JSON.parse(savedData);
+                meta = parsed.meta || { selfDeck: "", oppDeck: "" };
+                rootNodes = parsed.rootNodes || [];
+            } catch (e) {
+                console.error("Save data parse error", e);
+            }
+        }
+
+        if (rootNodes.length === 0) {
+            addRootTurn();
+        }
+
         render();
     };
+
+    function saveData() {
+        const data = { meta, rootNodes };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function resetData() {
+        if(confirm("現在の対戦データを全て消去してリセットしますか？")) {
+            localStorage.removeItem(STORAGE_KEY);
+            rootNodes = [];
+            meta = { selfDeck: "", oppDeck: "" };
+            addRootTurn();
+            render();
+            window.scrollTo(0, 0);
+        }
+    }
 
     function createId() { return Math.random().toString(36).substr(2, 9); }
 
@@ -254,7 +289,7 @@
             turn: turnNum,
             pattern: patternId,
             patternName: prevPatternName,
-            collapsed: false,
+            // collapsed property removed implicitly by not using it
             opp: { 
                 score: 0, stats: prevOppStats, noLive: true, 
                 members: prevOppMembers, lives: [...emptyArr] 
@@ -273,6 +308,7 @@
     function addRootTurn() {
         const pattern = String.fromCharCode(65 + rootNodes.length); 
         rootNodes.push(createNode(1, pattern));
+        saveData();
         render();
     }
 
@@ -284,7 +320,7 @@
         const newPattern = parent.pattern + suffix;
         
         parent.children.push(createNode(parent.turn + 1, newPattern, parent));
-        parent.collapsed = false;
+        saveData();
         render();
     }
 
@@ -304,12 +340,8 @@
             return false;
         };
         remove(rootNodes);
+        saveData();
         render();
-    }
-
-    function toggleCollapse(id) {
-        const path = findNode(rootNodes, id);
-        if(path) { path.node.collapsed = !path.node.collapsed; render(); }
     }
 
     // --- Updates ---
@@ -335,6 +367,8 @@
             path.node[player][field] = val;
         }
         
+        saveData();
+
         if(['score', 'stats', 'noLive'].includes(field)) {
             render();
         }
@@ -348,12 +382,14 @@
         if(v < 0) v = 0; 
         
         path.node[player][field] = v;
+        saveData();
         render();
     }
 
     function updateMeta() {
         meta.selfDeck = document.getElementById('self-deck-name').value;
         meta.oppDeck = document.getElementById('opp-deck-name').value;
+        saveData();
     }
 
     // --- Logic ---
@@ -427,11 +463,11 @@
                 else if(sDiff > 0 && oDiff > 0) statusClass = 'status-draw';
 
                 const card = document.createElement('div');
-                card.className = `turn-card ${statusClass} ${node.collapsed ? 'collapsed' : ''}`;
+                card.className = `turn-card ${statusClass}`; // Collapsed class removed
                 card.innerHTML = buildCardHtml(node, currentWins, isFinished);
                 wrapper.appendChild(card);
 
-                if(node.children.length > 0 && !node.collapsed) {
+                if(node.children.length > 0) {
                     const arrow = document.createElement('div');
                     arrow.className = 'connector-arrow';
                     arrow.textContent = '▼';
@@ -461,9 +497,9 @@
             const sName = meta.selfDeck || "自分";
             const oName = meta.oppDeck || "相手";
             if (wins.self >= 3) {
-                winnerHtml = `<div class="winner-banner self">🏆 ${sName} WIN!</div>`;
+                winnerHtml = `<div class="winner-banner self">${sName} WIN!</div>`; // Removed icon
             } else {
-                winnerHtml = `<div class="winner-banner opp">🏆 ${oName} WIN!</div>`;
+                winnerHtml = `<div class="winner-banner opp">${oName} WIN!</div>`; // Removed icon
             }
         }
 
@@ -494,17 +530,14 @@
                 </div>
             `;
             
-            // 色分け用のクラスを適用
             const cardsHtml = `
                 <div class="grid-row">
                     ${[0,1,2].map(i => {
-                        // 1列目 (自分:ライブ / 相手:メンバー)
                         const labelText = isSelf ? `ライブ${i+1}` : `メンバー${i+1}`;
                         const labelClass = isSelf ? 'live' : 'member';
                         return `<div class="input-group"><div class="input-label ${labelClass}">${labelText}</div><input type="text" class="card-input" value="${isSelf?data.lives[i]:data.members[i]}" onchange="updateVal('${id}','${player}','${isSelf?'lives':'members'}',this.value,${i})"></div>`;
                     }).join('')}
                     ${[0,1,2].map(i => {
-                        // 2列目 (自分:メンバー / 相手:ライブ)
                         const labelText = isSelf ? `メンバー${i+1}` : `ライブ${i+1}`;
                         const labelClass = isSelf ? 'member' : 'live';
                         return `<div class="input-group"><div class="input-label ${labelClass}">${labelText}</div><input type="text" class="card-input" value="${isSelf?data.members[i]:data.lives[i]}" onchange="updateVal('${id}','${player}','${isSelf?'members':'lives'}',this.value,${i})"></div>`;
@@ -531,9 +564,10 @@
 
         return `
             <div class="card-header">
-                <div style="display:flex; align-items:center; flex:1;" onclick="toggleCollapse('${id}')">
-                    <span class="turn-badge">Turn ${node.turn}</span>
-                    <input type="text" class="pattern-input" placeholder="${node.pattern}" value="${node.patternName || ''}" onclick="event.stopPropagation()" onchange="updateVal('${id}','','patternName',this.value)">
+                <div class="header-left">
+                    <span class="turn-badge">ターン ${node.turn}</span>
+                    <span class="pattern-id">${node.pattern}</span>
+                    <input type="text" class="pattern-input" placeholder="パターン名" value="${node.patternName || ''}" onchange="updateVal('${id}','','patternName',this.value)">
                 </div>
                 <div class="header-actions">
                     <button class="btn-mini" onclick="addSiblingBranch('${id}')">＋</button>
@@ -554,6 +588,7 @@
     // --- File IO ---
 
     function exportData() {
+        saveData();
         const now = new Date();
         const pad = n => String(n).padStart(2, '0');
         const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
@@ -579,6 +614,7 @@
                 if(d.rootNodes) {
                     meta = d.meta || {selfDeck:"", oppDeck:""};
                     rootNodes = d.rootNodes;
+                    saveData(); 
                     render();
                     alert("読込完了");
                 }
