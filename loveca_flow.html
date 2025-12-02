@@ -7,231 +7,212 @@
     <style>
         :root {
             --primary-text: #333;
-            --bg-color: #f0f0f4;
+            --bg-color: #eef2f5;
             --self-bg: #f0f8ff;
             --self-border: #0056b3;
             --opp-bg: #fff5f5;
             --opp-border: #c82333;
-            --header-bg: #333;
+            --header-bg: #2c3e50;
             --header-text: #fff;
-            --draw-bg: #6f42c1;
-            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            --snap-width: 90vw; /* カードの幅 */
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Meiryo, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 10px 0 120px 0; background: var(--bg-color); color: var(--primary-text); }
+        body { margin: 0; padding: 0 0 100px 0; background: var(--bg-color); color: var(--primary-text); overflow-x: hidden; }
         
-        /* 全体コンテナ */
-        .container { width: 100%; overflow-x: hidden; }
-        h1 { text-align: center; font-size: 1.2rem; margin: 5px 0 10px 0; color: #444; }
-
-        /* 共通UI */
-        input[type="text"], input[type="number"], textarea {
-            width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;
-            font-size: 16px; /* スマホでズームしないサイズ */
-            background: #fff; appearance: none;
+        /* タイトル・デッキ名エリア */
+        .top-container {
+            background: #fff; padding: 10px 15px; border-bottom: 1px solid #ccc; margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        input:focus, textarea:focus { outline: none; border-color: var(--self-border); }
-        button { cursor: pointer; user-select: none; }
+        h1 { text-align: center; font-size: 1.1rem; margin: 0 0 8px 0; color: #333; }
+        .deck-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .deck-box { position: relative; }
+        .deck-label { font-size: 0.65rem; font-weight: bold; color: #666; display: block; margin-bottom: 2px; }
+        .deck-input { 
+            width: 100%; border: none; border-bottom: 2px solid #ddd; border-radius: 0; 
+            background: transparent; padding: 4px 0; font-weight: bold; font-size: 0.9rem;
+        }
+        .deck-input:focus { outline: none; border-bottom-color: #666; }
+        .deck-box.self .deck-input:focus { border-bottom-color: var(--self-border); }
+        .deck-box.opp .deck-input:focus { border-bottom-color: var(--opp-border); }
 
-        /* トップバー (デッキ名入力) */
-        .top-bar { padding: 0 10px; max-width: 600px; margin: 0 auto 10px auto; }
-        .deck-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .deck-box { padding: 8px; background: #fff; border-radius: 6px; border: 1px solid #ddd; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .deck-box.self { border-top: 3px solid var(--self-border); }
-        .deck-box.opp { border-top: 3px solid var(--opp-border); }
-        .deck-label { display: block; font-size: 0.7rem; font-weight: bold; margin-bottom: 2px; color: #666; }
-        .deck-input { border: none; background: transparent; font-weight: bold; padding: 4px 0; border-bottom: 1px solid #eee; border-radius: 0; }
-        .deck-input:focus { border-bottom-color: #999; }
+        /* ツリー構造 */
+        #flow-root { display: flex; flex-direction: column; width: 100%; gap: 20px; }
 
-        /* ツリー構造レイアウト */
-        #flow-root { display: flex; flex-direction: column; align-items: center; width: 100%; }
-
-        /* 水平スクロールコンテナ (スナップ付き) */
+        /* レベル（横並びコンテナ） */
         .level-container {
             display: flex; flex-direction: row; 
-            gap: 15px; /* カード間の隙間 */
             overflow-x: auto; 
-            padding: 10px calc(50vw - 175px) 30px calc(50vw - 175px); /* 中央寄せのためのパディング調整 (カード幅350px想定) */
+            /* カードを中央に配置するためのパディング計算: (100vw - カード幅) / 2 - gapの半分 */
+            padding: 0 calc((100vw - var(--snap-width)) / 2); 
+            gap: 15px;
             width: 100%;
-            align-items: flex-start; 
-            scroll-snap-type: x mandatory; /* スナップ有効化 */
-            -webkit-overflow-scrolling: touch; /* 滑らかなスクロール */
+            scroll-snap-type: x mandatory; 
+            -webkit-overflow-scrolling: touch;
+            /* スクロールバー非表示 */
+            scrollbar-width: none; 
         }
+        .level-container::-webkit-scrollbar { display: none; }
         
         .node-wrapper {
             display: flex; flex-direction: column; align-items: center;
             flex-shrink: 0; 
-            scroll-snap-align: center; /* 中央にスナップ */
+            width: var(--snap-width);
+            scroll-snap-align: center; 
             position: relative;
         }
 
         /* カード本体 */
         .turn-card {
-            width: 90vw; max-width: 350px; /* スマホで見やすい幅 */
-            background: #fff; border: 1px solid #ccc; border-radius: 10px;
-            box-shadow: var(--card-shadow); overflow: hidden;
-            transition: all 0.2s ease; margin-bottom: 5px;
-            position: relative;
+            width: 100%; 
+            background: #fff; border-radius: 12px;
+            box-shadow: var(--card-shadow); 
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            border: 2px solid transparent; /* 枠線用スペース */
         }
 
-        /* 勝敗ステータス色 (枠線とヘッダー) */
+        /* 勝敗色 */
         .turn-card.status-self { border-color: var(--self-border); }
         .turn-card.status-self .card-header { background: var(--self-border); }
         .turn-card.status-opp { border-color: var(--opp-border); }
         .turn-card.status-opp .card-header { background: var(--opp-border); }
-        .turn-card.status-draw { border-color: var(--draw-bg); }
-        .turn-card.status-draw .card-header { background: var(--draw-bg); }
+        .turn-card.status-draw { border-color: #6f42c1; }
+        .turn-card.status-draw .card-header { background: #6f42c1; }
 
         /* ヘッダー */
         .card-header {
             background: var(--header-bg); color: var(--header-text);
             padding: 8px 12px;
             display: flex; justify-content: space-between; align-items: center;
-            /* 閉じたときにタップしやすい高さ確保 */
-            min-height: 44px;
         }
-        
-        .header-left { display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden; }
-        .pattern-badge { 
-            background: rgba(255,255,255,0.2); color: #fff; border-radius: 4px; 
-            padding: 2px 6px; font-size: 0.75rem; font-family: monospace; font-weight: bold;
-            white-space: nowrap;
+        .turn-badge {
+            background: #fff; color: #333; font-weight: 900; font-size: 0.8rem;
+            padding: 2px 6px; border-radius: 4px; margin-right: 8px; white-space: nowrap;
         }
-        
-        /* パターン名入力 (ヘッダー内) */
-        .pattern-name-input {
-            background: transparent; border: none; color: #fff; 
-            font-weight: bold; font-size: 0.95rem; padding: 4px;
-            width: 100%;
+        .pattern-input {
+            background: rgba(255,255,255,0.15); border: none; color: #fff; 
+            font-size: 0.9rem; padding: 4px 8px; border-radius: 4px; width: 100%;
         }
-        .pattern-name-input::placeholder { color: rgba(255,255,255,0.5); }
-        .pattern-name-input:focus { background: rgba(0,0,0,0.2); border-radius: 4px; }
-
-        .header-actions { display: flex; gap: 10px; margin-left: 5px; }
-        .btn-icon {
-            background: rgba(255,255,255,0.2); color: #fff; border: none; border-radius: 50%;
-            width: 30px; height: 30px; font-size: 14px; display: flex; justify-content: center; align-items: center;
-        }
-        .btn-branch {
-            background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.6); border-radius: 4px;
-            padding: 4px 8px; font-size: 0.75rem; white-space: nowrap;
+        .pattern-input::placeholder { color: rgba(255,255,255,0.6); }
+        .header-actions { display: flex; gap: 8px; margin-left: 8px; }
+        .btn-mini {
+            background: rgba(255,255,255,0.2); border: none; color: #fff; 
+            width: 28px; height: 28px; border-radius: 50%; font-size: 14px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
 
-        /* プレイヤーエリア */
-        .player-area { padding: 10px; }
+        /* コンテンツエリア */
+        .card-body { display: flex; flex-direction: column; }
+        
+        /* プレイヤーエリア共通 */
+        .player-area { padding: 8px; position: relative; }
         .player-area.opp { background: var(--opp-bg); border-bottom: 1px solid #eee; }
         .player-area.self { background: var(--self-bg); }
-        
-        .area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .area-label { font-size: 0.8rem; font-weight: bold; }
-        .area-label.opp { color: var(--opp-border); }
-        .area-label.self { color: var(--self-border); }
 
-        /* スタッツ行 */
-        .stats-row {
-            display: flex; align-items: center; gap: 10px;
-            background: rgba(255,255,255,0.5); padding: 6px; border-radius: 6px; margin: 6px 0;
+        .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .player-name { font-weight: bold; font-size: 0.8rem; }
+        .player-name.opp { color: var(--opp-border); }
+        .player-name.self { color: var(--self-border); }
+
+        .live-check { font-size: 0.7rem; display: flex; align-items: center; }
+        .live-check input { margin-right: 3px; }
+
+        /* スコア・スタッツ行 */
+        .stats-container { display: flex; gap: 8px; margin-bottom: 6px; }
+        .stat-box { 
+            flex: 1; display: flex; align-items: center; background: rgba(255,255,255,0.6); 
+            padding: 4px; border-radius: 6px; justify-content: space-between;
         }
-        .stat-group { display: flex; align-items: center; flex: 1; justify-content: center; }
-        .stat-label { font-size: 0.7rem; color: #555; margin-right: 4px; white-space: nowrap; }
+        .stat-label { font-size: 0.65rem; color: #666; margin-left: 4px; }
+        .stat-ctrl { display: flex; align-items: center; }
         .stat-val { 
-            width: 45px; text-align: center; font-weight: bold; border: none; background: transparent; font-size: 1.2rem; margin: 0 4px;
+            width: 36px; text-align: center; border: none; background: transparent; 
+            font-weight: bold; font-size: 1.1rem; padding: 0;
         }
-        .stat-val:focus { border-bottom: 2px solid #999; }
-
         .btn-pm {
-            width: 32px; height: 32px; background: #fff; border: 1px solid #ccc; border-radius: 6px;
-            display: flex; justify-content: center; align-items: center; font-weight: bold; color: #333; font-size: 1.1rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            width: 24px; height: 24px; background: #fff; border: 1px solid #ccc; border-radius: 4px;
+            display: flex; justify-content: center; align-items: center; font-weight: bold; color: #555;
         }
-        .btn-pm:active { background: #eee; transform: translateY(1px); }
 
-        /* カード入力グリッド */
-        .cards-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
-        .card-box { display: flex; flex-direction: column; }
-        .card-num { font-size: 0.6rem; text-align: center; color: #888; margin-bottom: 2px; }
-        .card-input { 
-            font-size: 0.8rem; text-align: center; padding: 0; height: 36px; border-radius: 4px; 
-            background: rgba(255,255,255,0.8);
+        /* カード入力グリッド (コンパクト化) */
+        .grid-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-label { font-size: 0.6rem; text-align: center; color: #888; margin-bottom: 1px; }
+        .card-input {
+            width: 100%; border: 1px solid #ddd; border-radius: 4px; font-size: 0.75rem; 
+            text-align: center; padding: 0; height: 30px; background: rgba(255,255,255,0.9);
         }
 
         /* メモ欄 */
-        .memo-box { padding: 10px; background: #fff; border-top: 1px solid #eee; }
-        .memo-input { 
-            width: 100%; height: 110px; /* 5行程度 */ 
-            border: 1px solid #ddd; font-size: 0.9rem; resize: none; line-height: 1.4;
+        .memo-area { padding: 8px; background: #fff; border-top: 1px solid #eee; }
+        .memo-input {
+            width: 100%; height: 80px; border: 1px solid #eee; border-radius: 4px; 
+            padding: 6px; font-size: 0.85rem; resize: none;
         }
 
-        /* 折りたたみ用ボタン (ヘッダー全体ではなく専用ボタン化も検討したが、ヘッダータップで実装) */
-        .collapse-trigger { cursor: pointer; flex: 1; height: 100%; display: flex; align-items: center; }
+        /* フッター */
+        .card-footer { padding: 8px; background: #f8f8f8; border-top: 1px solid #eee; }
+        .btn-next {
+            width: 100%; background: #444; color: #fff; border: none; padding: 10px;
+            border-radius: 6px; font-weight: bold; font-size: 0.9rem;
+        }
+        
+        /* 勝者表示 */
+        .winner-banner { 
+            padding: 10px; text-align: center; font-weight: bold; font-size: 1rem; 
+        }
+        .winner-banner.self { background: #e6f2ff; color: var(--self-border); border-bottom: 4px solid var(--self-border); }
+        .winner-banner.opp { background: #fff0f0; color: var(--opp-border); border-bottom: 4px solid var(--opp-border); }
 
         /* 折りたたみ状態 */
-        .turn-card.collapsed { width: auto; min-width: 180px; max-width: 90vw; background: #e0e0e0; border-color: #999; }
-        .turn-card.collapsed .card-body { display: none; }
-        .turn-card.collapsed .card-header { background: #ccc; color: #444; justify-content: center; border-bottom: none; }
-        .turn-card.collapsed .header-actions { display: none; }
-        .turn-card.collapsed .pattern-badge { background: #888; color: #fff; }
-        .turn-card.collapsed .pattern-name-input { text-align: center; color: #333; pointer-events: none; /* 閉じたときは編集不可 */ }
+        .turn-card.collapsed { width: auto; min-width: 120px; }
+        .turn-card.collapsed .card-body, 
+        .turn-card.collapsed .card-footer, 
+        .turn-card.collapsed .winner-banner,
+        .turn-card.collapsed .memo-area { display: none; }
+        .turn-card.collapsed .card-header { justify-content: center; padding: 12px; }
+        .turn-card.collapsed .header-actions, .turn-card.collapsed .pattern-input { display: none; }
+        .turn-card.collapsed .turn-badge { margin: 0; }
 
-        /* フッターボタン */
-        .card-footer { padding: 12px; background: #f9f9f9; border-top: 1px solid #ddd; }
-        .btn-next-turn {
-            width: 100%; background: #444; color: #fff; border: none;
-            padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn-next-turn:active { transform: translateY(1px); box-shadow: none; }
+        /* 矢印 */
+        .connector-arrow { color: #ccc; font-size: 1.5rem; margin-top: -5px; line-height: 1; z-index: -1; }
 
-        /* 勝利表示 */
-        .card-winner {
-            padding: 15px; text-align: center; font-weight: bold; font-size: 1.1rem; border-top: 1px solid #ddd;
-        }
-        .card-winner.self { background: #e6f2ff; color: var(--self-border); border-bottom: 5px solid var(--self-border); }
-        .card-winner.opp { background: #fff0f0; color: var(--opp-border); border-bottom: 5px solid var(--opp-border); }
-
-        /* 接続矢印 */
-        .connector-down { color: #aaa; font-size: 1.5rem; margin: -5px 0 5px 0; line-height: 1; }
-
-        /* 操作バー */
+        /* 固定フッター */
         .controls {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(255,255,255,0.95); border-top: 1px solid #ccc;
-            padding: 10px 15px; display: flex; gap: 10px; z-index: 1000;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
+            border-top: 1px solid #ccc; padding: 10px 20px;
+            display: flex; gap: 15px; z-index: 100;
             padding-bottom: max(10px, env(safe-area-inset-bottom));
-            backdrop-filter: blur(5px);
         }
         .btn-ctrl {
             flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc;
             background: #fff; font-weight: bold; font-size: 0.9rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-ctrl:active { background: #f0f0f0; }
-
-        .no-live-check { display: flex; align-items: center; font-size: 0.75rem; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px; }
-        .no-live-check input { margin-right: 4px; transform: scale(1.2); }
 
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="top-bar">
-        <h1>Loveca Flow</h1>
-        <div class="deck-info">
-            <div class="deck-box self">
-                <label class="deck-label">自分</label>
-                <input type="text" class="deck-input" id="self-deck-name" placeholder="デッキ名" onchange="updateMeta()">
-            </div>
-            <div class="deck-box opp">
-                <label class="deck-label">相手</label>
-                <input type="text" class="deck-input" id="opp-deck-name" placeholder="デッキ名" onchange="updateMeta()">
-            </div>
+<div class="top-container">
+    <h1>Loveca Flow</h1>
+    <div class="deck-info">
+        <div class="deck-box self">
+            <span class="deck-label">自分</span>
+            <input type="text" class="deck-input" id="self-deck-name" placeholder="デッキ名" onchange="updateMeta()">
+        </div>
+        <div class="deck-box opp">
+            <span class="deck-label">相手</span>
+            <input type="text" class="deck-input" id="opp-deck-name" placeholder="デッキ名" onchange="updateMeta()">
         </div>
     </div>
-
-    <div id="flow-root"></div>
 </div>
+
+<div class="container" id="flow-root"></div>
 
 <div class="controls">
     <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(this)">
@@ -252,8 +233,6 @@
 
     function createNode(turnNum, patternId, parentData = null) {
         const emptyArr = ["", "", ""];
-        
-        // 引き継ぎ
         const prevSelfMembers = parentData ? [...parentData.self.members] : [...emptyArr];
         const prevOppMembers = parentData ? [...parentData.opp.members] : [...emptyArr];
         const prevSelfStats = parentData ? parentData.self.stats : 0;
@@ -262,17 +241,11 @@
         return {
             id: createId(),
             turn: turnNum,
-            pattern: patternId,   // 自動生成ID (A, AB...)
-            customName: "",       // ユーザー入力名
+            pattern: patternId,
+            patternName: "", 
             collapsed: false,
-            opp: { 
-                score: 0, stats: prevOppStats, noLive: true, 
-                members: prevOppMembers, lives: [...emptyArr] 
-            },
-            self: { 
-                score: 0, stats: prevSelfStats, noLive: true, 
-                members: prevSelfMembers, lives: [...emptyArr] 
-            },
+            opp: { score: 0, stats: prevOppStats, noLive: true, members: prevOppMembers, lives: [...emptyArr] },
+            self: { score: 0, stats: prevSelfStats, noLive: true, members: prevSelfMembers, lives: [...emptyArr] },
             memo: "",
             children: []
         };
@@ -290,13 +263,8 @@
         const path = findNode(rootNodes, nodeId);
         if(!path) return;
         const parent = path.node;
-        
-        // 子要素の数でサフィックス決定
         const suffix = String.fromCharCode(65 + parent.children.length);
-        const newPattern = parent.pattern + suffix;
-        
-        const newNode = createNode(parent.turn + 1, newPattern, parent);
-        parent.children.push(newNode);
+        parent.children.push(createNode(parent.turn + 1, parent.pattern + suffix, parent));
         parent.collapsed = false;
         render();
     }
@@ -304,15 +272,12 @@
     function addSiblingBranch(nodeId) {
         const path = findNode(rootNodes, nodeId);
         if(!path) return;
-        if (!path.parent) {
-            addRootTurn(); // ルートの兄弟
-        } else {
-            addNextTurn(path.parent.id); // 親への子供追加 = 兄弟
-        }
+        if (!path.parent) addRootTurn();
+        else addNextTurn(path.parent.id);
     }
 
     function deleteNode(id) {
-        if(!confirm("このターンと以降の分岐を削除しますか？")) return;
+        if(!confirm("このターン以降を削除しますか？")) return;
         const remove = (nodes) => {
             const idx = nodes.findIndex(n => n.id === id);
             if(idx !== -1) { nodes.splice(idx, 1); return true; }
@@ -325,10 +290,7 @@
 
     function toggleCollapse(id) {
         const path = findNode(rootNodes, id);
-        if(path) {
-            path.node.collapsed = !path.node.collapsed;
-            render();
-        }
+        if(path) { path.node.collapsed = !path.node.collapsed; render(); }
     }
 
     // --- Updates ---
@@ -346,17 +308,16 @@
         const path = findNode(rootNodes, id);
         if(!path) return;
         
-        if (player === 'meta') {
-            // パターン名など
-            path.node[field] = val;
+        // メモやパターン名は player='' (または特定のキー) で渡ってくる想定
+        if (player === '') {
+            path.node[field] = val; // memo, patternName など
         } else if(idx !== null) {
             path.node[player][field][idx] = val;
         } else {
             path.node[player][field] = val;
         }
         
-        // 再描画が必要なフィールド
-        if(field==='score' || field==='stats' || field==='noLive') render(); 
+        if(['score', 'stats', 'noLive'].includes(field)) render(); 
     }
 
     function modNum(id, player, field, delta) {
@@ -383,19 +344,14 @@
         const sScore = parseInt(node.self.score);
         const oScore = parseInt(node.opp.score);
         
-        let sWinThis = false;
-        let oWinThis = false;
-
-        if (sScore > oScore) {
-            if (!node.self.noLive) sWinThis = true;
-        } else if (oScore > sScore) {
-            if (!node.opp.noLive) oWinThis = true;
-        } else {
-            if (!node.self.noLive && sWins < 2) sWinThis = true;
-            if (!node.opp.noLive && oWins < 2) oWinThis = true;
+        let sWin = false, oWin = false;
+        if (sScore > oScore) { if (!node.self.noLive) sWin = true; }
+        else if (oScore > sScore) { if (!node.opp.noLive) oWin = true; }
+        else {
+            if (!node.self.noLive && sWins < 2) sWin = true;
+            if (!node.opp.noLive && oWins < 2) oWin = true;
         }
-        if (sWinThis) sWins++;
-        if (oWinThis) oWins++;
+        if(sWin) sWins++; if(oWin) oWins++;
         return { self: sWins, opp: oWins };
     }
 
@@ -416,7 +372,13 @@
                 
                 const currentWins = calcPathWins(node, parentWins);
                 const isFinished = currentWins.self >= 3 || currentWins.opp >= 3;
-                const statusClass = getStatusClass(currentWins, parentWins);
+                
+                const sDiff = currentWins.self - parentWins.self;
+                const oDiff = currentWins.opp - parentWins.opp;
+                let statusClass = '';
+                if(sDiff > 0 && oDiff === 0) statusClass = 'status-self';
+                else if(oDiff > 0 && sDiff === 0) statusClass = 'status-opp';
+                else if(sDiff > 0 && oDiff > 0) statusClass = 'status-draw';
 
                 const card = document.createElement('div');
                 card.className = `turn-card ${statusClass} ${node.collapsed ? 'collapsed' : ''}`;
@@ -425,7 +387,7 @@
 
                 if(node.children.length > 0 && !node.collapsed) {
                     const arrow = document.createElement('div');
-                    arrow.className = 'connector-down';
+                    arrow.className = 'connector-arrow';
                     arrow.textContent = '▼';
                     wrapper.appendChild(arrow);
                     const childContainer = renderLevel(node.children, currentWins);
@@ -443,110 +405,88 @@
         document.getElementById('opp-deck-name').value = meta.oppDeck;
     }
 
-    function getStatusClass(curr, prev) {
-        const sDiff = curr.self - prev.self;
-        const oDiff = curr.opp - prev.opp;
-        if(sDiff > 0 && oDiff === 0) return 'status-self';
-        if(oDiff > 0 && sDiff === 0) return 'status-opp';
-        if(sDiff > 0 && oDiff > 0) return 'status-draw';
-        return '';
-    }
-
     function buildCardHtml(node, wins, isFinished) {
         const id = node.id;
         
-        // 勝利表示
         let winnerHtml = '';
         if (isFinished) {
             const sName = meta.selfDeck || "自分";
             const oName = meta.oppDeck || "相手";
             if (wins.self >= 3) {
-                winnerHtml = `<div class="card-winner self">🏆 ${sName} の勝利！</div>`;
+                winnerHtml = `<div class="winner-banner self">🏆 ${sName} WIN!</div>`;
             } else {
-                winnerHtml = `<div class="card-winner opp">🏆 ${oName} の勝利！</div>`;
+                winnerHtml = `<div class="winner-banner opp">🏆 ${oName} WIN!</div>`;
             }
         }
 
-        // 相手エリア (上部)
-        const oppHtml = `
-            <div class="player-area opp">
-                <div class="area-header">
-                    <span class="area-label opp">相手 (${wins.opp}勝)</span>
-                    <label class="no-live-check"><input type="checkbox" ${node.opp.noLive ? 'checked' : ''} onchange="updateVal('${id}','opp','noLive',this.checked)"> ライブ無</label>
-                </div>
-                <div class="stats-row">
-                    <div class="stat-group">
+        const buildPlayerArea = (player, winsNum) => {
+            const isSelf = player === 'self';
+            const cls = isSelf ? 'self' : 'opp';
+            const label = isSelf ? '自分' : '相手';
+            const data = node[player];
+            
+            // 相手: スコア上、カード下。自分: カード上、スコア下
+            const statsHtml = `
+                <div class="stats-container">
+                    <div class="stat-box">
                         <span class="stat-label">スコア</span>
-                        <button class="btn-pm" onclick="modNum('${id}','opp','score',-1)">－</button>
-                        <input type="number" class="stat-val" value="${node.opp.score}" onchange="updateVal('${id}','opp','score',this.value)">
-                        <button class="btn-pm" onclick="modNum('${id}','opp','score',1)">＋</button>
+                        <div class="stat-ctrl">
+                            <button class="btn-pm" onclick="modNum('${id}','${player}','score',-1)">－</button>
+                            <input type="number" class="stat-val" value="${data.score}" onchange="updateVal('${id}','${player}','score',this.value)">
+                            <button class="btn-pm" onclick="modNum('${id}','${player}','score',1)">＋</button>
+                        </div>
                     </div>
-                    <div class="stat-group">
+                    <div class="stat-box">
                         <span class="stat-label">スタッツ</span>
-                        <button class="btn-pm" onclick="modNum('${id}','opp','stats',-1)">－</button>
-                        <input type="number" class="stat-val" value="${node.opp.stats}" onchange="updateVal('${id}','opp','stats',this.value)">
-                        <button class="btn-pm" onclick="modNum('${id}','opp','stats',1)">＋</button>
+                        <div class="stat-ctrl">
+                            <button class="btn-pm" onclick="modNum('${id}','${player}','stats',-1)">－</button>
+                            <input type="number" class="stat-val" value="${data.stats}" onchange="updateVal('${id}','${player}','stats',this.value)">
+                            <button class="btn-pm" onclick="modNum('${id}','${player}','stats',1)">＋</button>
+                        </div>
                     </div>
                 </div>
-                <div class="cards-container">
-                     ${[0,1,2].map(i => `<div class="card-box"><div class="card-num">メンバー${i+1}</div><input type="text" class="card-input" value="${node.opp.members[i]}" onchange="updateVal('${id}','opp','members',this.value,${i})"></div>`).join('')}
-                     ${[0,1,2].map(i => `<div class="card-box"><div class="card-num">ライブ${i+1}</div><input type="text" class="card-input" value="${node.opp.lives[i]}" onchange="updateVal('${id}','opp','lives',this.value,${i})"></div>`).join('')}
+            `;
+            
+            const cardsHtml = `
+                <div class="grid-row">
+                    ${[0,1,2].map(i => `<div class="input-group"><div class="input-label">${isSelf?'ライブ':'メンバー'}${i+1}</div><input type="text" class="card-input" value="${isSelf?data.lives[i]:data.members[i]}" onchange="updateVal('${id}','${player}','${isSelf?'lives':'members'}',this.value,${i})"></div>`).join('')}
+                    ${[0,1,2].map(i => `<div class="input-group"><div class="input-label">${isSelf?'メンバー':'ライブ'}${i+1}</div><input type="text" class="card-input" value="${isSelf?data.members[i]:data.lives[i]}" onchange="updateVal('${id}','${player}','${isSelf?'members':'lives'}',this.value,${i})"></div>`).join('')}
                 </div>
-            </div>
-        `;
+            `;
 
-        // 自分エリア (下部)
-        const selfHtml = `
-            <div class="player-area self">
-                <div class="area-header">
-                    <span class="area-label self">自分 (${wins.self}勝)</span>
-                    <label class="no-live-check"><input type="checkbox" ${node.self.noLive ? 'checked' : ''} onchange="updateVal('${id}','self','noLive',this.checked)"> ライブ無</label>
-                </div>
-                 <div class="cards-container">
-                    ${[0,1,2].map(i => `<div class="card-box"><div class="card-num">ライブ${i+1}</div><input type="text" class="card-input" value="${node.self.lives[i]}" onchange="updateVal('${id}','self','lives',this.value,${i})"></div>`).join('')}
-                    ${[0,1,2].map(i => `<div class="card-box"><div class="card-num">メンバー${i+1}</div><input type="text" class="card-input" value="${node.self.members[i]}" onchange="updateVal('${id}','self','members',this.value,${i})"></div>`).join('')}
-                </div>
-                <div class="stats-row" style="margin-top:8px;">
-                    <div class="stat-group">
-                        <span class="stat-label">スコア</span>
-                        <button class="btn-pm" onclick="modNum('${id}','self','score',-1)">－</button>
-                        <input type="number" class="stat-val" value="${node.self.score}" onchange="updateVal('${id}','self','score',this.value)">
-                        <button class="btn-pm" onclick="modNum('${id}','self','score',1)">＋</button>
+            return `
+                <div class="player-area ${cls}">
+                    <div class="info-row">
+                        <span class="player-name ${cls}">${label} (${winsNum}勝)</span>
+                        <label class="live-check"><input type="checkbox" ${data.noLive ? 'checked' : ''} onchange="updateVal('${id}','${player}','noLive',this.checked)">ライブ無</label>
                     </div>
-                    <div class="stat-group">
-                        <span class="stat-label">スタッツ</span>
-                        <button class="btn-pm" onclick="modNum('${id}','self','stats',-1)">－</button>
-                        <input type="number" class="stat-val" value="${node.self.stats}" onchange="updateVal('${id}','self','stats',this.value)">
-                        <button class="btn-pm" onclick="modNum('${id}','self','stats',1)">＋</button>
-                    </div>
+                    ${!isSelf ? statsHtml + cardsHtml : cardsHtml + statsHtml}
                 </div>
-            </div>
-        `;
+            `;
+        };
 
         const footerHtml = isFinished ? winnerHtml : `
             <div class="card-footer">
-                <button class="btn-next-turn" onclick="addNextTurn('${id}')">▼ 次のターンを追加</button>
+                <button class="btn-next" onclick="addNextTurn('${id}')">▼ 次のターン</button>
             </div>
         `;
 
-        // パターン名プレースホルダー
-        const patternPlaceholder = node.pattern; 
-
+        // プレースホルダーをパターン記号に
         return `
             <div class="card-header">
-                <div class="header-left collapse-trigger" onclick="toggleCollapse('${id}')">
-                    <span class="pattern-badge">${node.pattern}</span>
-                    <input type="text" class="pattern-name-input" placeholder="パターン名" value="${node.customName}" onclick="event.stopPropagation()" onchange="updateVal('${id}','meta','customName',this.value)">
+                <div style="display:flex; align-items:center; flex:1;" onclick="toggleCollapse('${id}')">
+                    <span class="turn-badge">Turn ${node.turn}</span>
+                    <input type="text" class="pattern-input" placeholder="${node.pattern}" value="${node.patternName || ''}" onclick="event.stopPropagation()" onchange="updateVal('${id}','','patternName',this.value)">
                 </div>
                 <div class="header-actions">
-                     <button class="btn-branch" onclick="addSiblingBranch('${id}')">＋分岐</button>
-                     <button class="btn-icon" onclick="deleteNode('${id}')">✕</button>
+                    <button class="btn-mini" onclick="addSiblingBranch('${id}')">＋</button>
+                    <button class="btn-mini" style="background:rgba(255,0,0,0.4)" onclick="deleteNode('${id}')">×</button>
                 </div>
             </div>
             <div class="card-body">
-                ${oppHtml}
-                ${selfHtml}
-                <div class="memo-box">
+                ${buildPlayerArea('opp', wins.opp)}
+                ${buildPlayerArea('self', wins.self)}
+                <div class="memo-area">
                     <textarea class="memo-input" placeholder="メモ" onchange="updateVal('${id}','','memo',this.value)">${node.memo}</textarea>
                 </div>
                 ${footerHtml}
@@ -554,23 +494,19 @@
         `;
     }
 
-    // --- File Export ---
+    // --- File IO ---
+
     function exportData() {
         const now = new Date();
         const pad = n => String(n).padStart(2, '0');
         const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-        
         const sanitize = s => s.replace(/[\\/:*?"<>|]/g, '-').trim();
-        const sDeck = sanitize(meta.selfDeck) || "自分";
-        const oDeck = sanitize(meta.oppDeck) || "相手";
-        
-        const filename = `${sDeck}_vs_${oDeck}_${ts}.json`;
+        const fname = `${sanitize(meta.selfDeck)||"自分"}_vs_${sanitize(meta.oppDeck)||"相手"}_${ts}.json`;
 
-        const data = { meta, rootNodes };
-        const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+        const blob = new Blob([JSON.stringify({ meta, rootNodes })], {type: "application/json"});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = filename;
+        a.download = fname;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -587,7 +523,7 @@
                     meta = d.meta || {selfDeck:"", oppDeck:""};
                     rootNodes = d.rootNodes;
                     render();
-                    alert("読み込み完了");
+                    alert("読込完了");
                 }
             } catch(err) { alert("エラー"); }
             input.value = "";
