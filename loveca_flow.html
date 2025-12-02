@@ -45,7 +45,7 @@
         .level-container {
             display: flex; flex-direction: row; 
             overflow-x: auto; 
-            /* カードを中央に配置するためのパディング計算: (100vw - カード幅) / 2 - gapの半分 */
+            /* カードを中央に配置するためのパディング計算 */
             padding: 0 calc((100vw - var(--snap-width)) / 2); 
             gap: 15px;
             width: 100%;
@@ -149,7 +149,7 @@
         /* メモ欄 */
         .memo-area { padding: 8px; background: #fff; border-top: 1px solid #eee; }
         .memo-input {
-            width: 100%; height: 80px; border: 1px solid #eee; border-radius: 4px; 
+            width: 100%; height: 100px; border: 1px solid #eee; border-radius: 4px; 
             padding: 6px; font-size: 0.85rem; resize: none;
         }
 
@@ -223,6 +223,8 @@
 <script>
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
+    // スクロール位置保存用
+    let scrollPositions = {};
 
     window.onload = function() {
         if(rootNodes.length === 0) addRootTurn();
@@ -233,19 +235,29 @@
 
     function createNode(turnNum, patternId, parentData = null) {
         const emptyArr = ["", "", ""];
+        
+        // 引き継ぎ
         const prevSelfMembers = parentData ? [...parentData.self.members] : [...emptyArr];
         const prevOppMembers = parentData ? [...parentData.opp.members] : [...emptyArr];
         const prevSelfStats = parentData ? parentData.self.stats : 0;
         const prevOppStats = parentData ? parentData.opp.stats : 0;
+        // パターン名の引き継ぎ
+        const prevPatternName = parentData ? parentData.patternName : "";
 
         return {
             id: createId(),
             turn: turnNum,
             pattern: patternId,
-            patternName: "", 
+            patternName: prevPatternName, // 引き継ぎ
             collapsed: false,
-            opp: { score: 0, stats: prevOppStats, noLive: true, members: prevOppMembers, lives: [...emptyArr] },
-            self: { score: 0, stats: prevSelfStats, noLive: true, members: prevSelfMembers, lives: [...emptyArr] },
+            opp: { 
+                score: 0, stats: prevOppStats, noLive: true, 
+                members: prevOppMembers, lives: [...emptyArr] 
+            },
+            self: { 
+                score: 0, stats: prevSelfStats, noLive: true, 
+                members: prevSelfMembers, lives: [...emptyArr] 
+            },
             memo: "",
             children: []
         };
@@ -264,7 +276,10 @@
         if(!path) return;
         const parent = path.node;
         const suffix = String.fromCharCode(65 + parent.children.length);
-        parent.children.push(createNode(parent.turn + 1, parent.pattern + suffix, parent));
+        const newPattern = parent.pattern + suffix;
+        
+        // createNode内でparentDataとしてparentを渡すことで名前も引き継ぐ
+        parent.children.push(createNode(parent.turn + 1, newPattern, parent));
         parent.collapsed = false;
         render();
     }
@@ -308,16 +323,19 @@
         const path = findNode(rootNodes, id);
         if(!path) return;
         
-        // メモやパターン名は player='' (または特定のキー) で渡ってくる想定
+        // player='' はルート直下プロパティ (memo, patternName)
         if (player === '') {
-            path.node[field] = val; // memo, patternName など
+            path.node[field] = val;
         } else if(idx !== null) {
             path.node[player][field][idx] = val;
         } else {
             path.node[player][field] = val;
         }
         
-        if(['score', 'stats', 'noLive'].includes(field)) render(); 
+        // 勝敗に関わる変更のみ再描画、それ以外はデータ更新のみで描画スキップ（フォーカス外れ防止）
+        if(['score', 'stats', 'noLive'].includes(field)) {
+            render();
+        }
     }
 
     function modNum(id, player, field, delta) {
@@ -325,7 +343,9 @@
         if(!path) return;
         let v = parseInt(path.node[player][field]) || 0;
         v += delta;
-        if(field==='score' && v < 0) v = 0; 
+        // マイナス抑止
+        if(v < 0) v = 0; 
+        
         path.node[player][field] = v;
         render();
     }
@@ -333,7 +353,6 @@
     function updateMeta() {
         meta.selfDeck = document.getElementById('self-deck-name').value;
         meta.oppDeck = document.getElementById('opp-deck-name').value;
-        render();
     }
 
     // --- Logic ---
@@ -355,16 +374,42 @@
         return { self: sWins, opp: oWins };
     }
 
+    // --- Scroll Management ---
+    
+    function saveScroll() {
+        scrollPositions = {};
+        document.querySelectorAll('.level-container').forEach(el => {
+            const id = el.getAttribute('data-parent-id');
+            if(id) scrollPositions[id] = el.scrollLeft;
+        });
+        scrollPositions['window-y'] = window.scrollY;
+    }
+
+    function restoreScroll() {
+        document.querySelectorAll('.level-container').forEach(el => {
+            const id = el.getAttribute('data-parent-id');
+            if(id && scrollPositions[id] !== undefined) {
+                el.scrollLeft = scrollPositions[id];
+            }
+        });
+        if(scrollPositions['window-y'] !== undefined) {
+            window.scrollTo(0, scrollPositions['window-y']);
+        }
+    }
+
     // --- Rendering ---
 
     function render() {
+        saveScroll(); // 描画前に位置保存
+
         const rootEl = document.getElementById('flow-root');
         rootEl.innerHTML = '';
 
-        function renderLevel(nodes, parentWins = {self:0, opp:0}) {
+        function renderLevel(nodes, parentWins = {self:0, opp:0}, parentId = 'root') {
             if(!nodes || nodes.length === 0) return null;
             const container = document.createElement('div');
             container.className = 'level-container';
+            container.setAttribute('data-parent-id', parentId);
 
             nodes.forEach(node => {
                 const wrapper = document.createElement('div');
@@ -390,7 +435,7 @@
                     arrow.className = 'connector-arrow';
                     arrow.textContent = '▼';
                     wrapper.appendChild(arrow);
-                    const childContainer = renderLevel(node.children, currentWins);
+                    const childContainer = renderLevel(node.children, currentWins, node.id);
                     if(childContainer) wrapper.appendChild(childContainer);
                 }
                 container.appendChild(wrapper);
@@ -400,9 +445,11 @@
         
         const tree = renderLevel(rootNodes);
         if(tree) rootEl.appendChild(tree);
-
+        
         document.getElementById('self-deck-name').value = meta.selfDeck;
         document.getElementById('opp-deck-name').value = meta.oppDeck;
+
+        restoreScroll(); // 描画後に復元
     }
 
     function buildCardHtml(node, wins, isFinished) {
@@ -425,7 +472,6 @@
             const label = isSelf ? '自分' : '相手';
             const data = node[player];
             
-            // 相手: スコア上、カード下。自分: カード上、スコア下
             const statsHtml = `
                 <div class="stats-container">
                     <div class="stat-box">
@@ -471,7 +517,6 @@
             </div>
         `;
 
-        // プレースホルダーをパターン記号に
         return `
             <div class="card-header">
                 <div style="display:flex; align-items:center; flex:1;" onclick="toggleCollapse('${id}')">
