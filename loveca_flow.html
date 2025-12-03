@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loveca Flow - Mobile Optimized</title>
+    <title>Loveca Flow - Tree Edition</title>
     <style>
         :root {
             --primary-text: #333;
@@ -23,9 +23,14 @@
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Meiryo, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0 0 100px 0; background: var(--bg-color); color: var(--primary-text); overflow-x: hidden; }
+        body { margin: 0; padding: 0 0 100px 0; background: var(--bg-color); color: var(--primary-text); overflow-x: hidden; height: 100vh; }
         
-        /* タイトル・デッキ名エリア */
+        /* === メインビュー === */
+        #main-view {
+            padding-bottom: 120px;
+            width: 100%;
+        }
+
         .top-container {
             background: #fff; padding: 10px 15px; border-bottom: 1px solid #ccc; margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -42,10 +47,8 @@
         .deck-box.self .deck-input:focus { border-bottom-color: var(--self-border); }
         .deck-box.opp .deck-input:focus { border-bottom-color: var(--opp-border); }
 
-        /* ツリー構造 */
         #flow-root { display: flex; flex-direction: column; width: 100%; gap: 20px; }
 
-        /* レベル（横並びコンテナ） */
         .level-container {
             display: flex; flex-direction: row; 
             overflow-x: auto; 
@@ -66,7 +69,7 @@
             position: relative;
         }
 
-        /* カード本体 */
+        /* === カード共通スタイル === */
         .turn-card {
             width: 100%; 
             background: #fff; border-radius: 12px;
@@ -74,9 +77,9 @@
             overflow: hidden;
             display: flex; flex-direction: column;
             border: 2px solid transparent; 
+            transition: border-color 0.3s;
         }
 
-        /* 勝敗色 */
         .turn-card.status-self { border-color: var(--self-border); }
         .turn-card.status-self .card-header { background: var(--self-border); }
         .turn-card.status-opp { border-color: var(--opp-border); }
@@ -84,15 +87,12 @@
         .turn-card.status-draw { border-color: #6f42c1; }
         .turn-card.status-draw .card-header { background: #6f42c1; }
 
-        /* ヘッダー */
         .card-header {
             background: var(--header-bg); color: var(--header-text);
             padding: 8px 12px;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .header-left {
-            display: flex; align-items: center; flex: 1; overflow: hidden;
-        }
+        .header-left { display: flex; align-items: center; flex: 1; overflow: hidden; }
         .turn-badge {
             background: #fff; color: #333; font-weight: 900; font-size: 0.8rem;
             padding: 2px 6px; border-radius: 4px; margin-right: 8px; white-space: nowrap;
@@ -104,7 +104,7 @@
         .pattern-input {
             background: rgba(255,255,255,0.15); border: none; color: #fff; 
             font-size: 0.9rem; padding: 4px 8px; border-radius: 4px; width: 100%;
-            min-width: 0; /* Flexbox内での縮小対応 */
+            min-width: 0;
         }
         .pattern-input::placeholder { color: rgba(255,255,255,0.6); }
         
@@ -115,10 +115,8 @@
             display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
 
-        /* コンテンツエリア */
         .card-body { display: flex; flex-direction: column; }
         
-        /* プレイヤーエリア共通 */
         .player-area { padding: 8px; position: relative; }
         .player-area.opp { background: var(--opp-bg); border-bottom: 1px solid #eee; }
         .player-area.self { background: var(--self-bg); }
@@ -131,7 +129,6 @@
         .live-check { font-size: 0.7rem; display: flex; align-items: center; }
         .live-check input { margin-right: 3px; }
 
-        /* スコア・スタッツ行 */
         .stats-container { display: flex; gap: 8px; margin-bottom: 6px; }
         .stat-box { 
             flex: 1; display: flex; align-items: center; background: rgba(255,255,255,0.6); 
@@ -148,96 +145,192 @@
             display: flex; justify-content: center; align-items: center; font-weight: bold; color: #555;
         }
 
-        /* カード入力グリッド */
         .grid-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
         .input-group { display: flex; flex-direction: column; }
-        
         .input-label { font-size: 0.65rem; text-align: center; margin-bottom: 1px; font-weight: bold; }
         .input-label.member { color: var(--color-member); }
         .input-label.live { color: var(--color-live); }
-
         .card-input {
             width: 100%; border: 1px solid #ddd; border-radius: 4px; font-size: 0.75rem; 
             text-align: center; padding: 0; height: 30px; background: rgba(255,255,255,0.9);
         }
 
-        /* メモ欄 */
         .memo-area { padding: 8px; background: #fff; border-top: 1px solid #eee; }
         .memo-input {
             width: 100%; height: 100px; border: 1px solid #eee; border-radius: 4px; 
             padding: 6px; font-size: 0.85rem; resize: none;
         }
 
-        /* フッター */
         .card-footer { padding: 8px; background: #f8f8f8; border-top: 1px solid #eee; }
         .btn-next {
             width: 100%; background: #444; color: #fff; border: none; padding: 10px;
             border-radius: 6px; font-weight: bold; font-size: 0.9rem;
         }
         
-        /* 勝者表示 */
         .winner-banner { 
             padding: 10px; text-align: center; font-weight: bold; font-size: 1rem; 
         }
         .winner-banner.self { background: #e6f2ff; color: var(--self-border); border-bottom: 4px solid var(--self-border); }
         .winner-banner.opp { background: #fff0f0; color: var(--opp-border); border-bottom: 4px solid var(--opp-border); }
 
-        /* 矢印 */
         .connector-arrow { color: #ccc; font-size: 1.5rem; margin-top: -5px; line-height: 1; z-index: -1; }
 
-        /* 固定フッター */
+        /* === ツリービュー (俯瞰モード) === */
+        #tree-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #eef2f5; z-index: 2000;
+            display: none; /* 初期非表示 */
+            overflow: hidden;
+            flex-direction: column;
+        }
+        
+        #tree-canvas {
+            flex: 1;
+            overflow: hidden;
+            cursor: grab;
+            position: relative;
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        #tree-canvas:active { cursor: grabbing; }
+        
+        #tree-content {
+            position: absolute;
+            transform-origin: center top;
+            top: 50px; left: 50%;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* ツリービュー内のカードスタイル上書き */
+        #tree-content .turn-card {
+            width: 320px; /* 固定幅で見やすく */
+            margin: 0 auto;
+            font-size: 14px; /* 少し小さめ */
+        }
+        #tree-content .card-input { height: 26px; font-size: 0.7rem; }
+        #tree-content .memo-input { height: 60px; }
+
+        /* ツリー構造の線 */
+        .tree ul {
+            padding-top: 20px; position: relative;
+            transition: all 0.5s;
+            display: flex; justify-content: center;
+            margin: 0; padding-left: 0;
+        }
+        .tree li {
+            float: left; text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 10px 0 10px; /* 横間隔 */
+        }
+        /* Connectors */
+        .tree li::before, .tree li::after {
+            content: ''; position: absolute; top: 0; right: 50%;
+            border-top: 3px solid #ccc; width: 50%; height: 20px;
+        }
+        .tree li::after { right: auto; left: 50%; border-left: 3px solid #ccc; }
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 3px solid #ccc; border-radius: 0 5px 0 0; }
+        .tree li:first-child::after { border-radius: 5px 0 0 0; }
+        .tree ul ul::before {
+            content: ''; position: absolute; top: 0; left: 50%;
+            border-left: 3px solid #ccc; width: 0; height: 20px;
+        }
+
+        /* Tree Controls */
+        .tree-controls {
+            position: absolute; bottom: 80px; left: 0; width: 100%;
+            display: flex; justify-content: center; gap: 20px;
+            pointer-events: none;
+        }
+        .tc-btn {
+            pointer-events: auto;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: #333; color: #fff; font-size: 24px; font-weight: bold;
+            border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .tc-btn:active { transform: scale(0.95); }
+
+        .close-tree-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.5); color: #fff;
+            border: none; padding: 8px 16px; border-radius: 20px;
+            font-weight: bold; z-index: 2001; cursor: pointer;
+        }
+
+        /* === フッター === */
         .controls {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
-            border-top: 1px solid #ccc; padding: 10px 20px;
-            display: flex; gap: 15px; z-index: 100;
+            border-top: 1px solid #ccc; padding: 10px 10px;
+            display: flex; gap: 8px; z-index: 2100; /* 最前面 */
             padding-bottom: max(10px, env(safe-area-inset-bottom));
         }
         .btn-ctrl {
-            flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc;
-            background: #fff; font-weight: bold; font-size: 0.9rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            color: #333;
+            flex: 1; padding: 12px 0; border-radius: 8px; border: 1px solid #ccc;
+            background: #fff; font-weight: bold; font-size: 0.85rem; text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #333;
         }
-        .btn-ctrl.warn {
-            background: #fff0f0; color: #c82333; border-color: #ffcccc;
-        }
+        .btn-ctrl.primary { background: #333; color: #fff; border: none; }
+        .btn-ctrl.warn { background: #fff0f0; color: #c82333; border-color: #ffcccc; flex: 0.7; }
 
     </style>
 </head>
 <body>
 
-<div class="top-container">
-    <h1>Loveca Flow</h1>
-    <div class="deck-info">
-        <div class="deck-box self">
-            <span class="deck-label">自分</span>
-            <input type="text" class="deck-input" id="self-deck-name" placeholder="デッキ名" onchange="updateMeta()">
-        </div>
-        <div class="deck-box opp">
-            <span class="deck-label">相手</span>
-            <input type="text" class="deck-input" id="opp-deck-name" placeholder="デッキ名" onchange="updateMeta()">
+<div id="main-view">
+    <div class="top-container">
+        <h1>Loveca Flow</h1>
+        <div class="deck-info">
+            <div class="deck-box self">
+                <span class="deck-label">自分</span>
+                <input type="text" class="deck-input" id="self-deck-name" placeholder="デッキ名" onchange="updateMeta()">
+            </div>
+            <div class="deck-box opp">
+                <span class="deck-label">相手</span>
+                <input type="text" class="deck-input" id="opp-deck-name" placeholder="デッキ名" onchange="updateMeta()">
+            </div>
         </div>
     </div>
+
+    <div class="container" id="flow-root"></div>
 </div>
 
-<div class="container" id="flow-root"></div>
+<div id="tree-view">
+    <button class="close-tree-btn" onclick="closeTreeView()">閉じる</button>
+    <div id="tree-canvas">
+        <div id="tree-content" class="tree"></div>
+    </div>
+    <div class="tree-controls">
+        <button class="tc-btn" onclick="zoomTree(-0.1)">－</button>
+        <button class="tc-btn" onclick="zoomTree(0.1)">＋</button>
+    </div>
+</div>
 
 <div class="controls">
     <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(this)">
     <button class="btn-ctrl warn" onclick="resetData()">リセット</button>
     <button class="btn-ctrl" onclick="document.getElementById('import-file').click()">読込</button>
     <button class="btn-ctrl" onclick="exportData()">保存</button>
+    <button class="btn-ctrl primary" onclick="openTreeView()">ツリー</button>
 </div>
 
 <script>
-    const STORAGE_KEY = 'lovecaflow_data_v2'; // Key changed to ensure clean state
+    const STORAGE_KEY = 'lovecaflow_data_v5';
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
-    let scrollPositions = {};
+    
+    // Tree View State
+    let treeScale = 0.8;
+    let isPanning = false;
+    let panStart = { x: 0, y: 0 };
+    let panOffset = { x: 0, y: 0 };
+    let currentPan = { x: 0, y: 0 };
 
     window.onload = function() {
-        // Load from LocalStorage
         const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData) {
             try {
@@ -254,6 +347,7 @@
         }
 
         render();
+        setupTreeEvents();
     };
 
     function saveData() {
@@ -268,6 +362,8 @@
             meta = { selfDeck: "", oppDeck: "" };
             addRootTurn();
             render();
+            // ツリービューが開いていれば閉じる
+            closeTreeView();
             window.scrollTo(0, 0);
         }
     }
@@ -276,8 +372,6 @@
 
     function createNode(turnNum, patternId, parentData = null) {
         const emptyArr = ["", "", ""];
-        
-        // 引き継ぎ
         const prevSelfMembers = parentData ? [...parentData.self.members] : [...emptyArr];
         const prevOppMembers = parentData ? [...parentData.opp.members] : [...emptyArr];
         const prevSelfStats = parentData ? parentData.self.stats : 0;
@@ -289,15 +383,9 @@
             turn: turnNum,
             pattern: patternId,
             patternName: prevPatternName,
-            // collapsed property removed implicitly by not using it
-            opp: { 
-                score: 0, stats: prevOppStats, noLive: true, 
-                members: prevOppMembers, lives: [...emptyArr] 
-            },
-            self: { 
-                score: 0, stats: prevSelfStats, noLive: true, 
-                members: prevSelfMembers, lives: [...emptyArr] 
-            },
+            collapsed: false,
+            opp: { score: 0, stats: prevOppStats, noLive: true, members: prevOppMembers, lives: [...emptyArr] },
+            self: { score: 0, stats: prevSelfStats, noLive: true, members: prevSelfMembers, lives: [...emptyArr] },
             memo: "",
             children: []
         };
@@ -310,6 +398,7 @@
         rootNodes.push(createNode(1, pattern));
         saveData();
         render();
+        if(isTreeViewOpen()) renderTreeCanvas();
     }
 
     function addNextTurn(nodeId) {
@@ -318,10 +407,10 @@
         const parent = path.node;
         const suffix = String.fromCharCode(65 + parent.children.length);
         const newPattern = parent.pattern + suffix;
-        
         parent.children.push(createNode(parent.turn + 1, newPattern, parent));
         saveData();
         render();
+        if(isTreeViewOpen()) renderTreeCanvas();
     }
 
     function addSiblingBranch(nodeId) {
@@ -342,6 +431,7 @@
         remove(rootNodes);
         saveData();
         render();
+        if(isTreeViewOpen()) renderTreeCanvas();
     }
 
     // --- Updates ---
@@ -358,32 +448,42 @@
     function updateVal(id, player, field, val, idx = null) {
         const path = findNode(rootNodes, id);
         if(!path) return;
-        
-        if (player === '') {
-            path.node[field] = val;
-        } else if(idx !== null) {
-            path.node[player][field][idx] = val;
-        } else {
-            path.node[player][field] = val;
-        }
+        if (player === '') path.node[field] = val;
+        else if(idx !== null) path.node[player][field][idx] = val;
+        else path.node[player][field] = val;
         
         saveData();
-
+        // 勝敗に関わる変更のみ再描画（フォーカス外れ防止のためテキストは除外）
         if(['score', 'stats', 'noLive'].includes(field)) {
             render();
+            if(isTreeViewOpen()) renderTreeCanvas();
         }
     }
 
-    function modNum(id, player, field, delta) {
+    function modNum(btn, id, player, field, delta) {
         const path = findNode(rootNodes, id);
         if(!path) return;
         let v = parseInt(path.node[player][field]) || 0;
         v += delta;
         if(v < 0) v = 0; 
-        
         path.node[player][field] = v;
+        
+        // DOM直接更新でチラつき防止
+        // 階層を遡ってinputを探す
+        const container = btn.closest('.stat-ctrl');
+        if(container) {
+            const input = container.querySelector('input');
+            if(input) input.value = v;
+        }
+
         saveData();
+        
+        // 全体再描画（勝敗判定のため）
+        // ツリービューの場合、DOMを再構築するとズームなどがリセットされるリスクがあるが、
+        // 構造が変わらないならDOM置換で対応。
+        // ここでは簡易的に全レンダリングを行う。
         render();
+        if(isTreeViewOpen()) renderTreeCanvas();
     }
 
     function updateMeta() {
@@ -392,14 +492,11 @@
         saveData();
     }
 
-    // --- Logic ---
-
     function calcPathWins(node, parentWins) {
         let sWins = parentWins ? parentWins.self : 0;
         let oWins = parentWins ? parentWins.opp : 0;
         const sScore = parseInt(node.self.score);
         const oScore = parseInt(node.opp.score);
-        
         let sWin = false, oWin = false;
         if (sScore > oScore) { if (!node.self.noLive) sWin = true; }
         else if (oScore > sScore) { if (!node.opp.noLive) oWin = true; }
@@ -411,38 +508,38 @@
         return { self: sWins, opp: oWins };
     }
 
-    // --- Scroll Management ---
-    
-    function saveScroll() {
-        scrollPositions = {};
-        document.querySelectorAll('.level-container').forEach(el => {
-            const id = el.getAttribute('data-parent-id');
-            if(id) scrollPositions[id] = el.scrollLeft;
-        });
-        scrollPositions['window-y'] = window.scrollY;
-    }
-
-    function restoreScroll() {
-        document.querySelectorAll('.level-container').forEach(el => {
-            const id = el.getAttribute('data-parent-id');
-            if(id && scrollPositions[id] !== undefined) {
-                el.scrollLeft = scrollPositions[id];
-            }
-        });
-        if(scrollPositions['window-y'] !== undefined) {
-            window.scrollTo(0, scrollPositions['window-y']);
-        }
-    }
-
-    // --- Rendering ---
+    // --- Main View Rendering ---
 
     function render() {
-        saveScroll(); 
+        // メインビュー描画（現在のスクロール位置保持のため簡易実装）
+        // ツリービュー表示中は裏で更新するだけ
+        if(isTreeViewOpen()) {
+            _renderMainView();
+            return;
+        }
+        
+        const scrollMap = {};
+        document.querySelectorAll('.level-container').forEach(el => {
+            const pid = el.getAttribute('data-parent-id');
+            if(pid) scrollMap[pid] = el.scrollLeft;
+        });
+        const winY = window.scrollY;
 
+        _renderMainView();
+
+        // Scroll Restore
+        document.querySelectorAll('.level-container').forEach(el => {
+            const pid = el.getAttribute('data-parent-id');
+            if(pid && scrollMap[pid] !== undefined) el.scrollLeft = scrollMap[pid];
+        });
+        window.scrollTo(0, winY);
+    }
+
+    function _renderMainView() {
         const rootEl = document.getElementById('flow-root');
         rootEl.innerHTML = '';
 
-        function renderLevel(nodes, parentWins = {self:0, opp:0}, parentId = 'root') {
+        function renderLevel(nodes, parentWins, parentId) {
             if(!nodes || nodes.length === 0) return null;
             const container = document.createElement('div');
             container.className = 'level-container';
@@ -451,7 +548,6 @@
             nodes.forEach(node => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'node-wrapper';
-                
                 const currentWins = calcPathWins(node, parentWins);
                 const isFinished = currentWins.self >= 3 || currentWins.opp >= 3;
                 
@@ -463,7 +559,7 @@
                 else if(sDiff > 0 && oDiff > 0) statusClass = 'status-draw';
 
                 const card = document.createElement('div');
-                card.className = `turn-card ${statusClass}`; // Collapsed class removed
+                card.className = `turn-card ${statusClass}`;
                 card.innerHTML = buildCardHtml(node, currentWins, isFinished);
                 wrapper.appendChild(card);
 
@@ -480,15 +576,14 @@
             return container;
         }
         
-        const tree = renderLevel(rootNodes);
+        const tree = renderLevel(rootNodes, {self:0, opp:0}, 'root');
         if(tree) rootEl.appendChild(tree);
         
         document.getElementById('self-deck-name').value = meta.selfDeck;
         document.getElementById('opp-deck-name').value = meta.oppDeck;
-
-        restoreScroll();
     }
 
+    // --- Card HTML Generator (Common) ---
     function buildCardHtml(node, wins, isFinished) {
         const id = node.id;
         
@@ -497,9 +592,9 @@
             const sName = meta.selfDeck || "自分";
             const oName = meta.oppDeck || "相手";
             if (wins.self >= 3) {
-                winnerHtml = `<div class="winner-banner self">${sName} WIN!</div>`; // Removed icon
+                winnerHtml = `<div class="winner-banner self">${sName} WIN!</div>`;
             } else {
-                winnerHtml = `<div class="winner-banner opp">${oName} WIN!</div>`; // Removed icon
+                winnerHtml = `<div class="winner-banner opp">${oName} WIN!</div>`;
             }
         }
 
@@ -514,17 +609,17 @@
                     <div class="stat-box">
                         <span class="stat-label">スコア</span>
                         <div class="stat-ctrl">
-                            <button class="btn-pm" onclick="modNum('${id}','${player}','score',-1)">－</button>
+                            <button class="btn-pm" onclick="modNum(this, '${id}','${player}','score',-1)">－</button>
                             <input type="number" class="stat-val" value="${data.score}" onchange="updateVal('${id}','${player}','score',this.value)">
-                            <button class="btn-pm" onclick="modNum('${id}','${player}','score',1)">＋</button>
+                            <button class="btn-pm" onclick="modNum(this, '${id}','${player}','score',1)">＋</button>
                         </div>
                     </div>
                     <div class="stat-box">
                         <span class="stat-label">スタッツ</span>
                         <div class="stat-ctrl">
-                            <button class="btn-pm" onclick="modNum('${id}','${player}','stats',-1)">－</button>
+                            <button class="btn-pm" onclick="modNum(this, '${id}','${player}','stats',-1)">－</button>
                             <input type="number" class="stat-val" value="${data.stats}" onchange="updateVal('${id}','${player}','stats',this.value)">
-                            <button class="btn-pm" onclick="modNum('${id}','${player}','stats',1)">＋</button>
+                            <button class="btn-pm" onclick="modNum(this, '${id}','${player}','stats',1)">＋</button>
                         </div>
                     </div>
                 </div>
@@ -585,6 +680,137 @@
         `;
     }
 
+    // === Tree View Logic ===
+
+    function isTreeViewOpen() {
+        return document.getElementById('tree-view').style.display === 'flex';
+    }
+
+    function openTreeView() {
+        document.getElementById('main-view').style.display = 'none';
+        document.getElementById('tree-view').style.display = 'flex';
+        // 初期位置リセット
+        treeScale = 0.8;
+        currentPan = { x: 0, y: 0 };
+        renderTreeCanvas();
+        updateTransform();
+    }
+
+    function closeTreeView() {
+        document.getElementById('tree-view').style.display = 'none';
+        document.getElementById('main-view').style.display = 'block';
+        // メインビューに戻ったときにスクロール位置調整など必要ならここ
+    }
+
+    function renderTreeCanvas() {
+        const content = document.getElementById('tree-content');
+        
+        function buildTreeRecursive(nodes, parentWins) {
+            if(!nodes || nodes.length === 0) return '';
+            
+            let html = '<ul>';
+            nodes.forEach(node => {
+                const currentWins = calcPathWins(node, parentWins);
+                
+                const sDiff = currentWins.self - parentWins.self;
+                const oDiff = currentWins.opp - parentWins.opp;
+                let statusClass = '';
+                if(sDiff > 0 && oDiff === 0) statusClass = 'status-self';
+                else if(oDiff > 0 && sDiff === 0) statusClass = 'status-opp';
+                else if(sDiff > 0 && oDiff > 0) statusClass = 'status-draw';
+
+                const isFinished = currentWins.self >= 3 || currentWins.opp >= 3;
+
+                // 詳細カードHTMLを埋め込み
+                html += `
+                    <li>
+                        <div class="turn-card ${statusClass}">
+                            ${buildCardHtml(node, currentWins, isFinished)}
+                        </div>
+                        ${buildTreeRecursive(node.children, currentWins)}
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            return html;
+        }
+
+        const treeHtml = buildTreeRecursive(rootNodes, {self:0, opp:0});
+        content.innerHTML = treeHtml;
+    }
+
+    function zoomTree(delta) {
+        treeScale += delta;
+        if(treeScale < 0.2) treeScale = 0.2;
+        if(treeScale > 3) treeScale = 3;
+        updateTransform();
+    }
+
+    function updateTransform() {
+        const content = document.getElementById('tree-content');
+        content.style.transform = `translate(${currentPan.x}px, ${currentPan.y}px) scale(${treeScale})`;
+    }
+
+    function setupTreeEvents() {
+        const canvas = document.getElementById('tree-canvas');
+        
+        // 入力要素上でのイベント伝播を止める（パン操作防止）
+        // イベント委譲で処理
+        canvas.addEventListener('touchstart', handleInputTouch, {passive: false});
+        canvas.addEventListener('mousedown', handleInputTouch);
+
+        canvas.addEventListener('mousedown', startPan);
+        canvas.addEventListener('mousemove', doPan);
+        canvas.addEventListener('mouseup', endPan);
+        canvas.addEventListener('mouseleave', endPan);
+        
+        canvas.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 1 && !isInputEvent(e)) startPan(e.touches[0]);
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            if(e.touches.length === 1 && isPanning) {
+                e.preventDefault(); 
+                doPan(e.touches[0]);
+            }
+        }, {passive: false});
+        canvas.addEventListener('touchend', endPan);
+    }
+
+    function isInputEvent(e) {
+        const target = e.target;
+        return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'BUTTON';
+    }
+
+    function handleInputTouch(e) {
+        if (isInputEvent(e)) {
+            e.stopPropagation(); // パンイベントへ行かせない
+        }
+    }
+
+    function startPan(e) {
+        if(isInputEvent(e)) return;
+        isPanning = true;
+        panStart = { x: e.clientX, y: e.clientY };
+    }
+
+    function doPan(e) {
+        if(!isPanning) return;
+        const dx = e.clientX - panStart.x;
+        const dy = e.clientY - panStart.y;
+        
+        const content = document.getElementById('tree-content');
+        content.style.transform = `translate(${currentPan.x + dx}px, ${currentPan.y + dy}px) scale(${treeScale})`;
+        panOffset = { x: dx, y: dy };
+    }
+
+    function endPan() {
+        if(!isPanning) return;
+        isPanning = false;
+        currentPan.x += panOffset.x;
+        currentPan.y += panOffset.y;
+        panOffset = { x: 0, y: 0 };
+    }
+
     // --- File IO ---
 
     function exportData() {
@@ -616,6 +842,7 @@
                     rootNodes = d.rootNodes;
                     saveData(); 
                     render();
+                    if(isTreeViewOpen()) renderTreeCanvas();
                     alert("読込完了");
                 }
             } catch(err) { alert("エラー"); }
