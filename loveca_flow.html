@@ -205,10 +205,11 @@
         #tree-content .turn-card {
             width: 320px; /* 固定幅で見やすく */
             margin: 0 auto;
-            font-size: 14px; /* 少し小さめ */
+            font-size: 14px;
         }
         #tree-content .card-input { height: 26px; font-size: 0.7rem; }
-        #tree-content .memo-input { height: 60px; }
+        /* メモ欄を大きく修正 */
+        #tree-content .memo-input { height: 120px; }
 
         /* ツリー構造の線 */
         .tree ul {
@@ -362,7 +363,6 @@
             meta = { selfDeck: "", oppDeck: "" };
             addRootTurn();
             render();
-            // ツリービューが開いていれば閉じる
             closeTreeView();
             window.scrollTo(0, 0);
         }
@@ -469,7 +469,6 @@
         path.node[player][field] = v;
         
         // DOM直接更新でチラつき防止
-        // 階層を遡ってinputを探す
         const container = btn.closest('.stat-ctrl');
         if(container) {
             const input = container.querySelector('input');
@@ -477,11 +476,6 @@
         }
 
         saveData();
-        
-        // 全体再描画（勝敗判定のため）
-        // ツリービューの場合、DOMを再構築するとズームなどがリセットされるリスクがあるが、
-        // 構造が変わらないならDOM置換で対応。
-        // ここでは簡易的に全レンダリングを行う。
         render();
         if(isTreeViewOpen()) renderTreeCanvas();
     }
@@ -511,8 +505,6 @@
     // --- Main View Rendering ---
 
     function render() {
-        // メインビュー描画（現在のスクロール位置保持のため簡易実装）
-        // ツリービュー表示中は裏で更新するだけ
         if(isTreeViewOpen()) {
             _renderMainView();
             return;
@@ -527,7 +519,6 @@
 
         _renderMainView();
 
-        // Scroll Restore
         document.querySelectorAll('.level-container').forEach(el => {
             const pid = el.getAttribute('data-parent-id');
             if(pid && scrollMap[pid] !== undefined) el.scrollLeft = scrollMap[pid];
@@ -583,7 +574,7 @@
         document.getElementById('opp-deck-name').value = meta.oppDeck;
     }
 
-    // --- Card HTML Generator (Common) ---
+    // --- Card HTML Generator ---
     function buildCardHtml(node, wins, isFinished) {
         const id = node.id;
         
@@ -699,7 +690,6 @@
     function closeTreeView() {
         document.getElementById('tree-view').style.display = 'none';
         document.getElementById('main-view').style.display = 'block';
-        // メインビューに戻ったときにスクロール位置調整など必要ならここ
     }
 
     function renderTreeCanvas() {
@@ -755,7 +745,6 @@
         const canvas = document.getElementById('tree-canvas');
         
         // 入力要素上でのイベント伝播を止める（パン操作防止）
-        // イベント委譲で処理
         canvas.addEventListener('touchstart', handleInputTouch, {passive: false});
         canvas.addEventListener('mousedown', handleInputTouch);
 
