@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loveca Flow - Tree Edition</title>
+    <title>Loveca Flow - Mobile Optimized</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <style>
         :root {
             --primary-text: #333;
@@ -17,7 +18,6 @@
             --card-shadow: 0 4px 12px rgba(0,0,0,0.15);
             --snap-width: 90vw;
             
-            /* カード種別カラー */
             --color-member: #2c3e50;
             --color-live: #e91e63;
         }
@@ -208,7 +208,6 @@
             font-size: 14px;
         }
         #tree-content .card-input { height: 26px; font-size: 0.7rem; }
-        /* メモ欄を大きく修正 */
         #tree-content .memo-input { height: 120px; }
 
         /* ツリー構造の線 */
@@ -277,6 +276,10 @@
         }
         .btn-ctrl.primary { background: #333; color: #fff; border: none; }
         .btn-ctrl.warn { background: #fff0f0; color: #c82333; border-color: #ffcccc; flex: 0.7; }
+        /* URL共有ボタン用の色 */
+        .btn-ctrl.share { background: #e0f7fa; color: #006064; border-color: #b2ebf2; }
+        /* 小さいボタン */
+        .btn-ctrl.sm { flex: 0.6; font-size: 0.75rem; color: #555; }
 
     </style>
 </head>
@@ -314,13 +317,14 @@
 <div class="controls">
     <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(this)">
     <button class="btn-ctrl warn" onclick="resetData()">リセット</button>
-    <button class="btn-ctrl" onclick="document.getElementById('import-file').click()">読込</button>
-    <button class="btn-ctrl" onclick="exportData()">保存</button>
+    <button class="btn-ctrl sm" onclick="document.getElementById('import-file').click()">読込</button>
+    <button class="btn-ctrl sm" onclick="exportData()">保存</button>
+    <button class="btn-ctrl share" onclick="generateShareUrl()">URL共有</button>
     <button class="btn-ctrl primary" onclick="openTreeView()">ツリー</button>
 </div>
 
 <script>
-    const STORAGE_KEY = 'lovecaflow_data_v5';
+    const STORAGE_KEY = 'lovecaflow_data_v8';
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
     
@@ -332,14 +336,34 @@
     let currentPan = { x: 0, y: 0 };
 
     window.onload = function() {
-        const savedData = localStorage.getItem(STORAGE_KEY);
-        if (savedData) {
+        // 1. URLパラメータチェック (共有URLからの復元)
+        const urlParams = new URLSearchParams(window.location.search);
+        const compressedData = urlParams.get('data');
+
+        if (compressedData) {
             try {
-                const parsed = JSON.parse(savedData);
-                meta = parsed.meta || { selfDeck: "", oppDeck: "" };
-                rootNodes = parsed.rootNodes || [];
+                const jsonStr = LZString.decompressFromEncodedURIComponent(compressedData);
+                if (jsonStr) {
+                    const parsed = JSON.parse(jsonStr);
+                    meta = parsed.meta || { selfDeck: "", oppDeck: "" };
+                    rootNodes = parsed.rootNodes || [];
+                    saveData();
+                    // URLをクリーンにする
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    alert("共有データを読み込みました");
+                }
             } catch (e) {
-                console.error("Save data parse error", e);
+                console.error("Share load error", e);
+            }
+        } else {
+            // 2. ローカルストレージからの読み込み
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    meta = parsed.meta || { selfDeck: "", oppDeck: "" };
+                    rootNodes = parsed.rootNodes || [];
+                } catch (e) { console.error(e); }
             }
         }
 
@@ -365,6 +389,24 @@
             render();
             closeTreeView();
             window.scrollTo(0, 0);
+        }
+    }
+
+    // --- URL Share Logic ---
+    function generateShareUrl() {
+        const data = { meta, rootNodes };
+        const jsonStr = JSON.stringify(data);
+        const compressed = LZString.compressToEncodedURIComponent(jsonStr);
+        const url = `${window.location.origin}${window.location.pathname}?data=${compressed}`;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert("共有用URLをクリップボードにコピーしました！");
+            }).catch(() => {
+                prompt("URLをコピーしてください:", url);
+            });
+        } else {
+            prompt("URLをコピーしてください:", url);
         }
     }
 
@@ -453,7 +495,6 @@
         else path.node[player][field] = val;
         
         saveData();
-        // 勝敗に関わる変更のみ再描画（フォーカス外れ防止のためテキストは除外）
         if(['score', 'stats', 'noLive'].includes(field)) {
             render();
             if(isTreeViewOpen()) renderTreeCanvas();
@@ -468,7 +509,6 @@
         if(v < 0) v = 0; 
         path.node[player][field] = v;
         
-        // DOM直接更新でチラつき防止
         const container = btn.closest('.stat-ctrl');
         if(container) {
             const input = container.querySelector('input');
@@ -711,7 +751,6 @@
 
                 const isFinished = currentWins.self >= 3 || currentWins.opp >= 3;
 
-                // 詳細カードHTMLを埋め込み
                 html += `
                     <li>
                         <div class="turn-card ${statusClass}">
@@ -772,7 +811,7 @@
 
     function handleInputTouch(e) {
         if (isInputEvent(e)) {
-            e.stopPropagation(); // パンイベントへ行かせない
+            e.stopPropagation(); 
         }
     }
 
