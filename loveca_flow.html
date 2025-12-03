@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loveca Flow - Mobile Optimized</title>
+    <title>Loveca Flow</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <style>
         :root {
@@ -35,10 +35,27 @@
             background: #fff; padding: 10px 15px; border-bottom: 1px solid #ccc; margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        h1 { text-align: center; font-size: 1.1rem; margin: 0 0 8px 0; color: #333; }
+        
+        /* タイトルロゴ */
+        h1.app-title { 
+            text-align: center; 
+            margin: 5px 0 10px 0; 
+            font-family: "Arial Black", "Impact", sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+        }
+        .title-blue { color: var(--self-border); }
+        .title-red { color: var(--opp-border); }
+
         .deck-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .deck-box { position: relative; }
-        .deck-label { font-size: 0.65rem; font-weight: bold; color: #666; display: block; margin-bottom: 2px; }
+        
+        /* デッキラベルの色分け */
+        .deck-label { font-size: 0.65rem; font-weight: bold; display: block; margin-bottom: 2px; }
+        .deck-label.self { color: var(--self-border); }
+        .deck-label.opp { color: var(--opp-border); }
+
         .deck-input { 
             width: 100%; border: none; border-bottom: 2px solid #ddd; border-radius: 0; 
             background: transparent; padding: 4px 0; font-weight: bold; font-size: 0.9rem;
@@ -93,10 +110,12 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .header-left { display: flex; align-items: center; flex: 1; overflow: hidden; }
+        
         .turn-badge {
             background: #fff; color: #333; font-weight: 900; font-size: 0.8rem;
-            padding: 2px 6px; border-radius: 4px; margin-right: 8px; white-space: nowrap;
+            padding: 2px 6px; border-radius: 4px; margin-right: 6px; white-space: nowrap;
         }
+        
         .pattern-id {
             font-size: 0.75rem; color: rgba(255,255,255,0.8); font-family: monospace; 
             margin-right: 6px; font-weight: bold;
@@ -122,9 +141,17 @@
         .player-area.self { background: var(--self-bg); }
 
         .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .player-name { font-weight: bold; font-size: 0.8rem; }
+        .player-name { font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; }
         .player-name.opp { color: var(--opp-border); }
         .player-name.self { color: var(--self-border); }
+
+        /* 勝点獲得バッジ */
+        .win-point-badge {
+            font-size: 0.7rem; color: #fff; padding: 1px 5px; border-radius: 10px; margin-left: 6px;
+            font-weight: bold; display: inline-block; vertical-align: middle;
+        }
+        .player-name.self .win-point-badge { background: var(--self-border); }
+        .player-name.opp .win-point-badge { background: var(--opp-border); }
 
         .live-check { font-size: 0.7rem; display: flex; align-items: center; }
         .live-check input { margin-right: 3px; }
@@ -276,9 +303,7 @@
         }
         .btn-ctrl.primary { background: #333; color: #fff; border: none; }
         .btn-ctrl.warn { background: #fff0f0; color: #c82333; border-color: #ffcccc; flex: 0.7; }
-        /* URL共有ボタン用の色 */
         .btn-ctrl.share { background: #e0f7fa; color: #006064; border-color: #b2ebf2; }
-        /* 小さいボタン */
         .btn-ctrl.sm { flex: 0.6; font-size: 0.75rem; color: #555; }
 
     </style>
@@ -287,14 +312,17 @@
 
 <div id="main-view">
     <div class="top-container">
-        <h1>Loveca Flow</h1>
+        <h1 class="app-title">
+            <span class="title-blue">Loveca</span>
+            <span class="title-red">Flow</span>
+        </h1>
         <div class="deck-info">
             <div class="deck-box self">
-                <span class="deck-label">自分</span>
+                <span class="deck-label self">自分</span>
                 <input type="text" class="deck-input" id="self-deck-name" placeholder="デッキ名" onchange="updateMeta()">
             </div>
             <div class="deck-box opp">
-                <span class="deck-label">相手</span>
+                <span class="deck-label opp">相手</span>
                 <input type="text" class="deck-input" id="opp-deck-name" placeholder="デッキ名" onchange="updateMeta()">
             </div>
         </div>
@@ -324,7 +352,7 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'lovecaflow_data_v8';
+    const STORAGE_KEY = 'lovecaflow_data_v11';
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
     
@@ -336,7 +364,7 @@
     let currentPan = { x: 0, y: 0 };
 
     window.onload = function() {
-        // 1. URLパラメータチェック (共有URLからの復元)
+        // 1. URLパラメータチェック
         const urlParams = new URLSearchParams(window.location.search);
         const compressedData = urlParams.get('data');
 
@@ -348,7 +376,6 @@
                     meta = parsed.meta || { selfDeck: "", oppDeck: "" };
                     rootNodes = parsed.rootNodes || [];
                     saveData();
-                    // URLをクリーンにする
                     window.history.replaceState({}, document.title, window.location.pathname);
                     alert("共有データを読み込みました");
                 }
@@ -356,7 +383,7 @@
                 console.error("Share load error", e);
             }
         } else {
-            // 2. ローカルストレージからの読み込み
+            // 2. ローカルストレージ
             const savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 try {
@@ -591,7 +618,12 @@
 
                 const card = document.createElement('div');
                 card.className = `turn-card ${statusClass}`;
-                card.innerHTML = buildCardHtml(node, currentWins, isFinished);
+                
+                // Diffの計算をここでして、buildCardHtmlに渡す
+                const selfWinDiff = sDiff > 0;
+                const oppWinDiff = oDiff > 0;
+
+                card.innerHTML = buildCardHtml(node, currentWins, isFinished, selfWinDiff, oppWinDiff);
                 wrapper.appendChild(card);
 
                 if(node.children.length > 0) {
@@ -615,7 +647,7 @@
     }
 
     // --- Card HTML Generator ---
-    function buildCardHtml(node, wins, isFinished) {
+    function buildCardHtml(node, wins, isFinished, selfWinDiff, oppWinDiff) {
         const id = node.id;
         
         let winnerHtml = '';
@@ -635,6 +667,10 @@
             const label = isSelf ? '自分' : '相手';
             const data = node[player];
             
+            // 勝敗バッジ判定
+            const isWinPoint = isSelf ? selfWinDiff : oppWinDiff;
+            const badgeHtml = isWinPoint ? `<span class="win-point-badge">+1</span>` : '';
+
             const statsHtml = `
                 <div class="stats-container">
                     <div class="stat-box">
@@ -674,7 +710,7 @@
             return `
                 <div class="player-area ${cls}">
                     <div class="info-row">
-                        <span class="player-name ${cls}">${label} (${winsNum}勝)</span>
+                        <span class="player-name ${cls}">${label} (${winsNum}勝) ${badgeHtml}</span>
                         <label class="live-check"><input type="checkbox" ${data.noLive ? 'checked' : ''} onchange="updateVal('${id}','${player}','noLive',this.checked)">ライブ無</label>
                     </div>
                     ${!isSelf ? statsHtml + cardsHtml : cardsHtml + statsHtml}
@@ -720,7 +756,6 @@
     function openTreeView() {
         document.getElementById('main-view').style.display = 'none';
         document.getElementById('tree-view').style.display = 'flex';
-        // 初期位置リセット
         treeScale = 0.8;
         currentPan = { x: 0, y: 0 };
         renderTreeCanvas();
@@ -750,11 +785,13 @@
                 else if(sDiff > 0 && oDiff > 0) statusClass = 'status-draw';
 
                 const isFinished = currentWins.self >= 3 || currentWins.opp >= 3;
+                const selfWinDiff = sDiff > 0;
+                const oppWinDiff = oDiff > 0;
 
                 html += `
                     <li>
                         <div class="turn-card ${statusClass}">
-                            ${buildCardHtml(node, currentWins, isFinished)}
+                            ${buildCardHtml(node, currentWins, isFinished, selfWinDiff, oppWinDiff)}
                         </div>
                         ${buildTreeRecursive(node.children, currentWins)}
                     </li>
@@ -782,16 +819,12 @@
 
     function setupTreeEvents() {
         const canvas = document.getElementById('tree-canvas');
-        
-        // 入力要素上でのイベント伝播を止める（パン操作防止）
         canvas.addEventListener('touchstart', handleInputTouch, {passive: false});
         canvas.addEventListener('mousedown', handleInputTouch);
-
         canvas.addEventListener('mousedown', startPan);
         canvas.addEventListener('mousemove', doPan);
         canvas.addEventListener('mouseup', endPan);
         canvas.addEventListener('mouseleave', endPan);
-        
         canvas.addEventListener('touchstart', (e) => {
             if(e.touches.length === 1 && !isInputEvent(e)) startPan(e.touches[0]);
         });
@@ -810,9 +843,7 @@
     }
 
     function handleInputTouch(e) {
-        if (isInputEvent(e)) {
-            e.stopPropagation(); 
-        }
+        if (isInputEvent(e)) e.stopPropagation(); 
     }
 
     function startPan(e) {
@@ -825,7 +856,6 @@
         if(!isPanning) return;
         const dx = e.clientX - panStart.x;
         const dy = e.clientY - panStart.y;
-        
         const content = document.getElementById('tree-content');
         content.style.transform = `translate(${currentPan.x + dx}px, ${currentPan.y + dy}px) scale(${treeScale})`;
         panOffset = { x: dx, y: dy };
