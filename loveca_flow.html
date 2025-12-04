@@ -17,6 +17,7 @@
             --header-text: #fff;
             --card-shadow: 0 4px 12px rgba(0,0,0,0.15);
             --snap-width: 90vw;
+            
             --color-member: #2c3e50;
             --color-live: #e91e63;
         }
@@ -25,16 +26,23 @@
         body { margin: 0; padding: 0 0 100px 0; background: var(--bg-color); color: var(--primary-text); overflow-x: hidden; height: 100vh; }
         
         /* === メインビュー === */
-        #main-view { padding-bottom: 120px; width: 100%; }
+        #main-view {
+            padding-bottom: 120px;
+            width: 100%;
+        }
 
         .top-container {
             background: #fff; padding: 10px 15px; border-bottom: 1px solid #ccc; margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
+        
+        /* タイトルロゴ */
         h1.app-title { 
-            text-align: center; margin: 5px 0 10px 0; 
+            text-align: center; 
+            margin: 5px 0 10px 0; 
             font-family: "Arial Black", "Impact", sans-serif;
-            font-size: 1.6rem; letter-spacing: 1px;
+            font-size: 1.6rem;
+            letter-spacing: 1px;
             text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
         }
         .title-blue { color: var(--self-border); }
@@ -42,9 +50,11 @@
 
         .deck-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .deck-box { position: relative; }
+        
         .deck-label { font-size: 0.65rem; font-weight: bold; display: block; margin-bottom: 2px; }
         .deck-label.self { color: var(--self-border); }
         .deck-label.opp { color: var(--opp-border); }
+
         .deck-input { 
             width: 100%; border: none; border-bottom: 2px solid #ddd; border-radius: 0; 
             background: transparent; padding: 4px 0; font-weight: bold; font-size: 0.9rem;
@@ -56,26 +66,36 @@
         #flow-root { display: flex; flex-direction: column; width: 100%; gap: 20px; }
 
         .level-container {
-            display: flex; flex-direction: row; overflow-x: auto; 
+            display: flex; flex-direction: row; 
+            overflow-x: auto; 
             padding: 0 calc((100vw - var(--snap-width)) / 2); 
-            gap: 15px; width: 100%; scroll-snap-type: x mandatory; 
-            -webkit-overflow-scrolling: touch; scrollbar-width: none; 
+            gap: 15px;
+            width: 100%;
+            scroll-snap-type: x mandatory; 
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; 
         }
         .level-container::-webkit-scrollbar { display: none; }
         
         .node-wrapper {
             display: flex; flex-direction: column; align-items: center;
-            flex-shrink: 0; width: var(--snap-width); scroll-snap-align: center; 
+            flex-shrink: 0; 
+            width: var(--snap-width);
+            scroll-snap-align: center; 
             position: relative;
         }
 
-        /* === カードスタイル === */
+        /* === カード共通スタイル === */
         .turn-card {
-            width: 100%; background: #fff; border-radius: 12px;
-            box-shadow: var(--card-shadow); overflow: hidden;
-            display: flex; flex-direction: column; border: 2px solid transparent; 
+            width: 100%; 
+            background: #fff; border-radius: 12px;
+            box-shadow: var(--card-shadow); 
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            border: 2px solid transparent; 
             transition: border-color 0.3s;
         }
+
         .turn-card.status-self { border-color: var(--self-border); }
         .turn-card.status-self .card-header { background: var(--self-border); }
         .turn-card.status-opp { border-color: var(--opp-border); }
@@ -85,13 +105,16 @@
 
         .card-header {
             background: var(--header-bg); color: var(--header-text);
-            padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .header-left { display: flex; align-items: center; flex: 1; overflow: hidden; }
+        
         .turn-badge {
             background: #fff; color: #333; font-weight: 900; font-size: 0.8rem;
             padding: 2px 6px; border-radius: 4px; margin-right: 6px; white-space: nowrap;
         }
+        
         .result-badge {
             font-size: 0.75rem; font-weight: bold; padding: 1px 5px; border-radius: 4px; 
             margin-left: 4px; white-space: nowrap; color: #fff; vertical-align: middle; display: inline-block;
@@ -106,9 +129,11 @@
         }
         .pattern-input {
             background: rgba(255,255,255,0.15); border: none; color: #fff; 
-            font-size: 0.9rem; padding: 4px 8px; border-radius: 4px; width: 100%; min-width: 0;
+            font-size: 0.9rem; padding: 4px 8px; border-radius: 4px; width: 100%;
+            min-width: 0;
         }
         .pattern-input::placeholder { color: rgba(255,255,255,0.6); }
+        
         .header-actions { display: flex; gap: 8px; margin-left: 8px; }
         .btn-mini {
             background: rgba(255,255,255,0.2); border: none; color: #fff; 
@@ -117,6 +142,7 @@
         }
 
         .card-body { display: flex; flex-direction: column; }
+        
         .player-area { padding: 8px; position: relative; }
         .player-area.opp { background: var(--opp-bg); border-bottom: 1px solid #eee; }
         .player-area.self { background: var(--self-bg); }
@@ -125,6 +151,15 @@
         .player-name { font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; }
         .player-name.opp { color: var(--opp-border); }
         .player-name.self { color: var(--self-border); }
+
+        /* 勝点獲得バッジ */
+        .win-point-badge {
+            font-size: 0.7rem; color: #fff; padding: 1px 5px; border-radius: 10px; margin-left: 6px;
+            font-weight: bold; display: inline-block; vertical-align: middle;
+        }
+        .player-name.self .win-point-badge { background: var(--self-border); }
+        .player-name.opp .win-point-badge { background: var(--opp-border); }
+
         .live-check { font-size: 0.7rem; display: flex; align-items: center; }
         .live-check input { margin-right: 3px; }
 
@@ -135,7 +170,10 @@
         }
         .stat-label { font-size: 0.65rem; color: #666; margin-left: 4px; }
         .stat-ctrl { display: flex; align-items: center; }
-        .stat-val { width: 36px; text-align: center; border: none; background: transparent; font-weight: bold; font-size: 1.1rem; padding: 0; }
+        .stat-val { 
+            width: 36px; text-align: center; border: none; background: transparent; 
+            font-weight: bold; font-size: 1.1rem; padding: 0;
+        }
         .btn-pm {
             width: 24px; height: 24px; background: #fff; border: 1px solid #ccc; border-radius: 4px;
             display: flex; justify-content: center; align-items: center; font-weight: bold; color: #555;
@@ -146,49 +184,80 @@
         .input-label { font-size: 0.65rem; text-align: center; margin-bottom: 1px; font-weight: bold; }
         .input-label.member { color: var(--color-member); }
         .input-label.live { color: var(--color-live); }
-        .card-input { width: 100%; border: 1px solid #ddd; border-radius: 4px; font-size: 0.75rem; text-align: center; padding: 0; height: 30px; background: rgba(255,255,255,0.9); }
+        .card-input {
+            width: 100%; border: 1px solid #ddd; border-radius: 4px; font-size: 0.75rem; 
+            text-align: center; padding: 0; height: 30px; background: rgba(255,255,255,0.9);
+        }
 
         .memo-area { padding: 8px; background: #fff; border-top: 1px solid #eee; }
-        .memo-input { width: 100%; height: 100px; border: 1px solid #eee; border-radius: 4px; padding: 6px; font-size: 0.85rem; resize: none; }
+        .memo-input {
+            width: 100%; height: 100px; border: 1px solid #eee; border-radius: 4px; 
+            padding: 6px; font-size: 0.85rem; resize: none;
+        }
 
         .card-footer { padding: 8px; background: #f8f8f8; border-top: 1px solid #eee; }
-        .btn-next { width: 100%; background: #444; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; }
+        .btn-next {
+            width: 100%; background: #444; color: #fff; border: none; padding: 10px;
+            border-radius: 6px; font-weight: bold; font-size: 0.9rem;
+        }
         
-        .winner-banner { padding: 10px; text-align: center; font-weight: bold; font-size: 1rem; }
+        .winner-banner { 
+            padding: 10px; text-align: center; font-weight: bold; font-size: 1rem; 
+        }
         .winner-banner.self { background: #e6f2ff; color: var(--self-border); border-bottom: 4px solid var(--self-border); }
         .winner-banner.opp { background: #fff0f0; color: var(--opp-border); border-bottom: 4px solid var(--opp-border); }
 
         .connector-arrow { color: #ccc; font-size: 1.5rem; margin-top: -5px; line-height: 1; z-index: -1; }
 
-        /* === ツリービュー === */
+        /* === ツリービュー (俯瞰モード) === */
         #tree-view {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #eef2f5; z-index: 2000;
-            display: none; overflow: hidden; flex-direction: column;
+            display: none; /* 初期非表示 */
+            overflow: hidden;
+            flex-direction: column;
         }
+        
         #tree-canvas {
-            flex: 1; overflow: hidden; cursor: grab; position: relative;
-            background-image: radial-gradient(#ccc 1px, transparent 1px); background-size: 20px 20px;
+            flex: 1;
+            overflow: hidden;
+            cursor: grab;
+            position: relative;
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+            background-size: 20px 20px;
         }
         #tree-canvas:active { cursor: grabbing; }
         
         #tree-content {
-            position: absolute; transform-origin: center top; top: 50px; left: 50%;
-            transition: transform 0.1s ease-out; /* Smooth pan/zoom */
+            position: absolute;
+            transform-origin: center top;
+            top: 50px; left: 50%;
+            transition: transform 0.1s ease-out;
         }
 
-        #tree-content .turn-card { width: 320px; margin: 0 auto; font-size: 14px; }
+        /* ツリービュー内のカードスタイル上書き */
+        #tree-content .turn-card {
+            width: 320px; /* 固定幅で見やすく */
+            margin: 0 auto;
+            font-size: 14px;
+        }
         #tree-content .card-input { height: 26px; font-size: 0.7rem; }
         #tree-content .memo-input { height: 120px; }
 
+        /* ツリー構造の線 */
         .tree ul {
-            padding-top: 20px; position: relative; transition: all 0.5s;
-            display: flex; justify-content: center; margin: 0; padding-left: 0;
+            padding-top: 20px; position: relative;
+            transition: all 0.5s;
+            display: flex; justify-content: center;
+            margin: 0; padding-left: 0;
         }
         .tree li {
-            float: left; text-align: center; list-style-type: none;
-            position: relative; padding: 20px 10px 0 10px;
+            float: left; text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 10px 0 10px; /* 横間隔 */
         }
+        /* Connectors */
         .tree li::before, .tree li::after {
             content: ''; position: absolute; top: 0; right: 50%;
             border-top: 3px solid #ccc; width: 50%; height: 20px;
@@ -204,12 +273,15 @@
             border-left: 3px solid #ccc; width: 0; height: 20px;
         }
 
+        /* Tree Controls */
         .tree-controls {
             position: absolute; bottom: 80px; left: 0; width: 100%;
-            display: flex; justify-content: center; gap: 20px; pointer-events: none;
+            display: flex; justify-content: center; gap: 20px;
+            pointer-events: none;
         }
         .tc-btn {
-            pointer-events: auto; width: 50px; height: 50px; border-radius: 50%;
+            pointer-events: auto;
+            width: 50px; height: 50px; border-radius: 50%;
             background: #333; color: #fff; font-size: 24px; font-weight: bold;
             border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             display: flex; justify-content: center; align-items: center;
@@ -218,9 +290,9 @@
 
         .close-tree-btn {
             position: absolute; top: 15px; right: 15px;
-            background: rgba(0,0,0,0.5); color: #fff; border: none;
-            padding: 8px 16px; border-radius: 20px; font-weight: bold;
-            z-index: 2001; cursor: pointer;
+            background: rgba(0,0,0,0.5); color: #fff;
+            border: none; padding: 8px 16px; border-radius: 20px;
+            font-weight: bold; z-index: 2001; cursor: pointer;
         }
 
         /* === フッター === */
@@ -228,7 +300,7 @@
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
             border-top: 1px solid #ccc; padding: 10px 10px;
-            display: flex; gap: 8px; z-index: 2100;
+            display: flex; gap: 8px; z-index: 2100; /* 最前面 */
             padding-bottom: max(10px, env(safe-area-inset-bottom));
         }
         .btn-ctrl {
@@ -238,7 +310,9 @@
         }
         .btn-ctrl.primary { background: #333; color: #fff; border: none; }
         .btn-ctrl.warn { background: #fff0f0; color: #c82333; border-color: #ffcccc; flex: 0.7; }
+        /* URL共有ボタン用の色 */
         .btn-ctrl.share { background: #e0f7fa; color: #006064; border-color: #b2ebf2; }
+        /* 小さいボタン */
         .btn-ctrl.sm { flex: 0.6; font-size: 0.75rem; color: #555; }
 
     </style>
@@ -262,6 +336,7 @@
             </div>
         </div>
     </div>
+
     <div class="container" id="flow-root"></div>
 </div>
 
@@ -286,7 +361,7 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'lovecaflow_data_v12';
+    const STORAGE_KEY = 'lovecaflow_data_v13';
     let rootNodes = []; 
     let meta = { selfDeck: "", oppDeck: "" };
     
@@ -405,12 +480,12 @@
         const pattern = String.fromCharCode(65 + rootNodes.length); 
         const newNode = createNode(1, pattern);
         rootNodes.push(newNode);
-        setActiveNode(newNode.id); // 新規追加したらアクティブに
+        setActiveNode(newNode.id);
         saveData();
         render();
         if(isTreeViewOpen()) {
             renderTreeCanvas();
-            centerActiveNode(); // ツリービュー中なら移動
+            centerNode(newNode.id); // フォーカス移動
         }
     }
 
@@ -427,7 +502,7 @@
         render();
         if(isTreeViewOpen()) {
             renderTreeCanvas();
-            centerActiveNode();
+            centerNode(newNode.id);
         }
     }
 
@@ -447,7 +522,7 @@
             return false;
         };
         remove(rootNodes);
-        activeNodeId = null; // 削除時は未選択
+        activeNodeId = null; 
         saveData();
         render();
         if(isTreeViewOpen()) renderTreeCanvas();
@@ -465,7 +540,7 @@
     }
 
     function updateVal(id, player, field, val, idx = null) {
-        setActiveNode(id); // 編集したらアクティブに
+        setActiveNode(id);
         const path = findNode(rootNodes, id);
         if(!path) return;
         if (player === '') path.node[field] = val;
@@ -619,7 +694,7 @@
             const data = node[player];
             
             const isWinPoint = isSelf ? selfWinDiff : oppWinDiff;
-            const badgeHtml = isWinPoint ? `<span class="result-badge ${isSelf?'res-self':'res-opp'}">+1</span>` : '';
+            const badgeHtml = isWinPoint ? `<span class="win-point-badge">+1</span>` : '';
 
             const statsHtml = `
                 <div class="stats-container">
@@ -674,7 +749,6 @@
             </div>
         `;
 
-        // onclickでactiveNodeIdを更新 (main view & tree view共通)
         return `
             <div class="card-header" onmousedown="setActiveNode('${id}')">
                 <div class="header-left">
@@ -707,51 +781,46 @@
     function openTreeView() {
         document.getElementById('main-view').style.display = 'none';
         document.getElementById('tree-view').style.display = 'flex';
-        // 初期状態リセット
+        
+        // Reset state
         treeScale = 0.8;
         currentPan = { x: 0, y: 0 };
         renderTreeCanvas();
         updateTransform();
         
-        // 直前のアクティブノードへ移動
-        if(activeNodeId) {
-            // レンダリング完了後に移動するため、少しだけ待つ
-            setTimeout(centerActiveNode, 10);
+        // Focus on ROOT node (User Request)
+        if(rootNodes.length > 0) {
+            setTimeout(() => centerNode(rootNodes[0].id), 10);
         }
     }
 
-    function centerActiveNode() {
-        if(!activeNodeId) return;
-        const target = document.getElementById(`tree-node-${activeNodeId}`);
+    function centerNode(targetId) {
+        const target = document.getElementById(`tree-node-${targetId}`);
         if(!target) return;
 
-        // TreeView Canvasのサイズ
         const wrapper = document.getElementById('tree-view');
         const viewportW = wrapper.clientWidth;
         const viewportH = wrapper.clientHeight;
 
-        // スケール1、Pan0の状態での要素の位置を取得するために一旦リセット
-        // ※視覚的なチラつきを防ぐためDOM操作ではなく計算で行いたいが、
-        // 簡易実装として一時的にスタイル変更して計算する
         const content = document.getElementById('tree-content');
         
-        // CSS transformを一時的に解除して計測
+        // Temporarily reset transform to measure correct positions
         const originalTransform = content.style.transform;
         content.style.transform = `translate(0px, 0px) scale(1)`;
         
         const contentRect = content.getBoundingClientRect();
         const targetRect = target.getBoundingClientRect();
         
-        // content内の相対位置 (contentの左上からの距離)
+        // Relative position
         const nodeCenterX = targetRect.left - contentRect.left + targetRect.width / 2;
         const nodeCenterY = targetRect.top - contentRect.top + targetRect.height / 2;
 
-        // 画面中央に来るようにPanを計算
-        // PanX = (画面幅 / 2) - (ノードX * スケール)
+        // Restore transform immediately before applying new one (logic concept)
+        // Actually we just overwrite currentPan and apply.
+        
         currentPan.x = (viewportW / 2) - (nodeCenterX * treeScale);
         currentPan.y = (viewportH / 2) - (nodeCenterY * treeScale);
 
-        // 戻して適用
         updateTransform();
     }
 
@@ -781,7 +850,6 @@
                 const selfWinDiff = sDiff > 0;
                 const oppWinDiff = oDiff > 0;
 
-                // ツリービュー用ラッパーID付与
                 html += `
                     <li id="tree-node-${node.id}">
                         <div class="turn-card ${statusClass}">
@@ -813,15 +881,12 @@
 
     function setupTreeEvents() {
         const canvas = document.getElementById('tree-canvas');
-        
         canvas.addEventListener('touchstart', handleInputTouch, {passive: false});
         canvas.addEventListener('mousedown', handleInputTouch);
-
         canvas.addEventListener('mousedown', startPan);
         canvas.addEventListener('mousemove', doPan);
         canvas.addEventListener('mouseup', endPan);
         canvas.addEventListener('mouseleave', endPan);
-        
         canvas.addEventListener('touchstart', (e) => {
             if(e.touches.length === 1 && !isInputEvent(e)) startPan(e.touches[0]);
         });
@@ -840,9 +905,7 @@
     }
 
     function handleInputTouch(e) {
-        if (isInputEvent(e)) {
-            e.stopPropagation(); 
-        }
+        if (isInputEvent(e)) e.stopPropagation(); 
     }
 
     function startPan(e) {
