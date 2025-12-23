@@ -103,7 +103,6 @@
     <button class="primary" id="runBtn">計算する</button>
     <button class="ghost" id="clearBtn">入力リセット</button>
   </div>
-
 <script>
 /* ===== カテゴリ定義 ===== */
 const COLORS = [
@@ -118,6 +117,30 @@ const ALL = {key:'ALL', name:'', badge:'ALL'};
 const ANY = {key:'00',  name:'無', emo:'🖤'};
 const NONE= {key:'NONE',name:'BHなし', badge:'–'};
 const SU  = {key:'SU',  name:'スコアアップ', badge:'♪'};
+
+/* ===== LocalStorage 設定 ===== */
+const LS_KEY = 'llocg_sim_data_v1';
+
+function saveToLS(){
+  const data = {};
+  document.querySelectorAll('input[type="number"]').forEach(el => {
+    if(el.id) data[el.id] = el.value;
+  });
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
+}
+
+function loadFromLS(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    Object.keys(data).forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = data[id];
+    });
+    updateDeckTotals(); // 読み込み後に合計表示を更新
+  } catch(e) { console.error('Load error:', e); }
+}
 
 /* ===== UI部品 ===== */
 function makeStepper(id, value=0, min=0, max=999, step=1){
@@ -168,14 +191,24 @@ stageArea.innerHTML = [0,1,2].map(stageBlock).join('');
 liveArea.innerHTML  = [0,1,2].map(liveBlock).join('');
 deckArea.innerHTML  = deckBlock();
 
-/* +- ボタン */
+/* +- ボタン イベント (修正: 保存処理を追加) */
 document.addEventListener('click',(e)=>{
   const btn = e.target.closest('button[data-stepp]'); if(!btn) return;
   const id = btn.getAttribute('data-stepp'); const delta = Number(btn.getAttribute('data-d')||0);
   const input = document.getElementById(id); if(!input) return;
   const min = Number(input.min||'-Infinity'); const max = Number(input.max||'Infinity');
   let v = Number(input.value||0)+delta; v = Math.max(min, Math.min(max, v)); input.value = v;
+  
   if(id.startsWith('d_')) updateDeckTotals();
+  saveToLS(); // 保存
+});
+
+/* 手入力イベント (追加) */
+document.addEventListener('input', (e) => {
+  if (e.target.matches('input[type="number"]')) {
+    if(e.target.id.startsWith('d_')) updateDeckTotals();
+    saveToLS(); // 保存
+  }
 });
 
 /* ===== 合計表示（デッキ） ===== */
@@ -193,7 +226,7 @@ function updateDeckTotals(){
     <span>ハート総数 <b>${heartTotal}</b>（♪となしを除く）</span>
     <span>♪ <b>${counts['SU']}</b> ／ なし <b>${counts['NONE']}</b></span>`;
 }
-updateDeckTotals();
+// updateDeckTotals(); // 初期化時はloadFromLSで呼ぶのでここではコメントアウトでも可（呼んでも問題なし）
 
 /* ===== 入力取得 ===== */
 function getStage(){
@@ -238,15 +271,8 @@ function logC(n,k){
 }
 function logSum(a,b){ if(a===-Infinity) return b; if(b===-Infinity) return a; const m=Math.max(a,b); return m + Math.log(Math.exp(a-m)+Math.exp(b-m)); }
 
-/* ===== 補助：最小必要デッキ枚数（有効ハート） =====
-   手順:
-   1) 色要求をステージの同色で埋める → 残色欠損 Dc
-   2) ステージALLで Dc を補填 → ALL残量 Arem, 未充足色 Dc2
-   3) ANY要求を「同色余剰 + Arem」で補填 → 残ANY欠損 Da
-   4) デッキで最低限必要 = Dc2 + Da
-*/
+/* ===== 補助：最小必要デッキ枚数（有効ハート） ===== */
 function minDeckUsefulHearts(req, stageHave){
-  // 1) 同色で充足
   const stageSame = {}, deficitColor = {};
   COLORS.forEach(c=>{
     const need = req[c.key]|0, own = stageHave[c.key]|0;
@@ -254,14 +280,10 @@ function minDeckUsefulHearts(req, stageHave){
     deficitColor[c.key] = Math.max(0, need - own);
   });
   let Dc = Object.values(deficitColor).reduce((a,b)=>a+b,0);
-
-  // 2) ステージALLで色欠損を補填
   const stageALL = stageHave.ALL|0;
   const useAllForColor = Math.min(stageALL, Dc);
   let Arem = stageALL - useAllForColor;
   const Dc2 = Dc - useAllForColor;
-
-  // 3) ANYのために使えるステージ余剰
   let surplusColored = 0;
   COLORS.forEach(c=>{
     const need = req[c.key]|0, own = stageHave[c.key]|0;
@@ -270,8 +292,6 @@ function minDeckUsefulHearts(req, stageHave){
   const needAny = req['00']|0;
   const coverAnyByStage = Math.min(needAny, surplusColored + Arem);
   const Da = needAny - coverAnyByStage;
-
-  // 4) 必要最小デッキ枚数
   return {minDeck: Dc2 + Da, details:{Dc, useAllForColor, Dc2, Arem, surplusColored, needAny, coverAnyByStage, Da}};
 }
 
@@ -281,14 +301,12 @@ function computeExact(){
   const lives = getLives();
   const deck  = getDeckCounts();
 
-  // 総要求
   const req = {'00':0}; COLORS.forEach(c=>req[c.key]=0);
   for(const L of lives){ for(const k in req){ req[k] += (L.req[k]||0); } }
   const totalReq = Object.values(req).reduce((a,b)=>a+b,0);
 
-  const n = stage.reduce((a,m)=>a+(m.blades||0),0); // 抽出枚数
+  const n = stage.reduce((a,m)=>a+(m.blades||0),0);
 
-  // デッキ構成
   const N_by = {}; COLORS.forEach(c=>N_by[c.key]=deck[c.key]|0);
   N_by['ALL']=deck['ALL']|0;
   const N_SU = deck['SU']|0, N_NONE=deck['NONE']|0;
@@ -300,16 +318,13 @@ function computeExact(){
   if(totalReq===0) errors.push('ライブカードの要求が全て0です。');
   if(errors.length) return {ok:false,errors};
 
-  // 盤面ハート（固定）
   const haveBase = {'ALL':0}; COLORS.forEach(c=>haveBase[c.key]=0);
   for(const m of stage){ for(const c of COLORS){ haveBase[c.key] += (m.hearts[c.key]|0); } haveBase.ALL += (m.hearts.ALL|0); }
 
-  // サマリー用（要求合計、ステージ合計、必要最小デッキ、許容外し）
   const stageTotalHearts = haveBase.ALL + COLORS.reduce((s,c)=>s+haveBase[c.key],0);
   const {minDeck, details} = minDeckUsefulHearts(req, haveBase);
   const maxMiss = Math.max(0, n - minDeck);
 
-  // n=0：期待枚数0、成功は盤面のみ
   if(n===0){
     const p = canSatisfy(req, haveBase) ? 1 : 0;
     const exp = {};
@@ -318,9 +333,8 @@ function computeExact(){
             summary:{reqTotal:totalReq, stageTotal:stageTotalHearts, blades:n, minDeck, maxMiss}};
   }
 
-  // 厳密確率
-  const trackKeys = [...COLORS.map(c=>c.key), 'ALL']; // 7カテゴリ
-  const N_other = N_total - trackKeys.reduce((s,k)=>s+(N_by[k]|0),0); // SU+NONE
+  const trackKeys = [...COLORS.map(c=>c.key), 'ALL'];
+  const N_other = N_total - trackKeys.reduce((s,k)=>s+(N_by[k]|0),0);
   const logDen = logC(N_total, n);
   let logSumSucc = -Infinity;
   const x = {}; trackKeys.forEach(k=>x[k]=0);
@@ -346,7 +360,6 @@ function computeExact(){
   dfs(0, 0, 0);
   const p = (logSumSucc===-Infinity) ? 0 : Math.exp(logSumSucc - logDen);
 
-  // 期待枚数 E[X_i]=n*N_i/N
   const exp = {};
   trackKeys.forEach(k=>{ exp[k] = n * (N_by[k]|0) / N_total; });
   exp['SU']   = n * N_SU   / N_total;
@@ -406,12 +419,18 @@ function renderResult(r){
 
 /* ===== イベント ===== */
 document.getElementById('runBtn').addEventListener('click',()=>{ renderResult(computeExact()); });
+
+// リセットボタン (修正: 保存データも削除)
 document.getElementById('clearBtn').addEventListener('click',()=>{
   document.querySelectorAll('input[type="number"]').forEach(inp=>{ inp.value=0; });
   updateDeckTotals();
   resultsEl.innerHTML=`<div class="note">下の「計算する」を押してください。</div>`;
   breakdownEl.style.display='none'; breakdownEl.innerHTML='';
+  localStorage.removeItem(LS_KEY); // データ削除
 });
+
+/* ===== 初期ロード ===== */
+loadFromLS(); // ページ読み込み時にデータを復元
 </script>
 </body>
 </html>
