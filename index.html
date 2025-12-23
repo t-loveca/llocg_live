@@ -102,6 +102,7 @@
   <div class="stickybar">
     <button class="primary" id="runBtn">計算する</button>
     <button class="ghost" id="clearBtn">入力リセット</button>
+    <button class="ghost" id="shareBtn">URLコピー</button>
   </div>
 <script>
 /* ===== カテゴリ定義 ===== */
@@ -118,28 +119,62 @@ const ANY = {key:'00',  name:'無', emo:'🖤'};
 const NONE= {key:'NONE',name:'BHなし', badge:'–'};
 const SU  = {key:'SU',  name:'スコアアップ', badge:'♪'};
 
-/* ===== LocalStorage 設定 ===== */
+/* ===== データ管理（LS & URL） ===== */
 const LS_KEY = 'llocg_sim_data_v1';
 
-function saveToLS(){
-  const data = {};
-  document.querySelectorAll('input[type="number"]').forEach(el => {
-    if(el.id) data[el.id] = el.value;
+// データを画面に反映する共通関数
+function applyData(data){
+  // 一旦全て0にする（URL/LSにないキーをクリアするため）
+  document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = 0);
+  
+  // データを適用
+  Object.keys(data).forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = data[id];
   });
-  localStorage.setItem(LS_KEY, JSON.stringify(data));
+  updateDeckTotals();
 }
 
-function loadFromLS(){
-  const raw = localStorage.getItem(LS_KEY);
-  if(!raw) return;
-  try {
-    const data = JSON.parse(raw);
-    Object.keys(data).forEach(id => {
-      const el = document.getElementById(id);
-      if(el) el.value = data[id];
-    });
-    updateDeckTotals(); // 読み込み後に合計表示を更新
-  } catch(e) { console.error('Load error:', e); }
+// 現在の入力状態をオブジェクトとして取得（0は除外して軽量化）
+function getCurrentData(){
+  const data = {};
+  document.querySelectorAll('input[type="number"]').forEach(el => {
+    const v = Number(el.value);
+    if(el.id && v > 0) data[el.id] = v;
+  });
+  return data;
+}
+
+function saveToLS(){
+  localStorage.setItem(LS_KEY, JSON.stringify(getCurrentData()));
+}
+
+function loadFromUrlOrLS(){
+  // 1. URLパラメータのチェック (優先)
+  const params = new URLSearchParams(window.location.search);
+  const urlData = params.get('d');
+  
+  if(urlData){
+    try {
+      // Base64デコード -> JSONパース
+      const json = atob(urlData);
+      const data = JSON.parse(json);
+      applyData(data);
+      saveToLS(); // URLから開いた場合、LSも更新しておく
+      
+      // 読み込み成功したらURLをクリーンにする（任意：リロード時の挙動安定のため）
+      window.history.replaceState({}, '', window.location.pathname);
+      return; 
+    } catch(e) { console.error('URL parse error:', e); }
+  }
+
+  // 2. LocalStorageのチェック (URLになければ)
+  const lsRaw = localStorage.getItem(LS_KEY);
+  if(lsRaw){
+    try {
+      applyData(JSON.parse(lsRaw));
+    } catch(e) { console.error('LS parse error:', e); }
+  }
 }
 
 /* ===== UI部品 ===== */
@@ -191,7 +226,7 @@ stageArea.innerHTML = [0,1,2].map(stageBlock).join('');
 liveArea.innerHTML  = [0,1,2].map(liveBlock).join('');
 deckArea.innerHTML  = deckBlock();
 
-/* +- ボタン イベント (修正: 保存処理を追加) */
+/* +- ボタン イベント */
 document.addEventListener('click',(e)=>{
   const btn = e.target.closest('button[data-stepp]'); if(!btn) return;
   const id = btn.getAttribute('data-stepp'); const delta = Number(btn.getAttribute('data-d')||0);
@@ -200,14 +235,14 @@ document.addEventListener('click',(e)=>{
   let v = Number(input.value||0)+delta; v = Math.max(min, Math.min(max, v)); input.value = v;
   
   if(id.startsWith('d_')) updateDeckTotals();
-  saveToLS(); // 保存
+  saveToLS();
 });
 
-/* 手入力イベント (追加) */
+/* 手入力イベント */
 document.addEventListener('input', (e) => {
   if (e.target.matches('input[type="number"]')) {
     if(e.target.id.startsWith('d_')) updateDeckTotals();
-    saveToLS(); // 保存
+    saveToLS();
   }
 });
 
@@ -226,7 +261,6 @@ function updateDeckTotals(){
     <span>ハート総数 <b>${heartTotal}</b>（♪となしを除く）</span>
     <span>♪ <b>${counts['SU']}</b> ／ なし <b>${counts['NONE']}</b></span>`;
 }
-// updateDeckTotals(); // 初期化時はloadFromLSで呼ぶのでここではコメントアウトでも可（呼んでも問題なし）
 
 /* ===== 入力取得 ===== */
 function getStage(){
@@ -420,17 +454,36 @@ function renderResult(r){
 /* ===== イベント ===== */
 document.getElementById('runBtn').addEventListener('click',()=>{ renderResult(computeExact()); });
 
-// リセットボタン (修正: 保存データも削除)
+// リセット
 document.getElementById('clearBtn').addEventListener('click',()=>{
   document.querySelectorAll('input[type="number"]').forEach(inp=>{ inp.value=0; });
   updateDeckTotals();
   resultsEl.innerHTML=`<div class="note">下の「計算する」を押してください。</div>`;
   breakdownEl.style.display='none'; breakdownEl.innerHTML='';
-  localStorage.removeItem(LS_KEY); // データ削除
+  localStorage.removeItem(LS_KEY);
+  window.history.replaceState({}, '', window.location.pathname); // URLパラメータも消去
+});
+
+// URLコピー
+document.getElementById('shareBtn').addEventListener('click',()=>{
+  const data = getCurrentData();
+  // 0以外のデータのみをJSON化しBase64エンコード
+  const str = btoa(JSON.stringify(data));
+  const url = `${window.location.origin}${window.location.pathname}?d=${str}`;
+  
+  navigator.clipboard.writeText(url).then(()=> {
+    const btn = document.getElementById('shareBtn');
+    const orig = btn.innerText;
+    btn.innerText = 'コピー完了';
+    setTimeout(()=> btn.innerText = orig, 2000);
+  }).catch(err => {
+    alert('コピーに失敗しました');
+    console.error(err);
+  });
 });
 
 /* ===== 初期ロード ===== */
-loadFromLS(); // ページ読み込み時にデータを復元
+loadFromUrlOrLS();
 </script>
 </body>
 </html>
