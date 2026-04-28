@@ -1,0 +1,1525 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ラブカライフ！CUP 予想クイズ結果発表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=RocknRoll+One&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DotGothic16&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #fff5f8;
+    --bg-card: #ffffff;
+    --bg-soft: #fff0f5;
+    --bg-mint: #effff7;
+    --bg-cream: #fffbeb;
+    --line: rgba(60,30,80,0.10);
+    --line-strong: rgba(60,30,80,0.18);
+    --text: #2a1740;
+    --text-dim: #6e5b85;
+    --text-faint: #b3a4c4;
+
+    --accent: #ff3aa3;
+    --accent-2: #ffc83a;
+    --accent-3: #5fd2ff;
+    --accent-4: #aa7bff;
+    --accent-soft: #ffe3f0;
+
+    --c-pink:   #ff5fa7;
+    --c-red:    #ff5757;
+    --c-yellow: #ffba00;
+    --c-green:  #2fc278;
+    --c-blue:   #2d97ff;
+    --c-purple: #b15dff;
+    --c-gray:   #c7b9da;
+
+    --shadow-sm: 0 2px 4px rgba(255,58,163,0.08), 0 1px 2px rgba(60,30,80,0.04);
+    --shadow-md: 0 6px 18px rgba(255,58,163,0.10), 0 2px 6px rgba(60,30,80,0.05);
+    --shadow-pink: 0 8px 24px -4px rgba(255,58,163,0.30);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Kosugi Maru", "Zen Kaku Gothic New", "Hiragino Maru Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Pop background with confetti dots + soft gradients */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(720px 520px at 92% -8%, rgba(255,58,163,0.18), transparent 60%),
+      radial-gradient(620px 460px at -6% 18%, rgba(95,210,255,0.14), transparent 60%),
+      radial-gradient(540px 420px at 50% 105%, rgba(255,200,58,0.16), transparent 60%),
+      radial-gradient(500px 400px at 18% 80%, rgba(170,123,255,0.12), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255,58,163,0.45) 1.5px, transparent 2.5px),
+      radial-gradient(circle at 78% 32%, rgba(95,210,255,0.55) 1.5px, transparent 2.5px),
+      radial-gradient(circle at 45% 65%, rgba(255,200,58,0.55) 1.5px, transparent 2.5px),
+      radial-gradient(circle at 88% 78%, rgba(170,123,255,0.5) 1.5px, transparent 2.5px),
+      radial-gradient(circle at 22% 88%, rgba(255,58,163,0.4) 1.5px, transparent 2.5px),
+      radial-gradient(circle at 62% 12%, rgba(170,123,255,0.45) 1.5px, transparent 2.5px);
+    background-size: 500px 500px, 480px 480px, 520px 520px, 460px 460px, 540px 540px, 500px 500px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+  }
+
+  /* Title bar */
+  .titlebar {
+    text-align: center;
+    padding: 36px 16px 24px;
+    position: relative;
+  }
+  .titlebar h1 {
+    font-family: "RocknRoll One", "Zen Kaku Gothic New", sans-serif;
+    font-size: clamp(30px, 6vw, 56px);
+    line-height: 1.15;
+    margin: 0;
+    letter-spacing: 0.005em;
+    color: var(--text);
+    position: relative;
+    display: inline-block;
+  }
+  .titlebar h1 .accent {
+    background: linear-gradient(135deg, var(--accent) 0%, #ff8fc4 50%, var(--accent-2) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 0;
+  }
+  .titlebar h1::before, .titlebar h1::after {
+    content: "♡";
+    position: absolute;
+    color: var(--accent);
+    font-size: 0.5em;
+    top: -10px;
+    opacity: 0.7;
+    animation: float 3s ease-in-out infinite;
+  }
+  .titlebar h1::before { left: -28px; animation-delay: 0s; }
+  .titlebar h1::after { right: -28px; color: var(--accent-2); animation-delay: 1.5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-8deg); }
+    50% { transform: translateY(-6px) rotate(8deg); }
+  }
+  .titlebar .deco {
+    margin-top: 20px;
+    display: flex; justify-content: center; gap: 8px;
+  }
+  .titlebar .deco span {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .titlebar .deco span:nth-child(1) { background: var(--accent); }
+  .titlebar .deco span:nth-child(2) { background: var(--accent-2); }
+  .titlebar .deco span:nth-child(3) { background: var(--accent-3); }
+  .titlebar .deco span:nth-child(4) { background: var(--accent-4); }
+  .titlebar .deco span:nth-child(5) { background: var(--c-green); }
+
+  /* Start screen */
+  .start-screen {
+    margin: 36px auto 0;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .step-card {
+    background: var(--bg-card);
+    border: 3px dashed rgba(255,58,163,0.4);
+    border-radius: 26px;
+    padding: 26px 26px 28px;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+    transition: opacity 0.3s, border-color 0.3s, transform 0.3s;
+  }
+  .step-card.disabled {
+    opacity: 0.55;
+    border-color: rgba(60,30,80,0.18);
+    pointer-events: none;
+  }
+  .step-card.done {
+    border-style: solid;
+    border-color: rgba(47,194,120,0.5);
+    background: linear-gradient(180deg, rgba(47,194,120,0.04), var(--bg-card));
+  }
+  .step-card::before {
+    content: "";
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 110px; height: 110px;
+    background: radial-gradient(circle, rgba(255,200,58,0.35), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .step-card::after {
+    content: "";
+    position: absolute;
+    bottom: -30px; left: -30px;
+    width: 90px; height: 90px;
+    background: radial-gradient(circle, rgba(95,210,255,0.28), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .step-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .step-badge {
+    display: inline-block;
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: white;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+  .step-card.disabled .step-badge {
+    background: var(--text-faint);
+  }
+  .step-card.done .step-badge {
+    background: linear-gradient(135deg, var(--c-green), #5dd998);
+  }
+  .step-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--c-green);
+    color: white;
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 16px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(47,194,120,0.4);
+  }
+  .step-card.done .step-check { display: inline-flex; }
+  .step-card h3 {
+    margin: 4px 0 6px;
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 19px;
+    color: var(--text);
+    position: relative;
+  }
+  .step-card p {
+    margin: 0 0 18px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    position: relative;
+  }
+  .step-status {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: "Kosugi Maru", sans-serif;
+    min-height: 18px;
+    position: relative;
+  }
+  .step-status.success { color: #1e7d44; font-weight: 700; }
+  .step-status.error { color: #c93338; }
+  .upload-card {
+    background: var(--bg-card);
+    border: 3px dashed rgba(255,58,163,0.4);
+    border-radius: 28px;
+    padding: 40px 28px 36px;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-card h3 {
+    margin: 0 0 8px;
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 19px;
+    color: var(--text);
+    position: relative;
+  }
+  .upload-card p {
+    margin: 0 0 22px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    position: relative;
+  }
+  .upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    padding: 13px 28px;
+    border-radius: 100px;
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .upload-btn:hover {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+  }
+  .upload-btn.primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #ff7ec0 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: var(--shadow-pink);
+    padding: 16px 32px;
+    font-size: 16px;
+  }
+  .upload-btn.primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 32px -4px rgba(255,58,163,0.45);
+  }
+  .upload-btn:active { transform: translateY(-1px) scale(1); }
+  .upload-btn input { display: none; }
+  .upload-btn .btn-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* Quiz screen */
+  .quiz-screen { display: none; }
+  .quiz-screen.active { display: block; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 4px;
+    margin: 22px 0 16px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto;
+    background: var(--bg-card);
+    border: 2px solid var(--line);
+    color: var(--text-dim);
+    padding: 9px 16px;
+    border-radius: 100px;
+    font-family: "Kosugi Maru", "Zen Kaku Gothic New", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 7px;
+    box-shadow: var(--shadow-sm);
+  }
+  .tab:hover {
+    border-color: rgba(255,58,163,0.5);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+  .tab.active {
+    background: linear-gradient(135deg, var(--accent) 0%, #ff7ec0 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: var(--shadow-pink);
+    transform: translateY(-1px);
+  }
+  .tab .num {
+    font-family: "DotGothic16", monospace;
+    font-size: 11px;
+    opacity: 0.85;
+  }
+
+  .stage {
+    background: var(--bg-card);
+    border: 2px solid var(--line);
+    border-radius: 28px;
+    padding: 32px 34px 38px;
+    box-shadow: var(--shadow-md);
+    min-height: 480px;
+    position: relative;
+  }
+  @media (max-width: 600px) {
+    .stage { padding: 24px 18px 28px; border-radius: 22px; }
+  }
+  .stage.fade-in { animation: fadeIn 0.4s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .stage-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 4px;
+    padding-bottom: 16px;
+    border-bottom: 2px dashed var(--line);
+  }
+  .stage-head .qno {
+    display: inline-block;
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: white;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+  .stage-head h2 {
+    font-family: "RocknRoll One", sans-serif;
+    font-size: clamp(20px, 3vw, 26px);
+    margin: 10px 0 0;
+    color: var(--text);
+  }
+  .stage-head .head-side {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .stage-body { padding-top: 24px; }
+
+  .head-controls {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+  }
+
+  /* Prev/Next */
+  .nav-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px;
+    gap: 14px;
+  }
+  .nav-btn {
+    background: var(--bg-card);
+    border: 2px solid var(--line-strong);
+    color: var(--text);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-family: "Kosugi Maru", "Zen Kaku Gothic New", sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .nav-btn.next {
+    background: linear-gradient(135deg, var(--accent) 0%, #ff7ec0 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: var(--shadow-pink);
+  }
+  .nav-btn.next:hover:not(:disabled) {
+    color: white;
+    box-shadow: 0 12px 28px -6px rgba(255,58,163,0.5);
+  }
+  .page-indicator {
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+  .page-indicator b {
+    color: var(--accent);
+    font-size: 22px;
+    font-weight: normal;
+  }
+
+  /* Heart bars */
+  .heart-list { display: flex; flex-direction: column; gap: 14px; }
+  .heart-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 70px;
+    gap: 14px; align-items: center;
+  }
+  @media (max-width: 600px) {
+    .heart-row { grid-template-columns: 90px 1fr 56px; gap: 10px; }
+  }
+  .heart-name {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+    font-family: "RocknRoll One", "Zen Kaku Gothic New", sans-serif;
+  }
+  .heart-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  }
+  .heart-bar {
+    height: 20px;
+    background: rgba(60,30,80,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .heart-bar > .fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .heart-count {
+    text-align: right;
+    font-family: "DotGothic16", monospace;
+    font-size: 14px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Generic ranking bars */
+  .rank-list { display: flex; flex-direction: column; gap: 11px; }
+  .rank-row {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 70px;
+    gap: 12px; align-items: center;
+  }
+  .rank-row.top1 .rank-pos {
+    background: linear-gradient(135deg, var(--accent-2), #ffd866);
+    color: white;
+  }
+  .rank-row.top2 .rank-pos {
+    background: linear-gradient(135deg, #c8c8d4, #e8e8ee);
+    color: var(--text);
+  }
+  .rank-row.top3 .rank-pos {
+    background: linear-gradient(135deg, #c08855, #e0a878);
+    color: white;
+  }
+  .rank-pos {
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 13px;
+    color: var(--text-faint);
+    text-align: center;
+    background: var(--bg-soft);
+    border-radius: 100px;
+    padding: 4px 0;
+    line-height: 1;
+  }
+  .rank-bar-wrap { position: relative; min-width: 0; }
+  .rank-name {
+    font-size: 14px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .rank-bar {
+    height: 11px;
+    background: rgba(60,30,80,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .rank-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #ff8fc4);
+    transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-radius: 6px;
+  }
+  .rank-row.top1 .rank-bar-fill {
+    background: linear-gradient(90deg, var(--accent-2), #ffd866);
+  }
+  .rank-count {
+    text-align: right;
+    font-family: "DotGothic16", monospace;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+
+  /* Discrete distribution (cost) */
+  .dist {
+    display: flex;
+    gap: 12px;
+    align-items: end;
+    padding: 36px 4px 4px;
+    min-height: 240px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,58,163,0.4) transparent;
+  }
+  .dist::-webkit-scrollbar { height: 6px; }
+  .dist::-webkit-scrollbar-thumb { background: rgba(255,58,163,0.4); border-radius: 3px; }
+  .dist-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1 0 56px;
+    min-width: 56px;
+  }
+  .dist-bar {
+    width: 100%;
+    max-width: 70px;
+    background: linear-gradient(180deg, var(--accent), #ff7ec0);
+    border-radius: 10px 10px 4px 4px;
+    box-shadow: 0 4px 14px -2px rgba(255,58,163,0.35);
+    transition: height 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    min-height: 6px;
+    position: relative;
+  }
+  .dist-bar::after {
+    content: attr(data-val);
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: "DotGothic16", monospace;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .dist-label {
+    font-family: "DotGothic16", monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+  .dist-label .key {
+    display: block;
+    font-size: 17px;
+    color: var(--text);
+    font-weight: 500;
+    font-family: "RocknRoll One", sans-serif;
+  }
+
+  /* Card grid */
+  .card-grid {
+    display: grid;
+    gap: 16px;
+  }
+  .card-grid.members {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  .card-grid.lives {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .deck-card {
+    background: var(--bg-card);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 10px;
+    display: flex; flex-direction: column;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+  .deck-card:hover {
+    transform: translateY(-4px) rotate(-0.5deg);
+    border-color: var(--accent);
+    box-shadow: 0 12px 28px -10px rgba(255,58,163,0.4);
+  }
+  .deck-card .img-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(255,58,163,0.06), rgba(170,123,255,0.06));
+  }
+  .deck-card.member-card .img-wrap { aspect-ratio: 5 / 7; }
+  .deck-card.live-card .img-wrap { aspect-ratio: 7 / 5; }
+  .deck-card img {
+    width: 100%; height: 100%;
+    display: block;
+    color: transparent;
+  }
+  .deck-card.member-card img { object-fit: cover; }
+  .deck-card.live-card img { object-fit: contain; }
+  .deck-card img.broken { display: none; }
+  .deck-card .img-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-size: 11px;
+    font-family: "DotGothic16", monospace;
+    letter-spacing: 0.1em;
+  }
+  .deck-card .pos {
+    position: absolute;
+    top: 6px; left: 6px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(4px);
+    color: var(--accent);
+    font-family: "RocknRoll One", monospace;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 2px solid rgba(255,58,163,0.35);
+    z-index: 2;
+    box-shadow: var(--shadow-sm);
+  }
+  .deck-card .pos.gold {
+    background: linear-gradient(135deg, var(--accent-2), #ffd866);
+    color: white;
+    border-color: white;
+    box-shadow: 0 3px 10px rgba(255,200,58,0.5);
+  }
+  .deck-card .pos.silver {
+    background: linear-gradient(135deg, #c8c8d4, #e8e8ee);
+    color: var(--text);
+    border-color: white;
+    box-shadow: 0 3px 10px rgba(180,180,200,0.5);
+  }
+  .deck-card .pos.bronze {
+    background: linear-gradient(135deg, #c08855, #e0a878);
+    color: white;
+    border-color: white;
+    box-shadow: 0 3px 10px rgba(192,136,85,0.5);
+  }
+  .deck-card .count-badge {
+    position: absolute;
+    bottom: 6px; right: 6px;
+    background: linear-gradient(135deg, var(--accent), #ff7ec0);
+    color: white;
+    font-family: "RocknRoll One", sans-serif;
+    font-size: 13px;
+    padding: 4px 11px;
+    border-radius: 100px;
+    box-shadow: 0 3px 10px rgba(255,58,163,0.4);
+    z-index: 2;
+  }
+  .deck-card .meta {
+    margin-top: 10px;
+    padding: 0 4px 2px;
+  }
+  .deck-card .name {
+    font-size: 13px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  /* Toggle */
+  .view-toggle {
+    display: inline-flex;
+    background: var(--bg-soft);
+    border: 2px solid var(--line);
+    border-radius: 100px;
+    padding: 3px;
+  }
+  .view-toggle button {
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: "Kosugi Maru", "Zen Kaku Gothic New", sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .view-toggle button.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* Notice */
+  .notice {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    border: 2px solid;
+  }
+  .notice.error {
+    background: rgba(255, 87, 87, 0.08);
+    border-color: rgba(255, 87, 87, 0.35);
+    color: #c93338;
+  }
+
+  /* Search input */
+  .search-input {
+    background: var(--bg-card);
+    border: 2px solid var(--line);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-family: "Kosugi Maru", "Zen Kaku Gothic New", sans-serif;
+    font-size: 13px;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-faint); }
+
+  /* Series colors */
+  .ser-llss { background: linear-gradient(90deg, #ff8c00, #ffae42); }
+  .ser-ssss { background: linear-gradient(90deg, #ff4dba, #ff8fc4); }
+  .ser-nzk  { background: linear-gradient(90deg, #ffba00, #ffd866); }
+  .ser-aqu  { background: linear-gradient(90deg, #2d8cf0, #6dd5ed); }
+  .ser-hns  { background: linear-gradient(90deg, #a64dff, #d4a3ff); }
+  .ser-llo  { background: linear-gradient(90deg, #b9b9b9, #e0e0e0); }
+  .ser-default { background: linear-gradient(90deg, var(--accent), #ff8fc4); }
+
+  /* Series chips */
+  .series-list { display: flex; flex-direction: column; gap: 13px; }
+  .series-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 60px;
+    gap: 12px; align-items: center;
+  }
+  .series-bar-wrap { min-width: 0; }
+  .series-name {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .series-bar {
+    height: 13px;
+    background: rgba(60,30,80,0.06);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .series-bar > div {
+    height: 100%;
+    transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-radius: 7px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+    font-family: "DotGothic16", monospace;
+  }
+  .loading.error { color: #c93338; }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 18px;
+    color: var(--text-faint);
+    font-size: 11px;
+    font-family: "DotGothic16", monospace;
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+  .footer .hearts {
+    color: var(--accent);
+    margin: 0 8px;
+  }
+
+  .reupload-btn {
+    background: var(--bg-card);
+    border: 2px solid var(--line-strong);
+    color: var(--text-dim);
+    font-family: "Kosugi Maru", "Zen Kaku Gothic New", sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center;
+  }
+  .reupload-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .reupload-btn input { display: none; }
+
+  .quiz-toolbar {
+    display: flex; justify-content: flex-end; align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .quiz-toolbar .tally {
+    font-family: "Kosugi Maru", "Zen Kaku Gothic New", sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-right: auto;
+  }
+  .quiz-toolbar .tally b {
+    color: var(--accent);
+    font-weight: normal;
+    font-size: 16px;
+    font-family: "RocknRoll One", sans-serif;
+    margin: 0 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="titlebar">
+    <h1>ラブカライフ！<span class="accent">CUP</span><br>予想クイズ結果発表</h1>
+    <div class="deco"><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="start-screen" id="start-screen">
+    <div class="step-card" id="step-1">
+      <div class="step-head">
+        <span class="step-badge">STEP 1</span>
+        <span class="step-check" id="step-1-check">✓</span>
+      </div>
+      <h3>カードDB を読み込む</h3>
+      <p>cards.json（カードマスターデータ）を選択してください</p>
+      <label class="upload-btn">
+        <span class="btn-icon">📁</span>cards.json を選ぶ
+        <input type="file" id="cards-upload" accept=".json,application/json" />
+      </label>
+      <div class="step-status" id="cards-status"></div>
+    </div>
+
+    <div class="step-card disabled" id="step-2">
+      <div class="step-head">
+        <span class="step-badge">STEP 2</span>
+        <span class="step-check" id="step-2-check">✓</span>
+      </div>
+      <h3>デッキリストを読み込む</h3>
+      <p>大会のデッキリストCSVを選択すると発表開始！</p>
+      <label class="upload-btn primary">
+        <span class="btn-icon">♪</span>CSVを選んで発表開始
+        <input type="file" id="csv-upload" accept=".csv,text/csv" disabled />
+      </label>
+      <div class="step-status" id="csv-status"></div>
+    </div>
+  </div>
+
+  <div class="quiz-screen" id="quiz-screen">
+    <div class="quiz-toolbar">
+      <div class="tally">参加者 <b id="t-players">—</b>名 ／ 集計 <b id="t-cards">—</b>枚</div>
+      <label class="reupload-btn">
+        別のCSVを読み込む
+        <input type="file" id="csv-reupload" accept=".csv,text/csv" />
+      </label>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="stage" id="stage"></div>
+    <div class="nav-bar">
+      <button class="nav-btn prev" id="btn-prev">← 前の結果</button>
+      <div class="page-indicator"><b id="pn-cur">1</b> / <span id="pn-total">7</span></div>
+      <button class="nav-btn next" id="btn-next">次の結果 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+let CARDS = null;
+let DECKS = [];
+let AGG = null;
+let CUR_PAGE = 0;
+
+// ============== CONSTANTS ==============
+const HEART_COLORS = [
+  { key: "b_heart01", label: "桃",       color: "var(--c-pink)"   },
+  { key: "b_heart02", label: "赤",       color: "var(--c-red)"    },
+  { key: "b_heart03", label: "黄",       color: "var(--c-yellow)" },
+  { key: "b_heart04", label: "緑",       color: "var(--c-green)"  },
+  { key: "b_heart05", label: "青",       color: "var(--c-blue)"   },
+  { key: "b_heart06", label: "紫",       color: "var(--c-purple)" },
+  { key: "b_none",   label: "非ブレード", color: "var(--c-gray)"   },
+];
+const HEART_KEYS = ["b_heart01","b_heart02","b_heart03","b_heart04","b_heart05","b_heart06"];
+
+const SERIES_CLASS = {
+  "ラブライブ！": "ser-llo",
+  "ラブライブ！サンシャイン!!": "ser-aqu",
+  "ラブライブ！虹ヶ咲学園スクールアイドル同好会": "ser-nzk",
+  "ラブライブ！スーパースター!!": "ser-ssss",
+  "蓮ノ空女学院スクールアイドルクラブ": "ser-hns",
+};
+
+function normalizeUnit(u) {
+  if (!u) return null;
+  return u.replace(/！/g, "!");
+}
+
+// ============== AGGREGATION ==============
+function buildCardLookup(cards) {
+  // The deck CSV uses card_no without rarity suffix (e.g. 'LL-bp2-001'),
+  // but cards.json may key on the full card_no with rarity (e.g. 'LL-bp2-001-R＋').
+  // Build a unified lookup: keep direct full keys AND add base-stripped keys.
+  const lookup = Object.create(null);
+  for (const k of Object.keys(cards)) {
+    const card = cards[k];
+    if (!(k in lookup)) lookup[k] = card;
+    const parts = k.split("-");
+    if (parts.length > 1) {
+      const base = parts.slice(0, -1).join("-");
+      if (!(base in lookup)) lookup[base] = card;
+    }
+  }
+  return lookup;
+}
+
+function aggregate(decks, cards) {
+  const LOOKUP = buildCardLookup(cards);
+  const cost = new Map();
+  const unit = new Map();
+  const series = new Map();
+  const product = new Map();
+  const heart = new Map();
+  const liveCount = new Map();
+  const liveMeta = new Map();
+  const memberCount = new Map();
+  const memberMeta = new Map();
+  const memberKeyed = new Map();   // normKey -> { display, count, hasSpace, img }
+
+  let totalCards = 0;
+  const uniqueSet = new Set();
+
+  for (const d of decks) {
+    for (const e of d.entries) {
+      const c = LOOKUP[e.card_no];
+      const cnt = e.count;
+      totalCards += cnt;
+      uniqueSet.add(e.card_no);
+
+      if (!c) continue;
+
+      if (c.product) product.set(c.product, (product.get(c.product) || 0) + cnt);
+
+      if (c.series) {
+        for (const s of c.series.split(/\n/).map(x => x.trim()).filter(Boolean)) {
+          series.set(s, (series.get(s) || 0) + cnt);
+        }
+      }
+
+      if (c.type === "メンバー") {
+        if (c.cost != null) cost.set(c.cost, (cost.get(c.cost) || 0) + cnt);
+
+        const u = normalizeUnit(c.unit);
+        if (u) unit.set(u, (unit.get(u) || 0) + cnt);
+
+        const bh = c.blade_heart || {};
+        let bhSum = 0;
+        for (const k of HEART_KEYS) {
+          const v = bh[k] || 0;
+          if (v) {
+            heart.set(k, (heart.get(k) || 0) + v * cnt);
+            bhSum += v;
+          }
+        }
+        if (bhSum === 0) {
+          heart.set("b_none", (heart.get("b_none") || 0) + cnt);
+        }
+
+        // Members merged by NAME — ignore spaces to merge variants like
+        // "矢澤 にこ" and "矢澤にこ". Prefer the spaced form for display.
+        const rawName = c.name;
+        const key = rawName.replace(/[\s\u3000]/g, "");
+        const existing = memberKeyed.get(key);
+        const hasSpace = /[\s\u3000]/.test(rawName);
+        if (existing) {
+          existing.count += cnt;
+          if (!existing.hasSpace && hasSpace) {
+            existing.display = rawName;
+            existing.hasSpace = true;
+          }
+          if (!existing.img && c.img) existing.img = c.img;
+        } else {
+          memberKeyed.set(key, {
+            display: rawName,
+            count: cnt,
+            hasSpace,
+            img: c.img || null,
+          });
+        }
+      } else if (c.type === "ライブ") {
+        const name = c.name;
+        liveCount.set(name, (liveCount.get(name) || 0) + cnt);
+        if (!liveMeta.has(name) && c.img) liveMeta.set(name, { img: c.img });
+        else if (!liveMeta.has(name)) liveMeta.set(name, {});
+      }
+    }
+  }
+
+  // Finalize member maps using the keyed (space-normalized) data
+  for (const v of memberKeyed.values()) {
+    memberCount.set(v.display, v.count);
+    memberMeta.set(v.display, { img: v.img });
+  }
+
+  return {
+    cost, unit, series, product, heart,
+    liveCount, liveMeta,
+    memberCount, memberMeta,
+    totals: {
+      players: decks.length,
+      totalCards,
+      uniqueCards: uniqueSet.size,
+    },
+  };
+}
+
+// ============== HELPERS ==============
+function fmt(n) { return n.toLocaleString("en-US"); }
+function el(tag, props = {}, children = []) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") e.className = v;
+    else if (k === "style") e.setAttribute("style", v);
+    else if (k === "data") {
+      for (const [dk, dv] of Object.entries(v)) e.dataset[dk] = dv;
+    }
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === "html") e.innerHTML = v;
+    else if (v != null) e.setAttribute(k, v);
+  }
+  for (const c of [].concat(children)) {
+    if (c == null) continue;
+    if (typeof c === "string") e.appendChild(document.createTextNode(c));
+    else e.appendChild(c);
+  }
+  return e;
+}
+function rankClass(i) {
+  if (i === 0) return "rank-row top1";
+  if (i === 1) return "rank-row top2";
+  if (i === 2) return "rank-row top3";
+  return "rank-row";
+}
+function rankBadge(i) {
+  if (i === 0) return "pos gold";
+  if (i === 1) return "pos silver";
+  if (i === 2) return "pos bronze";
+  return "pos";
+}
+
+// ============== RENDERERS ==============
+function renderHeart(agg) {
+  const heart = agg.heart;
+  const max = Math.max(1, ...Array.from(heart.values()));
+  const wrap = el("div", { class: "heart-list" });
+  for (const { key, label, color } of HEART_COLORS) {
+    const v = heart.get(key) || 0;
+    const pct = max ? (v / max) * 100 : 0;
+    wrap.appendChild(el("div", { class: "heart-row" }, [
+      el("div", { class: "heart-name" }, [
+        el("span", { class: "heart-dot", style: `background: ${color};` }),
+        label,
+      ]),
+      el("div", { class: "heart-bar" }, [
+        el("div", { class: "fill", style: `width: ${pct}%; background: ${color};` }),
+      ]),
+      el("div", { class: "heart-count" }, fmt(v)),
+    ]));
+  }
+  return wrap;
+}
+
+function renderCost(agg) {
+  const map = agg.cost;
+  const keys = Array.from(map.keys()).sort((a, b) => a - b);
+  const max = Math.max(1, ...Array.from(map.values()));
+  const dist = el("div", { class: "dist" });
+  for (const k of keys) {
+    const v = map.get(k);
+    const h = (v / max) * 180 + 10;
+    dist.appendChild(el("div", { class: "dist-col" }, [
+      el("div", { class: "dist-bar", style: `height: ${h}px;`, data: { val: fmt(v) } }),
+      el("div", { class: "dist-label" }, [ el("span", { class: "key" }, String(k)) ]),
+    ]));
+  }
+  return dist;
+}
+
+function renderRankBars(map) {
+  const items = Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...items.map(x => x[1]));
+  const list = el("div", { class: "rank-list" });
+  items.forEach(([name, v], i) => {
+    list.appendChild(el("div", { class: rankClass(i) }, [
+      el("div", { class: "rank-pos" }, String(i + 1).padStart(2, "0")),
+      el("div", { class: "rank-bar-wrap" }, [
+        el("div", { class: "rank-name", title: name }, name),
+        el("div", { class: "rank-bar" }, [
+          el("div", { class: "rank-bar-fill", style: `width: ${(v / max) * 100}%;` }),
+        ]),
+      ]),
+      el("div", { class: "rank-count" }, fmt(v)),
+    ]));
+  });
+  return list;
+}
+
+function renderSeriesBars(map) {
+  const items = Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...items.map(x => x[1]));
+  const list = el("div", { class: "series-list" });
+  items.forEach(([name, v]) => {
+    const cls = SERIES_CLASS[name] || "ser-default";
+    list.appendChild(el("div", { class: "series-row" }, [
+      el("div", { class: "series-bar-wrap" }, [
+        el("div", { class: "series-name", title: name }, name),
+        el("div", { class: "series-bar" }, [
+          el("div", { class: cls, style: `width: ${(v / max) * 100}%;` }),
+        ]),
+      ]),
+      el("div", { class: "rank-count" }, fmt(v)),
+    ]));
+  });
+  return list;
+}
+
+function renderCardGrid(countMap, metaMap, kind, opts = {}) {
+  const initialLimit = opts.initialLimit || 18;
+  let limit = initialLimit;
+  let filter = "";
+  const allEntries = Array.from(countMap.entries()).sort((a, b) => b[1] - a[1]);
+
+  const grid = el("div", { class: `card-grid ${kind}` });
+
+  function rebuild() {
+    grid.innerHTML = "";
+    let entries = allEntries;
+    if (filter) {
+      const q = filter.toLowerCase();
+      entries = entries.filter(([name]) => name.toLowerCase().includes(q));
+    }
+    const showing = entries.slice(0, limit);
+    showing.forEach(([name, v], i) => {
+      const meta = metaMap.get(name) || {};
+      const imgWrap = el("div", { class: "img-wrap" }, [
+        el("span", { class: rankBadge(i) }, "#" + (i + 1)),
+        el("div", { class: "img-fallback" }, "NO IMAGE"),
+      ]);
+      if (meta.img) {
+        const img = el("img", {
+          src: meta.img, alt: "", loading: "lazy",
+          referrerpolicy: "no-referrer",
+          onerror(e) { e.target.classList.add("broken"); },
+        });
+        imgWrap.appendChild(img);
+      }
+      imgWrap.appendChild(el("span", { class: "count-badge" }, fmt(v) + " 枚"));
+
+      const dc = el("div", { class: `deck-card ${kind === "members" ? "member-card" : "live-card"}` }, [
+        imgWrap,
+        el("div", { class: "meta" }, [
+          el("div", { class: "name", title: name }, name),
+        ]),
+      ]);
+      grid.appendChild(dc);
+    });
+    if (showing.length === 0) {
+      grid.appendChild(el("div", { class: "loading" }, "該当するカードがありません"));
+    }
+  }
+
+  const toggle = el("div", { class: "view-toggle" }, [
+    el("button", { class: "active", onclick(e) {
+      [...toggle.children].forEach(b => b.classList.remove("active"));
+      e.target.classList.add("active");
+      limit = initialLimit; rebuild();
+    } }, "TOP " + initialLimit),
+    el("button", { onclick(e) {
+      [...toggle.children].forEach(b => b.classList.remove("active"));
+      e.target.classList.add("active");
+      limit = Infinity; rebuild();
+    } }, "すべて"),
+  ]);
+
+  const search = el("input", {
+    class: "search-input",
+    type: "text",
+    placeholder: kind === "members" ? "メンバー名で絞り込み…" : "ライブ名で絞り込み…",
+    oninput(e) { filter = e.target.value; rebuild(); },
+  });
+
+  rebuild();
+  return { grid, controls: el("div", { class: "head-controls" }, [search, toggle]) };
+}
+
+// ============== QUIZ PAGES ==============
+// Order: シリーズ → プロダクト → メンバー → ユニット → ライブ → ハート → コスト
+const PAGES = [
+  { id: "series",  title: "シリーズ別ランキング", short: "シリーズ",
+    build(agg) { return { body: renderSeriesBars(agg.series) }; } },
+  { id: "product", title: "商品別ランキング", short: "商品",
+    build(agg) { return { body: renderRankBars(agg.product) }; } },
+  { id: "member",  title: "メンバー使用率", short: "メンバー",
+    build(agg) {
+      const r = renderCardGrid(agg.memberCount, agg.memberMeta, "members");
+      return { body: r.grid, controls: r.controls };
+    } },
+  { id: "unit",    title: "ユニット別ランキング", short: "ユニット",
+    build(agg) { return { body: renderRankBars(agg.unit) }; } },
+  { id: "live",    title: "ライブカード使用率", short: "ライブ",
+    build(agg) {
+      const r = renderCardGrid(agg.liveCount, agg.liveMeta, "lives", { initialLimit: 20 });
+      return { body: r.grid, controls: r.controls };
+    } },
+  { id: "heart",   title: "ブレードハート ランキング", short: "ハート",
+    build(agg) { return { body: renderHeart(agg) }; } },
+  { id: "cost",    title: "コスト分布", short: "コスト",
+    build(agg) { return { body: renderCost(agg) }; } },
+];
+
+// ============== TAB / STAGE ==============
+function renderTabs() {
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = "";
+  PAGES.forEach((p, i) => {
+    const btn = el("button", {
+      class: "tab" + (i === CUR_PAGE ? " active" : ""),
+      onclick() { goTo(i); },
+    }, [
+      el("span", { class: "num" }, "Q" + (i + 1)),
+      p.short,
+    ]);
+    tabs.appendChild(btn);
+  });
+}
+
+function renderStage() {
+  const stage = document.getElementById("stage");
+  const p = PAGES[CUR_PAGE];
+  const built = p.build(AGG);
+  stage.innerHTML = "";
+  stage.classList.remove("fade-in");
+  void stage.offsetWidth;
+  stage.classList.add("fade-in");
+
+  const headSide = el("div", { class: "head-side" }, [
+    el("span", { class: "qno" }, `Q${CUR_PAGE + 1} / ${PAGES.length}`),
+    el("h2", {}, p.title),
+  ]);
+  const head = el("div", { class: "stage-head" }, [
+    headSide,
+    built.controls || null,
+  ]);
+  stage.appendChild(head);
+  stage.appendChild(el("div", { class: "stage-body" }, built.body));
+
+  document.getElementById("pn-cur").textContent = String(CUR_PAGE + 1);
+  document.getElementById("pn-total").textContent = String(PAGES.length);
+  document.getElementById("btn-prev").disabled = CUR_PAGE === 0;
+  document.getElementById("btn-next").disabled = CUR_PAGE === PAGES.length - 1;
+
+  const tabs = document.getElementById("tabs").children;
+  for (let i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle("active", i === CUR_PAGE);
+  }
+  if (tabs[CUR_PAGE]) {
+    tabs[CUR_PAGE].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }
+}
+
+function goTo(i) {
+  if (i < 0 || i >= PAGES.length) return;
+  CUR_PAGE = i;
+  renderStage();
+  document.getElementById("stage").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function startQuiz(agg) {
+  AGG = agg;
+  CUR_PAGE = 0;
+  document.getElementById("t-players").textContent = fmt(agg.totals.players);
+  document.getElementById("t-cards").textContent = fmt(agg.totals.totalCards);
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("quiz-screen").classList.add("active");
+  renderTabs();
+  renderStage();
+}
+
+// ============== CSV ==============
+function parseCSV(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i++; }
+        else inQuotes = false;
+      } else cell += ch;
+    } else {
+      if (ch === '"') inQuotes = true;
+      else if (ch === ",") { row.push(cell); cell = ""; }
+      else if (ch === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+      else if (ch === "\r") { /* skip */ }
+      else cell += ch;
+    }
+  }
+  if (cell.length > 0 || row.length > 0) { row.push(cell); rows.push(row); }
+  while (rows.length && rows[rows.length-1].every(c => !c)) rows.pop();
+  return rows;
+}
+
+function rowsToDecks(rows) {
+  const decks = [];
+  for (const row of rows) {
+    if (!row[0]) continue;
+    const player = row[0];
+    const code = row[1] || "";
+    const entries = [];
+    for (let i = 2; i + 2 < row.length; i += 3) {
+      const card_no = (row[i] || "").trim();
+      const name = row[i + 1] || "";
+      const cnt = parseInt(row[i + 2], 10);
+      if (card_no && Number.isFinite(cnt) && cnt > 0) {
+        entries.push({ card_no, name, count: cnt });
+      }
+    }
+    if (entries.length > 0) decks.push({ player, code, entries });
+  }
+  return decks;
+}
+
+async function handleCardsUpload(file) {
+  const status = document.getElementById("cards-status");
+  const step1 = document.getElementById("step-1");
+  const step2 = document.getElementById("step-2");
+  const csvInput = document.getElementById("csv-upload");
+  status.className = "step-status";
+  status.textContent = "";
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+      throw new Error("カードデータの形式が不正です");
+    }
+    const keys = Object.keys(obj);
+    if (keys.length === 0) {
+      throw new Error("カードデータが空です");
+    }
+    // sanity check: at least some entries should look like card records
+    let validShape = 0;
+    for (const k of keys.slice(0, 10)) {
+      const c = obj[k];
+      if (c && typeof c === "object" && (c.name || c.type)) validShape++;
+    }
+    if (validShape === 0) {
+      throw new Error("cards.json の形式が想定と異なります");
+    }
+    CARDS = obj;
+    step1.classList.add("done");
+    step2.classList.remove("disabled");
+    csvInput.disabled = false;
+    status.className = "step-status success";
+    status.textContent = `✓ ${keys.length.toLocaleString()} 枚のカードを読み込みました`;
+  } catch (err) {
+    CARDS = null;
+    step1.classList.remove("done");
+    step2.classList.add("disabled");
+    csvInput.disabled = true;
+    status.className = "step-status error";
+    status.textContent = "読み込みに失敗しました：" + err.message;
+  }
+}
+
+async function handleDeckUpload(file, statusEl) {
+  if (!file) return;
+  const status = statusEl;
+  if (status) {
+    status.className = "step-status";
+    status.textContent = "";
+  }
+  if (!CARDS) {
+    if (status) {
+      status.className = "step-status error";
+      status.textContent = "先に STEP 1 で cards.json を読み込んでください";
+    }
+    return;
+  }
+  try {
+    const text = await file.text();
+    const rows = parseCSV(text);
+    const newDecks = rowsToDecks(rows);
+    if (newDecks.length === 0) throw new Error("デッキが見つかりませんでした。CSV形式を確認してください。");
+    const agg = aggregate(newDecks, CARDS);
+    // Sanity check: did anything actually match cards.json?
+    const memberTotal = Array.from(agg.memberCount.values()).reduce((a, b) => a + b, 0);
+    const liveTotal = Array.from(agg.liveCount.values()).reduce((a, b) => a + b, 0);
+    if (memberTotal === 0 && liveTotal === 0) {
+      throw new Error("カードがcards.jsonと一致しません。STEP1で正しいcards.jsonを読み込んだか確認してください。");
+    }
+    DECKS = newDecks;
+    startQuiz(agg);
+  } catch (err) {
+    if (status) {
+      status.className = "step-status error";
+      status.textContent = "読み込みに失敗しました：" + err.message;
+    } else {
+      alert("読み込みに失敗しました：" + err.message);
+    }
+  }
+}
+
+document.getElementById("cards-upload").addEventListener("change", async (e) => {
+  await handleCardsUpload(e.target.files[0]);
+  e.target.value = "";
+});
+
+document.getElementById("csv-upload").addEventListener("change", async (e) => {
+  await handleDeckUpload(e.target.files[0], document.getElementById("csv-status"));
+  e.target.value = "";
+});
+
+document.getElementById("csv-reupload").addEventListener("change", async (e) => {
+  await handleDeckUpload(e.target.files[0], null);
+  e.target.value = "";
+});
+
+document.getElementById("btn-prev").addEventListener("click", () => goTo(CUR_PAGE - 1));
+document.getElementById("btn-next").addEventListener("click", () => goTo(CUR_PAGE + 1));
+
+document.addEventListener("keydown", (e) => {
+  if (!document.getElementById("quiz-screen").classList.contains("active")) return;
+  if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+  if (e.key === "ArrowLeft") goTo(CUR_PAGE - 1);
+  else if (e.key === "ArrowRight") goTo(CUR_PAGE + 1);
+});
+</script>
+</body>
+</html>
