@@ -136,6 +136,14 @@
   .titlebar .deco span:nth-child(3) { background: var(--accent-3); }
   .titlebar .deco span:nth-child(4) { background: var(--accent-4); }
   .titlebar .deco span:nth-child(5) { background: var(--c-green); }
+  .titlebar .build-stamp {
+    margin-top: 12px;
+    font-family: "DotGothic16", monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.12em;
+    opacity: 0.6;
+  }
 
   /* Start screen */
   .start-screen {
@@ -795,6 +803,7 @@
   .ser-aqu  { background: linear-gradient(90deg, #2d8cf0, #6dd5ed); }
   .ser-hns  { background: linear-gradient(90deg, #a64dff, #d4a3ff); }
   .ser-llo  { background: linear-gradient(90deg, #b9b9b9, #e0e0e0); }
+  .ser-other { background: linear-gradient(90deg, #8a7d99, #b3a4c4); }
   .ser-default { background: linear-gradient(90deg, var(--accent), #ff8fc4); }
 
   /* Series chips */
@@ -895,6 +904,7 @@
   <div class="titlebar">
     <h1>ラブカライフ！<span class="accent">CUP</span><br>予想クイズ結果発表</h1>
     <div class="deco"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="build-stamp">build 2026-05-04 / v10</div>
   </div>
 
   <div class="start-screen" id="start-screen">
@@ -971,6 +981,7 @@ const SERIES_CLASS = {
   "ラブライブ！虹ヶ咲学園スクールアイドル同好会": "ser-nzk",
   "ラブライブ！スーパースター!!": "ser-ssss",
   "蓮ノ空女学院スクールアイドルクラブ": "ser-hns",
+  "その他": "ser-other",
 };
 
 function normalizeUnit(u) {
@@ -1024,9 +1035,24 @@ function aggregate(decks, cards) {
       if (c.product) product.set(c.product, (product.get(c.product) || 0) + cnt);
 
       if (c.series) {
-        for (const s of c.series.split(/\n/).map(x => x.trim()).filter(Boolean)) {
-          series.set(s, (series.get(s) || 0) + cnt);
+        const KNOWN_SERIES = new Set([
+          "ラブライブ！",
+          "ラブライブ！サンシャイン!!",
+          "ラブライブ！虹ヶ咲学園スクールアイドル同好会",
+          "ラブライブ！スーパースター!!",
+          "蓮ノ空女学院スクールアイドルクラブ",
+        ]);
+        const seriesList = c.series.split(/\n/).map(x => x.trim()).filter(Boolean);
+        const matched = seriesList.filter(s => KNOWN_SERIES.has(s));
+        if (matched.length > 0) {
+          for (const s of matched) {
+            series.set(s, (series.get(s) || 0) + cnt);
+          }
+        } else {
+          series.set("その他", (series.get("その他") || 0) + cnt);
         }
+      } else {
+        series.set("その他", (series.get("その他") || 0) + cnt);
       }
 
       if (c.type === "メンバー") {
@@ -1188,7 +1214,12 @@ function renderRankBars(map) {
 }
 
 function renderSeriesBars(map) {
-  const items = Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  const items = Array.from(map.entries()).sort((a, b) => {
+    // Always pin "その他" to the bottom regardless of count
+    if (a[0] === "その他" && b[0] !== "その他") return 1;
+    if (b[0] === "その他" && a[0] !== "その他") return -1;
+    return b[1] - a[1];
+  });
   const max = Math.max(1, ...items.map(x => x[1]));
   const list = el("div", { class: "series-list" });
   items.forEach(([name, v]) => {
@@ -1485,6 +1516,13 @@ async function handleDeckUpload(file, statusEl) {
       throw new Error("カードがcards.jsonと一致しません。STEP1で正しいcards.jsonを読み込んだか確認してください。");
     }
     DECKS = newDecks;
+    // Diagnostic info — open DevTools console to verify
+    console.log("[ラブカライフ! CUP] Aggregation summary:");
+    console.log("  プレイヤー数:", agg.totals.players);
+    console.log("  集計枚数:", agg.totals.totalCards);
+    console.log("  シリーズ:", Array.from(agg.series.entries()).sort((a,b)=>b[1]-a[1]));
+    console.log("  ユニット:", Array.from(agg.unit.entries()).sort((a,b)=>b[1]-a[1]).slice(0, 10));
+    console.log("  メンバー TOP 10:", Array.from(agg.memberCount.entries()).sort((a,b)=>b[1]-a[1]).slice(0, 10));
     startQuiz(agg);
   } catch (err) {
     if (status) {
