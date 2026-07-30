@@ -132,7 +132,7 @@
 
     <button id="menu-btn" title="操作パネルを開く">⚙️</button>
 
-    <div id="timer-display">25:00</div>
+    <div id="timer-display">30:00</div>
 
     <div id="control-screen">
         <h2 style="margin:0; color:#fff; font-size: 2rem;">操作パネル</h2>
@@ -146,7 +146,7 @@
         <div class="settings-area">
             <div class="setting-item">
                 <label>初期時間 (MM:SS)</label>
-                <input type="text" id="initial-time-input" value="25:00">
+                <input type="text" id="initial-time-input" value="30:00">
             </div>
             
             <hr>
@@ -178,8 +178,8 @@
         const colorInput = document.getElementById('color-input');
         const bgInput = document.getElementById('bg-input');
 
-        // 変数化（デフォルト25分）
-        let totalSeconds = 25 * 60; 
+        // 変数化（デフォルト30分）
+        let totalSeconds = 30 * 60; 
         let currentSeconds = totalSeconds;
         let timerInterval = null;
         let audioTimeoutId = null; 
@@ -201,7 +201,7 @@
                 const s = parseInt(parts[1], 10);
                 if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
             }
-            return 25 * 60; // 不正な値なら25分に戻す
+            return 30 * 60; // 不正な値なら30分に戻す
         }
 
         // --- 音声再生ロジック（1回目再生 → 5秒待機 → 2回目再生） ---
