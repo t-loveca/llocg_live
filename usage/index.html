@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ラブカ 使用率ランキング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Oswald:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF7FD;
+  --paper:#FFFFFF;
+  --ink:#1B1030;
+  --ink-mid:#4A4160;
+  --ink-mute:#857D9A;
+  --line:#E7DEEF;
+  --line-soft:#F2ECF6;
+  --s-ll:#E8508E;
+  --s-ls:#1FA0D8;
+  --s-ln:#EF8A22;
+  --s-lsp:#D6A50F;
+  --s-lhs:#7B5BD6;
+  --s-any:#5B6470;
+  --num:"Big Shoulders Display","Oswald","Zen Kaku Gothic New",sans-serif;
+  --jp:"Zen Kaku Gothic New",system-ui,sans-serif;
+  --mono:"Roboto Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--jp);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+}
+.wrap{max-width:920px;margin:0 auto;padding:0 20px 80px}
+
+/* ---------- masthead ---------- */
+.mast{padding:56px 0 22px}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-mute);margin:0 0 14px;
+}
+h1{
+  font-family:var(--jp);font-weight:900;font-size:clamp(30px,6vw,46px);
+  letter-spacing:.01em;line-height:1.15;margin:0;
+}
+h1 .thin{font-weight:500;color:var(--ink-mid)}
+.lede{margin:14px 0 0;max-width:46em;color:var(--ink-mid);font-size:14.5px}
+.lede a{color:inherit;text-decoration:underline;text-decoration-color:var(--line)}
+
+/* ---------- controls ---------- */
+.bar{
+  position:sticky;top:0;z-index:20;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  margin-bottom:8px;
+}
+.bar-in{max-width:920px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.field{display:flex;align-items:center;gap:7px}
+.field > span{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute)}
+select,input[type=search]{
+  font-family:var(--jp);font-size:13px;color:var(--ink);
+  background:var(--paper);border:1px solid var(--line);border-radius:2px;
+  padding:6px 9px;min-width:0;
+}
+input[type=search]{width:150px}
+select:focus-visible,input:focus-visible,button:focus-visible,a:focus-visible,.art:focus-visible{
+  outline:2px solid var(--s-lhs);outline-offset:2px;
+}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font-family:var(--jp);font-size:12px;font-weight:700;cursor:pointer;
+  border:1px solid currentColor;border-radius:999px;padding:3px 11px;
+  background:transparent;line-height:1.5;
+}
+.chip[aria-pressed=false]{color:var(--ink-mute);border-color:var(--line);font-weight:500}
+.load{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn{
+  font-family:var(--jp);font-size:12.5px;font-weight:700;cursor:pointer;
+  background:var(--ink);color:#fff;border:0;border-radius:2px;padding:7px 14px;
+}
+.btn.ghost{background:transparent;color:var(--ink-mid);border:1px solid var(--line);font-weight:500}
+.count{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+
+/* ---------- list ---------- */
+ol.rank{list-style:none;margin:0;padding:0}
+li.row{
+  display:grid;
+  grid-template-columns:72px var(--artw) 1fr;
+  --artw:124px; --ar:63/88;
+  gap:0 20px;
+  align-items:center;
+  padding:18px 0;
+  border-bottom:1px solid var(--line-soft);
+}
+li.row.t1{--artw:208px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 8%,transparent),transparent 62%);padding:26px 0}
+li.row.t2{--artw:164px;padding:22px 0}
+/* 横長（ライブカードなど）は枠の向きと幅を切り替える */
+li.row.ls{--artw:172px; --ar:88/63}
+li.row.ls.t2{--artw:224px}
+li.row.ls.t1{--artw:280px}
+
+.n{
+  font-family:var(--num);font-weight:800;
+  font-size:40px;line-height:.82;text-align:right;
+  color:var(--c);font-variant-numeric:tabular-nums;
+  align-self:start;padding-top:6px;
+}
+.t1 .n{font-size:92px}
+.t2 .n{font-size:62px}
+
+.art{
+  position:relative;aspect-ratio:var(--ar);border-radius:4px;overflow:hidden;
+  background:var(--paper);border:1px solid var(--line);
+  display:block;
+}
+.art[role=button]{cursor:zoom-in;transition:transform .18s ease,box-shadow .18s ease}
+.art[role=button]:hover{transform:translateY(-3px);box-shadow:0 10px 24px -12px color-mix(in srgb,var(--ink) 45%,transparent)}
+
+/* 拡大表示 */
+.lb{
+  position:fixed;inset:0;z-index:60;display:none;place-items:center;padding:clamp(16px,4vw,40px);
+  background:color-mix(in srgb,var(--ink) 80%,transparent);
+}
+.lb.on{display:grid}
+.lb figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%}
+.lb img{
+  max-width:min(94vw,760px);max-height:76vh;width:auto;height:auto;display:block;
+  border-radius:6px;box-shadow:0 30px 70px -24px rgba(0,0,0,.7);cursor:zoom-out;
+}
+.lb figcaption{color:#fff;text-align:center;line-height:1.5}
+.lb figcaption b{display:block;font-weight:700;font-size:16px}
+.lb figcaption span{font-family:var(--mono);font-size:11px;opacity:.65}
+.lb .close{
+  position:absolute;top:10px;right:14px;background:transparent;border:0;color:#fff;
+  font-size:28px;line-height:1;cursor:pointer;padding:8px 12px;
+}
+.art img{width:100%;height:100%;object-fit:contain;display:block}
+.art .skel{position:absolute;inset:0;background:linear-gradient(105deg,var(--line-soft),var(--paper),var(--line-soft));background-size:300% 100%;animation:sh 1.5s linear infinite}
+@keyframes sh{to{background-position:-300% 0}}
+.art .miss{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:6px;
+  padding:10px;text-align:center;
+}
+.art .miss b{font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--ink-mid);word-break:break-all;line-height:1.4}
+.art .miss .retry{
+  align-self:center;font-family:var(--jp);font-size:10.5px;cursor:pointer;
+  background:transparent;color:var(--ink-mute);border:1px solid var(--line);
+  border-radius:2px;padding:3px 8px;
+}
+
+.meta{min-width:0}
+.name{font-weight:700;font-size:clamp(15px,2.4vw,19px);line-height:1.35;margin:0 0 6px;word-break:break-word}
+.t1 .name{font-size:clamp(19px,3.4vw,26px)}
+.t2 .name{font-size:clamp(16px,2.8vw,21px)}
+.tags{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.series{font-size:11px;font-weight:700;color:var(--c)}
+.no{font-family:var(--mono);font-size:11px;color:var(--ink-mute);word-break:break-all}
+.pt{display:flex;align-items:baseline;gap:5px;margin-bottom:5px}
+.pt b{font-family:var(--num);font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.t1 .pt b{font-size:36px}
+.pt span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
+.track{height:3px;background:var(--line-soft);border-radius:2px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--c);width:var(--w)}
+
+.empty{padding:72px 0;text-align:center;color:var(--ink-mute);font-size:14px}
+.empty p{margin:0 0 16px}
+.empty .btn{font-size:13px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-mute);line-height:1.8}
+
+.drop{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:color-mix(in srgb,var(--ink) 55%,transparent);color:#fff;font-weight:700;font-size:18px}
+.drop.on{display:grid}
+
+@media(max-width:640px){
+  .wrap{padding:0 14px 60px}
+  .bar-in{padding:10px 14px}
+  li.row{grid-template-columns:44px var(--artw) 1fr;gap:0 14px;--artw:84px}
+  li.row.t1{--artw:132px}
+  li.row.t2{--artw:104px}
+  li.row.ls{--artw:120px}
+  li.row.ls.t2{--artw:146px}
+  li.row.ls.t1{--artw:176px}
+  .n{font-size:26px}.t1 .n{font-size:52px}.t2 .n{font-size:38px}
+  .load{margin-left:0;width:100%}
+  input[type=search]{width:100%;flex:1}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="mast">
+    <h1>使用率ランキング</h1>
+  </header>
+</div>
+
+<div class="bar">
+  <div class="bar-in">
+    <label class="field"><span>表示</span>
+      <select id="topN">
+        <option value="10">上位10</option>
+        <option value="20">上位20</option>
+        <option value="30" selected>上位30</option>
+        <option value="50">上位50</option>
+        <option value="100">上位100</option>
+        <option value="0">すべて</option>
+      </select>
+    </label>
+    <div class="chips" id="chips"></div>
+    <label class="field"><span>検索</span>
+      <input type="search" id="q" placeholder="カード名 / 番号">
+    </label>
+    <div class="load">
+      <span class="count" id="count"></span>
+      <button class="btn ghost" id="pick">CSVを読み込む</button>
+      <input type="file" id="file" accept=".csv,text/csv" hidden>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <ol class="rank" id="list"></ol>
+  <div class="empty" id="empty" hidden></div>
+  <footer>カード画像: 公式カードリスト ©プロジェクトラブライブ！ / ©Bushiroad</footer>
+</div>
+
+<div class="drop" id="drop">CSVをここにドロップ</div>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="カード画像">
+  <button type="button" class="close" id="lbClose" aria-label="閉じる">&times;</button>
+  <figure>
+    <img id="lbImg" alt="">
+    <figcaption><b id="lbName"></b><span id="lbNo"></span></figcaption>
+  </figure>
+</div>
+
+<script>
+/* ============ データ ============ */
+let DATA = [];
+
+/* ============ 作品 ============ */
+const SERIES = {
+  'PL!'  :{label:'ラブライブ！',      c:'var(--s-ll)'},
+  'PL!S' :{label:'サンシャイン!!',    c:'var(--s-ls)'},
+  'PL!N' :{label:'虹ヶ咲',            c:'var(--s-ln)'},
+  'PL!SP':{label:'スーパースター!!',  c:'var(--s-lsp)'},
+  'PL!HS':{label:'蓮ノ空',            c:'var(--s-lhs)'},
+  'LL'   :{label:'シリーズ共通',      c:'var(--s-any)'}
+};
+const FALLBACK = {label:'その他', c:'var(--s-any)'};
+
+/* ============ 画像URLの組み立て ============ */
+const BASE = 'https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist';
+/* 収録商品 → 画像フォルダ。公式カードリストの画像パスで確認済み
+   （虹ヶ咲プレミアムブースターだけ検索コード PBN に対して PBnj） */
+const PB  = {'PL!':'PBLL','PL!S':'PBLS','PL!N':'PBnj','PL!SP':'PBSP','PL!HS':'PBHS'};
+const SD  = {'PL!':'PLSD01','PL!S':'SSD01','PL!N':'NSD01','PL!SP':'SPSD01','PL!HS':'HSSD01'};
+const SD2 = {'PL!SP':'SPSD02'};
+const ALL_FOLDERS = ['BP01','BP02','BP03','BP04','BP05','BP06',
+  'PBLL','PBLS','PBnj','PBSP','PBHS',
+  'PLSD01','SSD01','NSD01','SPSD01','SPSD02','HSSD01','CLHS01','PR'];
+
+/* ファイル名末尾のレアリティ。＋ 付きは 2 になる（R＋ → R2） */
+const RAR_PACK  = ['R','R2','L','L2','N','SEC','SECL','P','P2','RM','AR','SEC2','LLE','PE','PE2','RE','SRE'];
+const RAR_DECK  = ['SD','R','N','L','P'];
+const RAR_PR    = ['PR','PR2'];
+const RAR_SWEEP = ['R','SD','PR','L'];
+const MAX_TRIES = 200;
+
+function parseNo(no){
+  const p = String(no).split('-');
+  return {series:p[0]||'', set:p[1]||'', num:p.slice(2).join('-')};
+}
+function rarFor(folder){
+  if(folder === 'PR') return RAR_PR;
+  if(/SD\d\d$/.test(folder)) return RAR_DECK;
+  return RAR_PACK;
+}
+function primaryFolders(series,set){
+  const f=[]; let m;
+  if((m=/^bp(\d+)$/i.exec(set)))      f.push('BP'+String(m[1]).padStart(2,'0'));
+  else if(/^pb\d*$/i.test(set))       { if(PB[series]) f.push(PB[series]); }
+  else if((m=/^sd(\d+)$/i.exec(set))) {
+    if(+m[1] === 2 && SD2[series]) f.push(SD2[series]);
+    if(SD[series]) f.push(SD[series]);
+  }
+  else if(/^cl/i.test(set))           f.push('CLHS01');
+  else if(/^pr$/i.test(set))          f.push('PR');
+  return f;
+}
+/* ファイル名の流儀が商品ごとに違うので、レアリティごとに全パターンを試す
+     通常形   BP01/PL!N-bp1-001-R.png     … 番号のあとにレアリティ
+     二重形   BP03/PL!N-bp3-R-008-R.png   … 番号の前にもレアリティが入る
+     省略形   PR/PL!HS-022-PR.png         … 弾コード(PR)が抜ける。PRカードのみ
+   省略形は PR 収録のカードだけに限定する。ほかの弾に使うと、
+   PRフォルダの同番号の別カードを誤って拾う恐れがあるため */
+function candidates(no){
+  const {series,set,num} = parseNo(no);
+  const isPR = /^pr$/i.test(set);
+  const seen = new Set(), out = [];
+  const add  = u =>{ if(!seen.has(u)){ seen.add(u); out.push(u); } };
+  const both = (f,r)=>{
+    add(`${BASE}/${f}/${no}-${r}.png`);
+    add(`${BASE}/${f}/${series}-${set}-${r}-${num}-${r}.png`);
+    if(isPR) add(`${BASE}/${f}/${series}-${num}-${r}.png`);
+  };
+  const prim = primaryFolders(series,set);
+  for(const f of prim) for(const r of rarFor(f)) both(f,r);
+  for(const f of prim) for(const r of ['L','L2','SECL'])   /* 番号なしの変則ファイル */
+    add(`${BASE}/${f}/${series}-${set}-${r}.png`);
+  both('PR','PR'); both('PR','PR2');                       /* PR再録 */
+  for(const f of ALL_FOLDERS){                             /* 別商品への再録を総当たり */
+    if(prim.includes(f)) continue;
+    for(const r of RAR_SWEEP) both(f,r);
+  }
+  return out.slice(0, MAX_TRIES);
+}
+
+/* 同時実行を抑えつつ候補を順に試す */
+const cache = new Map();
+let active = 0; const queue = [];
+function pump(){
+  while(active < 6 && queue.length){ active++; queue.shift()(); }
+}
+function resolveArt(no){
+  if(cache.has(no)) return Promise.resolve(cache.get(no));
+  return new Promise(done=>{
+    queue.push(()=>{
+      const c = candidates(no); let i = 0;
+      const finish = v =>{ cache.set(no,v); active--; pump(); done(v); };
+      const next = ()=>{
+        if(i >= c.length) return finish(null);
+        const url = c[i++], img = new Image();
+        img.onload  = ()=> finish({url, w:img.naturalWidth, h:img.naturalHeight});
+        img.onerror = next;
+        img.src = url;
+      };
+      next();
+    });
+    pump();
+  });
+}
+
+/* ============ 描画 ============ */
+const $ = s=>document.querySelector(s);
+const list=$('#list'), empty=$('#empty');
+const state = {n:30, q:'', off:new Set()};
+
+const io = new IntersectionObserver(es=>{
+  for(const e of es){
+    if(!e.isIntersecting) continue;
+    io.unobserve(e.target);
+    fill(e.target);
+  }
+},{rootMargin:'400px 0px'});
+
+async function fill(art){
+  const no  = art.dataset.no;
+  const hit = await resolveArt(no);
+  art.querySelector('.skel')?.remove();
+  art.querySelector('.miss')?.remove();
+  if(hit){
+    if(hit.w > hit.h) art.closest('li').classList.add('ls');   /* 横長カード */
+    const img = new Image();
+    img.src = hit.url; img.alt = art.dataset.name; img.loading = 'lazy';
+    art.appendChild(img);
+    art.dataset.url = hit.url;
+    art.setAttribute('role','button');
+    art.setAttribute('tabindex','0');
+    art.setAttribute('aria-label', art.dataset.name + ' を拡大表示');
+  }else{
+    delete art.dataset.url;
+    art.removeAttribute('role'); art.removeAttribute('tabindex'); art.removeAttribute('aria-label');
+    art.insertAdjacentHTML('beforeend',
+      `<div class="miss"><b>${esc(no)}</b>` +
+      `<button type="button" class="retry">再取得</button></div>`);
+    art.querySelector('.retry').onclick = ev=>{
+      ev.preventDefault(); ev.stopPropagation();
+      cache.delete(no);
+      art.querySelector('.miss').remove();
+      art.insertAdjacentHTML('beforeend','<div class="skel"></div>');
+      fill(art);
+    };
+  }
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+
+function seriesOf(no){ return SERIES[parseNo(no).series] || FALLBACK; }
+
+function render(){
+  const q = state.q.trim().toLowerCase();
+  let rows = DATA.slice().sort((a,b)=>a.r-b.r);
+  rows = rows.filter(d=>!state.off.has(parseNo(d.no).series));
+  if(q) rows = rows.filter(d=>d.n.toLowerCase().includes(q) || d.no.toLowerCase().includes(q));
+  if(state.n) rows = rows.slice(0, state.n);
+
+  const max = rows.length ? Math.max(...rows.map(d=>d.p)) : 1;
+  $('#count').textContent = DATA.length ? `${rows.length} / ${DATA.length} 枚` : '';
+  empty.hidden = rows.length > 0;
+  if(!rows.length){
+    empty.innerHTML = DATA.length
+      ? '<p>条件に合うカードがありません。検索語や作品の絞り込みを見直してください。</p>'
+      : '<p>使用率CSVを読み込むとランキングが表示されます。<br>ファイルをこのウィンドウにドロップしても読み込めます。</p>'
+        + '<button type="button" class="btn" id="pick2">CSVを読み込む</button>';
+    const p2 = $('#pick2'); if(p2) p2.onclick = ()=>$('#file').click();
+  }
+
+  list.innerHTML = rows.map(d=>{
+    const s = seriesOf(d.no);
+    const tier = d.r===1 ? 't1' : (d.r<=3 ? 't2' : '');
+    const w = Math.max(2, Math.round(d.p / max * 100));
+    return `<li class="row ${tier}" style="--c:${s.c}">
+      <div class="n">${d.r}</div>
+      <div class="art" data-no="${esc(d.no)}" data-name="${esc(d.n)}">
+        <div class="skel"></div>
+      </div>
+      <div class="meta">
+        <p class="name">${esc(d.n)}</p>
+        <div class="tags"><span class="series">${s.label}</span><span class="no">${esc(d.no)}</span></div>
+        <div class="pt"><b>${d.p}</b><span>pt</span></div>
+        <div class="track"><i style="--w:${w}%"></i></div>
+      </div>
+    </li>`;
+  }).join('');
+
+  list.querySelectorAll('.art').forEach(a=>io.observe(a));
+}
+
+/* ============ 絞り込みチップ ============ */
+function buildChips(){
+  const present = [...new Set(DATA.map(d=>parseNo(d.no).series))]
+    .filter(k=>SERIES[k])
+    .sort((a,b)=>Object.keys(SERIES).indexOf(a)-Object.keys(SERIES).indexOf(b));
+  $('#chips').innerHTML = present.map(k=>
+    `<button class="chip" data-k="${k}" aria-pressed="true" style="color:${SERIES[k].c}">${SERIES[k].label}</button>`
+  ).join('');
+  $('#chips').querySelectorAll('.chip').forEach(b=>{
+    b.onclick = ()=>{
+      const k=b.dataset.k, on = b.getAttribute('aria-pressed')==='true';
+      b.setAttribute('aria-pressed', String(!on));
+      on ? state.off.add(k) : state.off.delete(k);
+      render();
+    };
+  });
+}
+
+/* ============ CSV 読み込み ============ */
+function splitCSV(text){
+  const rows=[]; let row=[], cell='', q=false;
+  text = text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; }
+      else cell+=ch;
+    }else if(ch==='"') q=true;
+    else if(ch===','){ row.push(cell); cell=''; }
+    else if(ch==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
+    else cell+=ch;
+  }
+  if(cell!=='' || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r=>r.some(c=>c.trim()!==''));
+}
+function loadCSV(text){
+  const rows = splitCSV(text);
+  if(!rows.length) throw new Error('中身が空です');
+  const head = rows[0].map(h=>h.trim());
+  const find = (...names)=>head.findIndex(h=>names.includes(h));
+  let iR=find('順位','rank'), iNo=find('カード番号','card_no','no'),
+      iN=find('カード名','name'), iP=find('個別ポイント','ポイント','point','points');
+  let body = rows.slice(1);
+  if(iNo<0 || iP<0){ iR=0; iNo=1; iN=2; iP=3; body = rows; }   /* ヘッダー無しCSV */
+  const out=[];
+  body.forEach((r,k)=>{
+    const no=(r[iNo]||'').trim(); if(!no) return;
+    out.push({
+      r: parseInt((r[iR]||'').replace(/\D/g,''),10) || k+1,
+      no,
+      n: (iN>=0 ? (r[iN]||'') : '').trim() || no,
+      p: parseInt((r[iP]||'').replace(/[^\d-]/g,''),10) || 0
+    });
+  });
+  if(!out.length) throw new Error('カード番号の列を見つけられません');
+  DATA = out; cache.clear(); state.off.clear();
+  buildChips(); render();
+}
+
+$('#pick').onclick = ()=>$('#file').click();
+$('#file').onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const fr=new FileReader();
+  fr.onload=()=>{ try{ loadCSV(fr.result); }catch(err){ alert('読み込めませんでした: '+err.message); } };
+  fr.readAsText(f,'utf-8');
+};
+const drop=$('#drop'); let dc=0;
+addEventListener('dragenter',e=>{e.preventDefault();dc++;drop.classList.add('on');});
+addEventListener('dragover',e=>e.preventDefault());
+addEventListener('dragleave',e=>{if(--dc<=0)drop.classList.remove('on');});
+addEventListener('drop',e=>{
+  e.preventDefault(); dc=0; drop.classList.remove('on');
+  const f=e.dataTransfer.files[0]; if(!f) return;
+  const fr=new FileReader();
+  fr.onload=()=>{ try{ loadCSV(fr.result); }catch(err){ alert('読み込めませんでした: '+err.message); } };
+  fr.readAsText(f,'utf-8');
+});
+
+/* ============ 拡大表示 ============ */
+const lb = $('#lb'), lbImg = $('#lbImg');
+let lastFocus = null;
+
+function openLB(art){
+  lastFocus = art;
+  lbImg.src = art.dataset.url;
+  lbImg.alt = art.dataset.name;
+  $('#lbName').textContent = art.dataset.name;
+  $('#lbNo').textContent   = art.dataset.no;
+  lb.classList.add('on');
+  document.body.style.overflow = 'hidden';
+  $('#lbClose').focus();
+}
+function closeLB(){
+  if(!lb.classList.contains('on')) return;
+  lb.classList.remove('on');
+  lbImg.removeAttribute('src');
+  document.body.style.overflow = '';
+  lastFocus?.focus();
+}
+$('#lbClose').onclick = closeLB;
+lb.onclick = e=>{ if(e.target !== lbImg) closeLB(); };   /* 画像以外はどこでも閉じる */
+lbImg.onclick = closeLB;
+addEventListener('keydown', e=>{ if(e.key === 'Escape') closeLB(); });
+
+list.addEventListener('click', e=>{
+  if(e.target.closest('.retry')) return;
+  const art = e.target.closest('.art');
+  if(art && art.dataset.url) openLB(art);
+});
+list.addEventListener('keydown', e=>{
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const art = e.target.closest('.art');
+  if(art && art.dataset.url){ e.preventDefault(); openLB(art); }
+});
+
+$('#topN').onchange = e=>{ state.n = +e.target.value; render(); };
+let t; $('#q').oninput = e=>{ clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value; render(); },180); };
+
+buildChips(); render();
+</script>
+</body>
+</html>
