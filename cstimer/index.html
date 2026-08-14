@@ -156,7 +156,8 @@
 
     <button id="menu-btn" title="操作パネルを開く">⚙️</button>
 
-    <div id="timer-display">25:00</div>
+    <!-- 初期表示を30分に変更 -->
+    <div id="timer-display">30:00</div>
 
     <div id="control-screen">
         <h2 style="margin:0; color:#fff; font-size: 2rem;">操作パネル</h2>
@@ -170,7 +171,8 @@
         <div class="settings-area">
             <div class="setting-item">
                 <label class="title">初期時間 (MM:SS)</label>
-                <input type="text" id="initial-time-input" value="25:00">
+                <!-- 初期値を30:00に変更 -->
+                <input type="text" id="initial-time-input" value="30:00">
             </div>
 
             <hr>
@@ -215,18 +217,18 @@
         const colorInput = document.getElementById('color-input');
         const bgInput = document.getElementById('bg-input');
 
-        let totalSeconds = 25 * 60; 
+        // デフォルト時間を30分(30 * 60)に変更
+        let totalSeconds = 30 * 60; 
         let currentSeconds = totalSeconds;
         let timerInterval = null;
         let audioTimeoutId = null; 
 
-        // 通知時間(秒)と音声ファイルのマッピング
         const ALARMS = {
             900: '15.wav', // 15:00
             600: '10.wav', // 10:00
             300: '5.wav',  // 05:00
             120: '2.wav',  // 02:00
-            60:  '1.wav'   // 01:00 (追加)
+            60:  '1.wav'   // 01:00
         };
         const END_AUDIO = 'end.wav';
 
@@ -237,10 +239,9 @@
                 const s = parseInt(parts[1], 10);
                 if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
             }
-            return 25 * 60; 
+            return 30 * 60; // 読み込み失敗時のフォールバックも30分に変更
         }
 
-        // 音声再生ロジック（1回目 → 5秒待機 → 2回目）
         function playAudioTwice(fileName) {
             if (audioTimeoutId) {
                 clearTimeout(audioTimeoutId);
@@ -297,9 +298,7 @@
                     currentSeconds--;
                     updateDisplay();
 
-                    // 通知タイミングのチェック
                     if (ALARMS[currentSeconds]) {
-                        // 対象のチェックボックスがオンになっているか確認
                         const chk = document.querySelector(`input.alarm-chk[value="${currentSeconds}"]`);
                         if (chk && chk.checked) {
                             playAudioTwice(ALARMS[currentSeconds]);
@@ -333,7 +332,6 @@
             updateDisplay();
         }
 
-        // イベントリスナー
         menuBtn.addEventListener('click', () => {
             controlScreen.style.display = 'flex';
         });
