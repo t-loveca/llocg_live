@@ -1,489 +1,368 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-<meta property="og:url" content="https://t-loveca.github.io/llocg_live/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="ライブシミュレーター">
-<meta property="og:site_name" content="ライブシミュレーター">
-<meta property="og:description" content="ラブカのライブ成功率を計算します。">
-<meta property="og:image" content="https://t-loveca.github.io/llocg_live/favicon.png">
-<meta property="og:locale" content="ja_JP">
-<title>ライブシミュレーター</title>
-<style>
-  :root{
-    --bg:#fafafa; --card:#ffffff; --ink:#1b1f24; --sub:#60666d;
-    --accent:#ff6a00; --ok:#0a7f45; --warn:#b54708; --muted:#e9ecef;
-    --btn:#111; --btn-ink:#fff;
-  }
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
-  .wrap{max-width:960px;margin:0 auto;padding-bottom:96px;}
-  header{position:sticky;top:0;background:linear-gradient(180deg,#fff,rgba(255,255,255,.9));backdrop-filter:saturate(180%) blur(6px);border-bottom:1px solid #eee;z-index:10}
-  header .inner{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;}
-  h1{font-size:18px;margin:0;}
-  .card{background:var(--card);border:1px solid #eee;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:12px;margin:12px 16px;}
-  .card h2{font-size:16px;margin:0 0 8px 0;}
-  .grid{display:grid;gap:8px;}
-  .g2{grid-template-columns:1fr 1fr;}
-  .g3{grid-template-columns:1fr 1fr 1fr;}
-  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border-radius:10px;background:#fff;border:1px solid #eee;}
-  .label{display:flex;align-items:center;gap:8px;font-size:14px;}
-  .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #ddd;border-radius:999px;padding:2px 8px;font-size:13px;background:#fff;}
-  .count{display:flex;align-items:center;gap:6px;}
-  .count input{width:62px;text-align:right;padding:6px 8px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:14px;}
-  .steppers{display:flex;gap:4px;}
-  button.icon{inline-size:36px;block-size:36px;border-radius:10px;border:1px solid #ddd;background:#fff;font-weight:700;font-size:18px;line-height:0;display:grid;place-items:center}
-  button.icon:active{transform:translateY(1px)}
-  input[type="number"]{appearance:textfield;}
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0;}
-  .note{color:var(--sub);font-size:12px;}
-  .totals{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--sub);}
-  .ok{color:var(--ok)} .warn{color:var(--warn)}
-  .stickybar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #eee;padding:8px 12px;display:flex;gap:10px;align-items:center;justify-content:center;z-index:20}
-  .primary{background:var(--accent);color:#fff;border:none;padding:12px 18px;border-radius:12px;font-weight:700;font-size:16px}
-  .ghost{background:#fff;color:var(--ink);border:1px solid #ddd;padding:10px 14px;border-radius:10px}
-  .result{background:#fff;border:1px dashed #ddd;border-radius:12px;padding:12px;margin-top:8px}
-  .muted{background:var(--muted);}
-  .cols{display:grid;gap:8px;grid-template-columns:1fr 1fr;}
-  @media (max-width:720px){ .g3{grid-template-columns:1fr;} .cols{grid-template-columns:1fr;} }
-  .small{font-size:12px}
-  .mono{font-family:ui-monospace,Consolas,Menlo,monospace}
-  .divider{height:1px;background:#eee;margin:8px 0}
-  .table{width:100%;border-collapse:collapse;font-size:13px}
-  .table th,.table td{border:1px solid #eee;padding:6px 8px;text-align:right}
-  .table th{background:#f7f7f7;text-align:center}
-  .kv{display:grid;grid-template-columns:1fr auto;gap:6px;font-size:13px}
-  .kv div:nth-child(odd){color:#555}
-  .kv div:nth-child(even){font-weight:700}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webタイマー</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            transition: color 0.3s;
+            overflow: hidden;
+        }
+
+        /* タイマー表示 */
+        #timer-display {
+            font-size: 30vw;
+            font-weight: bold;
+            line-height: 1;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            user-select: none;
+            z-index: 10;
+        }
+
+        /* メニューを開くボタン */
+        #menu-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 15;
+            font-size: 1.8rem;
+            opacity: 0.15;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+
+        #menu-btn:hover {
+            opacity: 1;
+            transform: rotate(30deg);
+        }
+
+        /* 操作・設定用の別画面 */
+        #control-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 15, 15, 0.95);
+            z-index: 30;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .control-screen-btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        .control-screen-btn:active { transform: scale(0.95); }
+
+        #start-btn { background-color: #2ecc71; color: white; }
+        #stop-btn { background-color: #e74c3c; color: white; }
+        #reset-btn { background-color: #f39c12; color: white; }
+        
+        #start-btn:hover { background-color: #27ae60; }
+        #stop-btn:hover { background-color: #c0392b; }
+        #reset-btn:hover { background-color: #d68910; }
+
+        /* 設定エリア */
+        .settings-area {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 320px;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .setting-item label.title { font-size: 0.95rem; color: #ccc; font-weight: bold; }
+        .setting-item input[type="text"] { padding: 10px; font-size: 1.2rem; text-align: center; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; }
+        .setting-item input[type="file"], .setting-item input[type="color"] { padding: 5px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; width: 100%; box-sizing: border-box;}
+
+        /* チェックボックスのスタイル */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #eee;
+        }
+        .checkbox-label input[type="checkbox"] {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        hr { border: none; border-top: 1px solid #555; margin: 5px 0; }
+
+        #close-menu-btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #close-menu-btn:hover { background-color: #777; }
+    </style>
 </head>
 <body>
-  <header><div class="inner">
-    <h1>ライブシミュレーター</h1>
-    <span class="note">LoveLive! OCG</span>
-  </div></header>
 
-  <div class="wrap" id="app">
-    <!-- ステージ -->
-    <section class="card" id="stageCard">
-      <h2>ステージ（最大3人）</h2>
-      <div class="note">各メンバーのハートとブレード数を設定</div>
-      <div class="grid g3" id="stageArea"></div>
-    </section>
+    <button id="menu-btn" title="操作パネルを開く">⚙️</button>
 
-    <!-- ライブカード -->
-    <section class="card" id="liveCard">
-      <h2>ライブカード（最大3枚）</h2>
-      <div class="note">各ライブカードの要求ハート数を指定</div>
-      <div class="grid g3" id="liveArea"></div>
-    </section>
+    <div id="timer-display">30:00</div>
 
-    <!-- ブレードデッキ -->
-    <section class="card">
-      <h2>デッキの構成</h2>
-      <div class="note">エールでめくるデッキの内訳</div>
-      <div class="grid g3" id="deckArea"></div>
-      <div class="totals" id="deckTotals"></div>
-    </section>
+    <div id="control-screen">
+        <h2 style="margin:0; color:#fff; font-size: 2rem;">操作パネル</h2>
+        
+        <div class="control-group">
+            <button id="start-btn" class="control-screen-btn">スタート</button>
+            <button id="stop-btn" class="control-screen-btn">ストップ</button>
+            <button id="reset-btn" class="control-screen-btn">リセット</button>
+        </div>
 
-    <!-- 結果 -->
-    <section class="card">
-      <h2>結果</h2>
-      <div id="results" class="result">
-        <div class="note">下の「計算する」を押してください。</div>
-      </div>
-      <div id="breakdown" class="result" style="margin-top:8px;display:none"></div>
-    </section>
-  </div>
+        <div class="settings-area">
+            <div class="setting-item">
+                <label class="title">初期時間 (MM:SS)</label>
+                <input type="text" id="initial-time-input" value="30:00">
+            </div>
 
-  <div class="stickybar">
-    <button class="primary" id="runBtn">計算する</button>
-    <button class="ghost" id="clearBtn">入力リセット</button>
-    <button class="ghost" id="shareBtn">URLコピー</button>
-  </div>
-<script>
-/* ===== カテゴリ定義 ===== */
-const COLORS = [
-  {key:'01', name:'桃',  emo:'💗'},
-  {key:'02', name:'赤',  emo:'❤️'},
-  {key:'03', name:'黄',  emo:'💛'},
-  {key:'04', name:'緑',  emo:'💚'},
-  {key:'05', name:'青',  emo:'💙'},
-  {key:'06', name:'紫',  emo:'💜'},
-];
-const ALL = {key:'ALL', name:'', badge:'ALL'};
-const ANY = {key:'00',  name:'無', emo:'🖤'};
-const NONE= {key:'NONE',name:'BHなし', badge:'–'};
-const SU  = {key:'SU',  name:'スコアアップ', badge:'♪'};
+            <hr>
 
-/* ===== データ管理（LS & URL） ===== */
-const LS_KEY = 'llocg_sim_data_v1';
+            <div class="setting-item">
+                <label class="title">通知設定（終了時は必ず鳴ります）</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="900" checked> 残り15分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="600" checked> 残り10分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="300" checked> 残り5分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="120" checked> 残り2分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="60" checked> 残り1分</label>
+                </div>
+            </div>
+            
+            <hr>
 
-// データを画面に反映する共通関数
-function applyData(data){
-  // 一旦全て0にする（URL/LSにないキーをクリアするため）
-  document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = 0);
-  
-  // データを適用
-  Object.keys(data).forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.value = data[id];
-  });
-  updateDeckTotals();
-}
+            <div class="setting-item">
+                <label class="title">文字色</label>
+                <input type="color" id="color-input" value="#ffffff">
+            </div>
+            <div class="setting-item">
+                <label class="title">背景画像</label>
+                <input type="file" id="bg-input" accept="image/*">
+            </div>
+        </div>
 
-// 現在の入力状態をオブジェクトとして取得（0は除外して軽量化）
-function getCurrentData(){
-  const data = {};
-  document.querySelectorAll('input[type="number"]').forEach(el => {
-    const v = Number(el.value);
-    if(el.id && v > 0) data[el.id] = v;
-  });
-  return data;
-}
-
-function saveToLS(){
-  localStorage.setItem(LS_KEY, JSON.stringify(getCurrentData()));
-}
-
-function loadFromUrlOrLS(){
-  // 1. URLパラメータのチェック (優先)
-  const params = new URLSearchParams(window.location.search);
-  const urlData = params.get('d');
-  
-  if(urlData){
-    try {
-      // Base64デコード -> JSONパース
-      const json = atob(urlData);
-      const data = JSON.parse(json);
-      applyData(data);
-      saveToLS(); // URLから開いた場合、LSも更新しておく
-      
-      // 読み込み成功したらURLをクリーンにする（任意：リロード時の挙動安定のため）
-      window.history.replaceState({}, '', window.location.pathname);
-      return; 
-    } catch(e) { console.error('URL parse error:', e); }
-  }
-
-  // 2. LocalStorageのチェック (URLになければ)
-  const lsRaw = localStorage.getItem(LS_KEY);
-  if(lsRaw){
-    try {
-      applyData(JSON.parse(lsRaw));
-    } catch(e) { console.error('LS parse error:', e); }
-  }
-}
-
-/* ===== UI部品 ===== */
-function makeStepper(id, value=0, min=0, max=999, step=1){
-  return `<div class="count">
-    <div class="steppers"><button class="icon" data-stepp="${id}" data-d="-${step}">−</button></div>
-    <input type="number" id="${id}" value="${value}" min="${min}" max="${max}" step="${step}">
-    <div class="steppers"><button class="icon" data-stepp="${id}" data-d="${step}">＋</button></div>
-  </div>`;
-}
-function colorChip(c){return `<span class="chip">${c.emo} ${c.name}</span>`}
-function badgeChip(b){return `<span class="chip"><span class="mono">${b}</span></span>`}
-
-const stageArea = document.getElementById('stageArea');
-const liveArea  = document.getElementById('liveArea');
-const deckArea  = document.getElementById('deckArea');
-const deckTotals= document.getElementById('deckTotals');
-
-function stageBlock(i){
-  const hearts = COLORS.map(c=>`
-    <div class="row"><div class="label">${colorChip(c)}</div>${makeStepper(`s${i}_${c.key}`,0,0,20,1)}</div>
-  `).join('');
-  const all = `
-    <div class="row"><div class="label">${badgeChip(ALL.badge)} ${ALL.name}</div>${makeStepper(`s${i}_${ALL.key}`,0,0,20,1)}</div>`;
-  const blades = `
-    <div class="row"><div class="label"><span class="chip">ブレード数</span></div>${makeStepper(`s${i}_BLD`,0,0,60,1)}</div>`;
-  return `<div class="card muted"><h3 style="margin:0 0 6px 0;font-size:14px;">メンバー ${i+1}</h3><div class="grid">${hearts+all+blades}</div></div>`;
-}
-function liveBlock(i){
-  const req = COLORS.map(c=>`
-    <div class="row"><div class="label">${colorChip(c)}</div>${makeStepper(`l${i}_req_${c.key}`,0,0,40,1)}</div>
-  `).join('');
-  const any = `
-    <div class="row"><div class="label"><span class="chip">${ANY.emo} ${ANY.name}</span></div>${makeStepper(`l${i}_req_${ANY.key}`,0,0,40,1)}</div>`;
-  return `<div class="card muted"><h3 style="margin:0 0 6px 0;font-size:14px;">ライブ ${i+1}</h3><div class="grid">${req+any}</div></div>`;
-}
-function deckBlock(){
-  const rows = [
-    ...COLORS.map(c=>({label:`${colorChip(c)}`, id:`d_${c.key}`})),
-    {label:`${badgeChip(ALL.badge)} ${ALL.name}`, id:`d_${ALL.key}`},
-    {label:`${badgeChip(SU.badge)} ${SU.name}`, id:`d_${SU.key}`},
-    {label:`${badgeChip('–')} ${NONE.name}`, id:`d_${NONE.key}`},
-  ].map(r=>`
-    <div class="row"><div class="label">${r.label}</div>${makeStepper(r.id,0,0,100,1)}</div>
-  `).join('');
-  return rows;
-}
-stageArea.innerHTML = [0,1,2].map(stageBlock).join('');
-liveArea.innerHTML  = [0,1,2].map(liveBlock).join('');
-deckArea.innerHTML  = deckBlock();
-
-/* +- ボタン イベント */
-document.addEventListener('click',(e)=>{
-  const btn = e.target.closest('button[data-stepp]'); if(!btn) return;
-  const id = btn.getAttribute('data-stepp'); const delta = Number(btn.getAttribute('data-d')||0);
-  const input = document.getElementById(id); if(!input) return;
-  const min = Number(input.min||'-Infinity'); const max = Number(input.max||'Infinity');
-  let v = Number(input.value||0)+delta; v = Math.max(min, Math.min(max, v)); input.value = v;
-  
-  if(id.startsWith('d_')) updateDeckTotals();
-  saveToLS();
-});
-
-/* 手入力イベント */
-document.addEventListener('input', (e) => {
-  if (e.target.matches('input[type="number"]')) {
-    if(e.target.id.startsWith('d_')) updateDeckTotals();
-    saveToLS();
-  }
-});
-
-/* ===== 合計表示（デッキ） ===== */
-function num(id){ return Number(document.getElementById(id)?.value||0); }
-function getDeckCounts(){
-  const counts={ALL:0,SU:0,NONE:0}; COLORS.forEach(c=>counts[c.key]=num(`d_${c.key}`));
-  counts.ALL=num(`d_${ALL.key}`); counts.SU=num(`d_${SU.key}`); counts.NONE=num(`d_${NONE.key}`); return counts;
-}
-function updateDeckTotals(){
-  const counts=getDeckCounts();
-  const total=Object.values(counts).reduce((a,b)=>a+b,0);
-  const heartTotal = counts['ALL'] + COLORS.reduce((s,c)=>s+counts[c.key],0);
-  deckTotals.innerHTML = `
-    <span>合計 <b>${total}</b> 枚</span>
-    <span>ハート総数 <b>${heartTotal}</b>（♪となしを除く）</span>
-    <span>♪ <b>${counts['SU']}</b> ／ なし <b>${counts['NONE']}</b></span>`;
-}
-
-/* ===== 入力取得 ===== */
-function getStage(){
-  return [0,1,2].map(i=>{
-    const hearts={}; COLORS.forEach(c=>hearts[c.key]=num(`s${i}_${c.key}`));
-    hearts['ALL']=num(`s${i}_${ALL.key}`); const blades=num(`s${i}_BLD`);
-    return {hearts,blades};
-  });
-}
-function getLives(){
-  return [0,1,2].map(i=>{
-    const req={}; COLORS.forEach(c=>req[c.key]=num(`l${i}_req_${c.key}`));
-    req['00']=num(`l${i}_req_${ANY.key}`); return {req};
-  });
-}
-
-/* ===== 充足判定 ===== */
-function canSatisfy(req, have){
-  let all = have.ALL|0;
-  const leftover = {};
-  for(const c of COLORS.map(x=>x.key)){
-    const need = req[c]|0, own = have[c]|0;
-    if(own >= need){ leftover[c] = own - need; }
-    else{
-      const d = need - own;
-      if(all < d) return false;
-      all -= d; leftover[c] = 0;
-    }
-  }
-  const remColored = Object.values(leftover).reduce((a,b)=>a+b,0);
-  return remColored + all >= (req['00']|0);
-}
-
-/* ===== 組合せ logC(n,k) ===== */
-const logFact = [0];
-function ensureLogFact(n){ for(let i=logFact.length;i<=n;i++) logFact[i]=logFact[i-1]+Math.log(i); }
-const logCcache = new Map();
-function logC(n,k){
-  if(k<0||k>n) return -Infinity;
-  const key=n+'_'+k; if(logCcache.has(key)) return logCcache.get(key);
-  ensureLogFact(n); const r = logFact[n]-logFact[k]-logFact[n-k]; logCcache.set(key,r); return r;
-}
-function logSum(a,b){ if(a===-Infinity) return b; if(b===-Infinity) return a; const m=Math.max(a,b); return m + Math.log(Math.exp(a-m)+Math.exp(b-m)); }
-
-/* ===== 補助：最小必要デッキ枚数（有効ハート） ===== */
-function minDeckUsefulHearts(req, stageHave){
-  const stageSame = {}, deficitColor = {};
-  COLORS.forEach(c=>{
-    const need = req[c.key]|0, own = stageHave[c.key]|0;
-    stageSame[c.key] = Math.min(need, own);
-    deficitColor[c.key] = Math.max(0, need - own);
-  });
-  let Dc = Object.values(deficitColor).reduce((a,b)=>a+b,0);
-  const stageALL = stageHave.ALL|0;
-  const useAllForColor = Math.min(stageALL, Dc);
-  let Arem = stageALL - useAllForColor;
-  const Dc2 = Dc - useAllForColor;
-  let surplusColored = 0;
-  COLORS.forEach(c=>{
-    const need = req[c.key]|0, own = stageHave[c.key]|0;
-    surplusColored += Math.max(0, own - need);
-  });
-  const needAny = req['00']|0;
-  const coverAnyByStage = Math.min(needAny, surplusColored + Arem);
-  const Da = needAny - coverAnyByStage;
-  return {minDeck: Dc2 + Da, details:{Dc, useAllForColor, Dc2, Arem, surplusColored, needAny, coverAnyByStage, Da}};
-}
-
-/* ===== 厳密計算（多変量超幾何の合算） ===== */
-function computeExact(){
-  const stage = getStage();
-  const lives = getLives();
-  const deck  = getDeckCounts();
-
-  const req = {'00':0}; COLORS.forEach(c=>req[c.key]=0);
-  for(const L of lives){ for(const k in req){ req[k] += (L.req[k]||0); } }
-  const totalReq = Object.values(req).reduce((a,b)=>a+b,0);
-
-  const n = stage.reduce((a,m)=>a+(m.blades||0),0);
-
-  const N_by = {}; COLORS.forEach(c=>N_by[c.key]=deck[c.key]|0);
-  N_by['ALL']=deck['ALL']|0;
-  const N_SU = deck['SU']|0, N_NONE=deck['NONE']|0;
-  const N_total = Object.values(N_by).reduce((a,b)=>a+b,0) + N_SU + N_NONE;
-
-  const errors=[];
-  if(N_total<=0) errors.push('デッキ枚数が0です。');
-  if(n > N_total) errors.push(`ブレード総数(${n})がデッキ枚数(${N_total})を超えています。`);
-  if(totalReq===0) errors.push('ライブカードの要求が全て0です。');
-  if(errors.length) return {ok:false,errors};
-
-  const haveBase = {'ALL':0}; COLORS.forEach(c=>haveBase[c.key]=0);
-  for(const m of stage){ for(const c of COLORS){ haveBase[c.key] += (m.hearts[c.key]|0); } haveBase.ALL += (m.hearts.ALL|0); }
-
-  const stageTotalHearts = haveBase.ALL + COLORS.reduce((s,c)=>s+haveBase[c.key],0);
-  const {minDeck, details} = minDeckUsefulHearts(req, haveBase);
-  const maxMiss = Math.max(0, n - minDeck);
-
-  if(n===0){
-    const p = canSatisfy(req, haveBase) ? 1 : 0;
-    const exp = {};
-    [...COLORS.map(c=>c.key),'ALL','SU','NONE'].forEach(k=>exp[k]=0);
-    return {ok:true, p, blades:n, deckTotal:N_total, expected:exp,
-            summary:{reqTotal:totalReq, stageTotal:stageTotalHearts, blades:n, minDeck, maxMiss}};
-  }
-
-  const trackKeys = [...COLORS.map(c=>c.key), 'ALL'];
-  const N_other = N_total - trackKeys.reduce((s,k)=>s+(N_by[k]|0),0);
-  const logDen = logC(N_total, n);
-  let logSumSucc = -Infinity;
-  const x = {}; trackKeys.forEach(k=>x[k]=0);
-
-  function dfs(idx, taken, logW){
-    if(idx===trackKeys.length){
-      const x_other = n - taken;
-      if(x_other<0 || x_other> N_other) return;
-      const logW2 = logW + logC(N_other, x_other);
-      const have = {'ALL': haveBase.ALL + (x['ALL']|0)};
-      COLORS.forEach(c=>{ have[c.key] = haveBase[c.key] + (x[c.key]|0); });
-      if(canSatisfy(req, have)) logSumSucc = logSum(logSumSucc, logW2);
-      return;
-    }
-    const k = trackKeys[idx];
-    const N_k = (N_by[k]|0);
-    const maxPick = Math.min(N_k, n - taken);
-    for(let t=0; t<=maxPick; t++){
-      x[k]=t;
-      dfs(idx+1, taken + t, logW + logC(N_k, t));
-    }
-  }
-  dfs(0, 0, 0);
-  const p = (logSumSucc===-Infinity) ? 0 : Math.exp(logSumSucc - logDen);
-
-  const exp = {};
-  trackKeys.forEach(k=>{ exp[k] = n * (N_by[k]|0) / N_total; });
-  exp['SU']   = n * N_SU   / N_total;
-  exp['NONE'] = n * N_NONE / N_total;
-
-  return {ok:true, p, blades:n, deckTotal:N_total, expected:exp,
-          summary:{reqTotal:totalReq, stageTotal:stageTotalHearts, blades:n, minDeck, maxMiss}};
-}
-
-/* ===== 表示 ===== */
-const resultsEl=document.getElementById('results');
-const breakdownEl=document.getElementById('breakdown');
-const pct = x => (x*100).toFixed(2)+'%';
-const fmt = (x,d=2)=> Number(x).toFixed(d);
-
-function renderBreakdown(exp){
-  const rows = [
-    ...COLORS.map(c=>[`${c.emo} ${c.name}`, exp[c.key]]),
-    [`${ALL.badge} ${ALL.name}`,  exp.ALL],
-    [`${SU.badge} ${SU.name}`,    exp.SU],
-    [`– ${NONE.name}`,            exp.NONE]
-  ];
-  breakdownEl.style.display='block';
-  breakdownEl.innerHTML = `
-    <div><b>エールでめくれる期待枚数</b></div>
-    <div class="tablewrap">
-      <table class="table" aria-label="期待枚数">
-        <thead><tr><th style="text-align:left">ブレードハート</th><th>期待枚数</th></tr></thead>
-        <tbody>
-          ${rows.map(r=>`<tr><td style="text-align:left">${r[0]}</td><td>${fmt(r[1],2)}</td></tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function renderResult(r){
-  if(!r.ok){
-    breakdownEl.style.display='none';
-    resultsEl.innerHTML = `<div class="note" style="color:#b54708">⚠ 入力エラー：</div><ul class="small">${r.errors.map(e=>`<li>${e}</li>`).join('')}</ul>`;
-    return;
-  }
-  const s = r.summary;
-  resultsEl.innerHTML = `
-    <div>
-      <div><b>成功確率</b></div>
-      <div style="font-size:24px;font-weight:800">${pct(r.p)}</div>
+        <button id="close-menu-btn">タイマー画面に戻る</button>
     </div>
-    <div class="divider"></div>
-    <div class="totals small">
-      <span>デッキ枚数 <b>${r.deckTotal}</b></span>
-      <span>エール総数 <b>${r.blades}</b></span>
-      <span>許容外し <b>${s.maxMiss}</b></span>
-    </div>
-  `;
-  renderBreakdown(r.expected);
-}
 
-/* ===== イベント ===== */
-document.getElementById('runBtn').addEventListener('click',()=>{ renderResult(computeExact()); });
+    <script>
+        const display = document.getElementById('timer-display');
+        const menuBtn = document.getElementById('menu-btn');
+        const controlScreen = document.getElementById('control-screen');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        const initialTimeInput = document.getElementById('initial-time-input');
+        const colorInput = document.getElementById('color-input');
+        const bgInput = document.getElementById('bg-input');
 
-// リセット
-document.getElementById('clearBtn').addEventListener('click',()=>{
-  document.querySelectorAll('input[type="number"]').forEach(inp=>{ inp.value=0; });
-  updateDeckTotals();
-  resultsEl.innerHTML=`<div class="note">下の「計算する」を押してください。</div>`;
-  breakdownEl.style.display='none'; breakdownEl.innerHTML='';
-  localStorage.removeItem(LS_KEY);
-  window.history.replaceState({}, '', window.location.pathname); // URLパラメータも消去
-});
+        let totalSeconds = 30 * 60; 
+        let currentSeconds = totalSeconds;
+        let timerInterval = null;
+        let audioTimeoutId = null; 
 
-// URLコピー
-document.getElementById('shareBtn').addEventListener('click',()=>{
-  const data = getCurrentData();
-  // 0以外のデータのみをJSON化しBase64エンコード
-  const str = btoa(JSON.stringify(data));
-  const url = `${window.location.origin}${window.location.pathname}?d=${str}`;
-  
-  navigator.clipboard.writeText(url).then(()=> {
-    const btn = document.getElementById('shareBtn');
-    const orig = btn.innerText;
-    btn.innerText = 'コピー完了';
-    setTimeout(()=> btn.innerText = orig, 2000);
-  }).catch(err => {
-    alert('コピーに失敗しました');
-    console.error(err);
-  });
-});
+        // 通知時間(秒)と音声ファイルのマッピング
+        const ALARMS = {
+            900: '15.wav', // 15:00
+            600: '10.wav', // 10:00
+            300: '5.wav',  // 05:00
+            120: '2.wav',  // 02:00
+            60:  '1.wav'   // 01:00 (追加)
+        };
+        const END_AUDIO = 'end.wav';
 
-/* ===== 初期ロード ===== */
-loadFromUrlOrLS();
-</script>
+        function parseTimeToSeconds(timeStr) {
+            const parts = timeStr.split(':');
+            if (parts.length === 2) {
+                const m = parseInt(parts[0], 10);
+                const s = parseInt(parts[1], 10);
+                if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
+            }
+            return 30 * 60; 
+        }
+
+        // 音声再生ロジック（1回目 → 5秒待機 → 2回目）
+        function playAudioTwice(fileName) {
+            if (audioTimeoutId) {
+                clearTimeout(audioTimeoutId);
+                audioTimeoutId = null;
+            }
+
+            const audio1 = new Audio(fileName);
+            
+            audio1.play().catch(e => {
+                console.warn(`${fileName} の再生に失敗しました。`, e);
+            });
+
+            audio1.onended = () => {
+                audioTimeoutId = setTimeout(() => {
+                    const audio2 = new Audio(fileName);
+                    audio2.play().catch(e => console.warn(`2回目の再生に失敗しました。`, e));
+                }, 5000); 
+            };
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            display.textContent = formatTime(currentSeconds);
+        }
+
+        function applySettings() {
+            if (!timerInterval) {
+                const newSeconds = parseTimeToSeconds(initialTimeInput.value);
+                if (totalSeconds !== newSeconds) {
+                    totalSeconds = newSeconds;
+                    currentSeconds = totalSeconds;
+                    updateDisplay();
+                }
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+
+            applySettings();
+
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioCtx.resume();
+
+            controlScreen.style.display = 'none';
+
+            timerInterval = setInterval(() => {
+                if (currentSeconds > 0) {
+                    currentSeconds--;
+                    updateDisplay();
+
+                    // 通知タイミングのチェック
+                    if (ALARMS[currentSeconds]) {
+                        // 対象のチェックボックスがオンになっているか確認
+                        const chk = document.querySelector(`input.alarm-chk[value="${currentSeconds}"]`);
+                        if (chk && chk.checked) {
+                            playAudioTwice(ALARMS[currentSeconds]);
+                        }
+                    }
+
+                    if (currentSeconds === 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        playAudioTwice(END_AUDIO);
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            if (audioTimeoutId) {
+                clearTimeout(audioTimeoutId);
+                audioTimeoutId = null;
+            }
+        }
+
+        function resetTimer() {
+            stopTimer();
+            totalSeconds = parseTimeToSeconds(initialTimeInput.value);
+            currentSeconds = totalSeconds;
+            updateDisplay();
+        }
+
+        // イベントリスナー
+        menuBtn.addEventListener('click', () => {
+            controlScreen.style.display = 'flex';
+        });
+
+        closeMenuBtn.addEventListener('click', () => {
+            applySettings();
+            controlScreen.style.display = 'none';
+        });
+
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        colorInput.addEventListener('input', (e) => {
+            document.body.style.color = e.target.value;
+        });
+
+        bgInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.body.style.backgroundImage = `url('${event.target.result}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        updateDisplay();
+    </script>
 </body>
 </html>
