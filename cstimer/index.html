@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSタイマー</title>
+    <title>Webタイマー</title>
     <style>
         body {
             margin: 0;
@@ -22,7 +22,7 @@
             overflow: hidden;
         }
 
-        /* タイマー表示（誤操作防止のためクリック無効化） */
+        /* タイマー表示 */
         #timer-display {
             font-size: 30vw;
             font-weight: bold;
@@ -32,7 +32,7 @@
             z-index: 10;
         }
 
-        /* メニューを開くボタン（目立たないように変更） */
+        /* メニューを開くボタン */
         #menu-btn {
             position: absolute;
             top: 20px;
@@ -44,16 +44,16 @@
             cursor: pointer;
             z-index: 15;
             font-size: 1.8rem;
-            opacity: 0.15; /* 普段は半透明で背景に溶け込ませる */
+            opacity: 0.15;
             transition: opacity 0.3s, transform 0.2s;
         }
 
         #menu-btn:hover {
-            opacity: 1; /* マウスを乗せるとはっきり見える */
-            transform: rotate(30deg); /* 少し回転する遊び心 */
+            opacity: 1;
+            transform: rotate(30deg);
         }
 
-        /* 操作・設定用の別画面（オーバーレイ） */
+        /* 操作・設定用の別画面 */
         #control-screen {
             position: fixed;
             top: 0;
@@ -67,6 +67,8 @@
             justify-content: center;
             align-items: center;
             gap: 40px;
+            overflow-y: auto;
+            padding: 20px 0;
         }
 
         .control-group {
@@ -110,9 +112,31 @@
             flex-direction: column;
             gap: 8px;
         }
-        .setting-item label { font-size: 0.95rem; color: #ccc; font-weight: bold; }
+        .setting-item label.title { font-size: 0.95rem; color: #ccc; font-weight: bold; }
         .setting-item input[type="text"] { padding: 10px; font-size: 1.2rem; text-align: center; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; }
         .setting-item input[type="file"], .setting-item input[type="color"] { padding: 5px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; width: 100%; box-sizing: border-box;}
+
+        /* チェックボックスのスタイル */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #eee;
+        }
+        .checkbox-label input[type="checkbox"] {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
 
         hr { border: none; border-top: 1px solid #555; margin: 5px 0; }
 
@@ -132,7 +156,7 @@
 
     <button id="menu-btn" title="操作パネルを開く">⚙️</button>
 
-    <div id="timer-display">30:00</div>
+    <div id="timer-display">25:00</div>
 
     <div id="control-screen">
         <h2 style="margin:0; color:#fff; font-size: 2rem;">操作パネル</h2>
@@ -145,18 +169,31 @@
 
         <div class="settings-area">
             <div class="setting-item">
-                <label>初期時間 (MM:SS)</label>
-                <input type="text" id="initial-time-input" value="30:00">
+                <label class="title">初期時間 (MM:SS)</label>
+                <input type="text" id="initial-time-input" value="25:00">
+            </div>
+
+            <hr>
+
+            <div class="setting-item">
+                <label class="title">通知設定（終了時は必ず鳴ります）</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="900" checked> 残り15分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="600" checked> 残り10分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="300" checked> 残り5分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="120" checked> 残り2分</label>
+                    <label class="checkbox-label"><input type="checkbox" class="alarm-chk" value="60" checked> 残り1分</label>
+                </div>
             </div>
             
             <hr>
 
             <div class="setting-item">
-                <label>文字色</label>
+                <label class="title">文字色</label>
                 <input type="color" id="color-input" value="#ffffff">
             </div>
             <div class="setting-item">
-                <label>背景画像</label>
+                <label class="title">背景画像</label>
                 <input type="file" id="bg-input" accept="image/*">
             </div>
         </div>
@@ -178,22 +215,21 @@
         const colorInput = document.getElementById('color-input');
         const bgInput = document.getElementById('bg-input');
 
-        // 変数化（デフォルト30分）
-        let totalSeconds = 30 * 60; 
+        let totalSeconds = 25 * 60; 
         let currentSeconds = totalSeconds;
         let timerInterval = null;
         let audioTimeoutId = null; 
 
-        // 通知時間と音声ファイルのマッピング（単位：秒）
+        // 通知時間(秒)と音声ファイルのマッピング
         const ALARMS = {
             900: '15.wav', // 15:00
             600: '10.wav', // 10:00
             300: '5.wav',  // 05:00
-            120: '2.wav'   // 02:00
+            120: '2.wav',  // 02:00
+            60:  '1.wav'   // 01:00 (追加)
         };
         const END_AUDIO = 'end.wav';
 
-        // --- 時間文字列のパース ---
         function parseTimeToSeconds(timeStr) {
             const parts = timeStr.split(':');
             if (parts.length === 2) {
@@ -201,10 +237,10 @@
                 const s = parseInt(parts[1], 10);
                 if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
             }
-            return 30 * 60; // 不正な値なら30分に戻す
+            return 25 * 60; 
         }
 
-        // --- 音声再生ロジック（1回目再生 → 5秒待機 → 2回目再生） ---
+        // 音声再生ロジック（1回目 → 5秒待機 → 2回目）
         function playAudioTwice(fileName) {
             if (audioTimeoutId) {
                 clearTimeout(audioTimeoutId);
@@ -221,11 +257,10 @@
                 audioTimeoutId = setTimeout(() => {
                     const audio2 = new Audio(fileName);
                     audio2.play().catch(e => console.warn(`2回目の再生に失敗しました。`, e));
-                }, 5000); // 5秒のインターバル
+                }, 5000); 
             };
         }
 
-        // --- 時間フォーマット変換と描画 ---
         function formatTime(seconds) {
             const m = Math.floor(seconds / 60);
             const s = seconds % 60;
@@ -236,9 +271,7 @@
             display.textContent = formatTime(currentSeconds);
         }
 
-        // --- 設定の適用 ---
         function applySettings() {
-            // タイマーが停止している時のみ初期時間を反映させる
             if (!timerInterval) {
                 const newSeconds = parseTimeToSeconds(initialTimeInput.value);
                 if (totalSeconds !== newSeconds) {
@@ -249,11 +282,9 @@
             }
         }
 
-        // --- タイマー制御 ---
         function startTimer() {
             if (timerInterval) return;
 
-            // 初期時間が手動で書き換えられていた場合の適用
             applySettings();
 
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -266,8 +297,13 @@
                     currentSeconds--;
                     updateDisplay();
 
+                    // 通知タイミングのチェック
                     if (ALARMS[currentSeconds]) {
-                        playAudioTwice(ALARMS[currentSeconds]);
+                        // 対象のチェックボックスがオンになっているか確認
+                        const chk = document.querySelector(`input.alarm-chk[value="${currentSeconds}"]`);
+                        if (chk && chk.checked) {
+                            playAudioTwice(ALARMS[currentSeconds]);
+                        }
                     }
 
                     if (currentSeconds === 0) {
@@ -292,18 +328,16 @@
 
         function resetTimer() {
             stopTimer();
-            // 入力欄の時間を読み込んでリセット
             totalSeconds = parseTimeToSeconds(initialTimeInput.value);
             currentSeconds = totalSeconds;
             updateDisplay();
         }
 
-        // --- イベントリスナー ---
+        // イベントリスナー
         menuBtn.addEventListener('click', () => {
             controlScreen.style.display = 'flex';
         });
 
-        // 閉じるボタンを押したときにも設定を反映
         closeMenuBtn.addEventListener('click', () => {
             applySettings();
             controlScreen.style.display = 'none';
@@ -313,7 +347,6 @@
         stopBtn.addEventListener('click', stopTimer);
         resetBtn.addEventListener('click', resetTimer);
 
-        // 外見の変更
         colorInput.addEventListener('input', (e) => {
             document.body.style.color = e.target.value;
         });
@@ -329,7 +362,6 @@
             }
         });
 
-        // 初期描画
         updateDisplay();
     </script>
 </body>
