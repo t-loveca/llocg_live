@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4e2"/><stop offset="1" stop-color="#f7c98f"/></linearGradient></defs>
+<rect width="1280" height="720" fill="url(#g)"/>
+<rect x="24" y="24" width="1232" height="672" rx="28" fill="none" stroke="#ef8a2b" stroke-width="5" stroke-dasharray="18 12"/>
+<path transform="translate(570.0 150) scale(1.4)" d="M50 4 C53 16 56 22 60 26 L66 16 L68 32 C74 30 82 24 92 22 C88 32 84 38 78 44 L88 50 C80 54 72 56 66 58 L72 70 C64 68 58 66 54 64 L52 80 L54 96 L50 96 L48 80 L46 64 C42 66 36 68 28 70 L34 58 C28 56 20 54 12 50 L22 44 C16 38 12 32 8 22 C18 24 26 30 32 32 L34 16 L40 26 C44 22 47 16 50 4 Z" fill="#e8553a"/>
+<path transform="translate(70 60) scale(.8) rotate(-25 50 50)" d="M50 4 C53 16 56 22 60 26 L66 16 L68 32 C74 30 82 24 92 22 C88 32 84 38 78 44 L88 50 C80 54 72 56 66 58 L72 70 C64 68 58 66 54 64 L52 80 L54 96 L50 96 L48 80 L46 64 C42 66 36 68 28 70 L34 58 C28 56 20 54 12 50 L22 44 C16 38 12 32 8 22 C18 24 26 30 32 32 L34 16 L40 26 C44 22 47 16 50 4 Z" fill="#f2a53a" opacity=".7"/>
+<path transform="translate(1120 550) scale(.9) rotate(30 50 50)" d="M50 4 C53 16 56 22 60 26 L66 16 L68 32 C74 30 82 24 92 22 C88 32 84 38 78 44 L88 50 C80 54 72 56 66 58 L72 70 C64 68 58 66 54 64 L52 80 L54 96 L50 96 L48 80 L46 64 C42 66 36 68 28 70 L34 58 C28 56 20 54 12 50 L22 44 C16 38 12 32 8 22 C18 24 26 30 32 32 L34 16 L40 26 C44 22 47 16 50 4 Z" fill="#f2a53a" opacity=".7"/>
+<text x="640.0" y="480.0" text-anchor="middle" font-family="sans-serif" font-size="64" font-weight="800" fill="#d6336c">謎3 問題画像</text>
+<text x="640.0" y="540.0" text-anchor="middle" font-family="sans-serif" font-size="32" fill="#7a4a2a">ダミー（16:9・差し替えてください）</text>
+</svg>

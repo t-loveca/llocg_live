@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f08a2a">
+<meta name="robots" content="noindex">
+<title>ひらめき収穫祭｜ラブカライフ！CUP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* タイトル画像から拾った色 */
+  --pink:#e8407e;      /* ラブカライフ！ */
+  --pink-deep:#c42a66;
+  --orange:#f08a2a;    /* ひらめき */
+  --red:#d9472b;       /* 紅葉・収穫 */
+  --olive:#8c8a2c;     /* 祭 */
+  --sky:#3d9be9;       /* CUP */
+  --wood:#8a5a36;      /* テーブル */
+  --wood-deep:#5e3a20;
+  --cream:#fff8ec;
+  --ink:#4a2c18;
+  --ink-soft:#7d5a3f;
+  --line:#f3d9b6;
+  --ng:#d1372b;
+  --round:"M PLUS Rounded 1c","Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  min-height:100vh;color:var(--ink);background:#f7d9b0;
+  font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;
+  font-size:16px;line-height:1.85;-webkit-text-size-adjust:100%;overflow-x:hidden;
+}
+/* 背景：タイトル画像をぼかしたもの＋淡いクリーム */
+#bg{position:fixed;inset:0;z-index:0;background:#f7d9b0 center/cover no-repeat}
+#bg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,250,240,.55) 0%,rgba(255,244,226,.72) 45%,rgba(250,226,192,.85) 100%)}
+
+/* ---------- 落ち葉 ---------- */
+#leaves{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.leaf{position:absolute;top:-60px;will-change:transform;animation:fall linear infinite}
+.leaf svg{display:block;animation:sway ease-in-out infinite alternate}
+@keyframes fall{to{transform:translate3d(var(--drift),110vh,0)}}
+@keyframes sway{from{transform:rotate(-40deg)}to{transform:rotate(40deg)}}
+@media (prefers-reduced-motion:reduce){#leaves{display:none}}
+
+/* ---------- 枠 ---------- */
+.wrap{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:0 14px calc(36px + env(safe-area-inset-bottom))}
+
+/* ロゴ風文字：白フチ（本体）の上にグラデ文字（::after）を重ねる */
+.logo{position:relative;display:inline-block;font-family:var(--round);font-weight:900;line-height:1.2;
+  color:#fff;-webkit-text-stroke:var(--stroke,8px) #fff;filter:drop-shadow(0 3px 0 rgba(160,70,30,.35))}
+.logo::after{content:attr(data-text);position:absolute;inset:0;-webkit-text-stroke:0;
+  background:linear-gradient(90deg,var(--orange),var(--pink) 55%,var(--red));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- タイトル ---------- */
+.hero{margin:0 -14px 16px;position:relative}
+.hero img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;background:#f7d9b0}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:28px;
+  background:linear-gradient(180deg,transparent,rgba(255,244,226,.0))}
+@media (min-width:748px){.hero{margin:16px 0 18px}.hero img{border-radius:20px;box-shadow:0 14px 30px -14px rgba(120,50,20,.55);border:4px solid #fff}}
+
+.welcome{text-align:center;margin:4px 0 14px}
+.welcome .sub{display:inline-block;font-family:var(--round);font-weight:800;font-size:13px;color:#fff;
+  background:var(--sky);border-radius:999px;padding:2px 14px;letter-spacing:.08em}
+.welcome .big{--stroke:7px;font-size:clamp(20px,5.8vw,28px);margin:8px 0 0;white-space:nowrap}
+
+/* ---------- カード ---------- */
+.card{position:relative;background:rgba(255,253,248,.96);border:3px solid #fff;border-radius:22px;
+  padding:20px 18px;margin:0 0 16px;box-shadow:0 10px 24px -12px rgba(120,55,20,.45)}
+.card p{margin:0 0 10px}.card p:last-child{margin-bottom:0}
+.card h2{display:flex;align-items:center;gap:8px;margin:-4px 0 10px;font-family:var(--round);font-weight:800;font-size:18px;color:var(--wood-deep)}
+.card h2 .ic{width:24px;height:24px;flex:0 0 24px}
+strong{color:var(--pink-deep)}
+small{color:var(--ink-soft)}
+.prize{background:linear-gradient(135deg,#fff6e6 0%,#ffe3ec 100%)}
+.prize h2{color:var(--pink-deep)}
+ul.rules{margin:0;padding:0;list-style:none}
+ul.rules li{position:relative;padding-left:22px;margin:0 0 8px}
+ul.rules li::before{content:"";position:absolute;left:0;top:.45em;width:14px;height:14px;background:var(--orange);
+  -webkit-mask:var(--maple-mask) center/contain no-repeat;mask:var(--maple-mask) center/contain no-repeat}
+ul.rules li:nth-child(2n)::before{background:var(--red)}
+
+/* ---------- 入力 ---------- */
+label.lbl{display:block;font-weight:700;font-size:14px;margin:0 0 6px;color:var(--ink-soft)}
+input[type=text]{width:100%;font:inherit;font-size:17px;padding:14px;border-radius:14px;
+  border:2px solid var(--line);background:#fff;color:var(--ink);outline:none;-webkit-appearance:none;appearance:none}
+input[type=text]:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,138,42,.2)}
+.btn{display:block;width:100%;margin-top:14px;padding:15px 18px;border:3px solid #fff;border-radius:999px;
+  font-family:var(--round);font-weight:900;font-size:19px;letter-spacing:.08em;color:#fff;cursor:pointer;
+  background:linear-gradient(90deg,var(--orange) 0%,var(--pink) 100%);
+  text-shadow:0 2px 0 rgba(150,40,40,.35);
+  box-shadow:0 5px 0 #b8335f,0 12px 20px -8px rgba(196,42,102,.6);
+  transition:transform .08s,box-shadow .08s,opacity .2s;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #b8335f}
+.btn[disabled]{opacity:.65;cursor:wait}
+.msg{min-height:1.6em;margin:10px 0 0;font-weight:700;text-align:center}
+.msg.ng{color:var(--ng)}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* ---------- 問題ページ ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 2px 6px}
+.topbar .mini{font-family:var(--round);font-weight:900;font-size:15px;line-height:1.2;--stroke:5px}
+.topbar .mini small{display:block;font-size:10px;color:var(--sky);-webkit-text-fill-color:var(--sky);letter-spacing:.06em}
+.progress{display:flex;gap:4px;flex-wrap:nowrap}
+.progress span{width:20px;height:20px;background:#c9b48f;opacity:.45;
+  -webkit-mask:var(--maple-mask) center/contain no-repeat;mask:var(--maple-mask) center/contain no-repeat}
+.progress span.done{opacity:1;background:var(--red)}
+.progress span.now{opacity:1;background:var(--orange);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.2) rotate(10deg)}}
+
+.q-head{text-align:center;margin:8px 0 12px}
+.q-badge{display:inline-block;font-family:var(--round);font-weight:900;color:#fff;font-size:15px;letter-spacing:.1em;
+  background:linear-gradient(90deg,var(--orange),var(--pink));border:3px solid #fff;border-radius:999px;padding:2px 18px;
+  box-shadow:0 3px 8px -3px rgba(196,42,102,.6)}
+.q-title{font-family:var(--round);font-weight:800;font-size:21px;line-height:1.45;margin:10px 0 0;color:var(--wood-deep);
+  text-wrap:balance;word-break:auto-phrase;text-shadow:0 0 6px #fff,0 0 2px #fff}
+
+/* 問題画像：16:9を画面幅いっぱいに */
+.q-figure{margin:0 -14px 8px;position:relative}
+.q-figure img{display:block;width:100%;height:auto;background:#fff;cursor:zoom-in;border-top:3px solid #fff;border-bottom:3px solid #fff}
+.q-figure .zoom{position:absolute;right:8px;bottom:8px;font-size:11px;font-weight:700;color:#fff;background:rgba(74,44,24,.7);
+  border-radius:999px;padding:2px 10px;pointer-events:none}
+@media (min-width:748px){.q-figure{margin:0 0 10px}.q-figure img{border:4px solid #fff;border-radius:18px;box-shadow:0 12px 26px -14px rgba(120,50,20,.55)}}
+.q-tip{text-align:center;font-size:12px;color:var(--ink-soft);margin:0 0 14px}
+.howto{font-size:15px}
+
+/* 拡大表示 */
+#lightbox{position:fixed;inset:0;z-index:50;background:rgba(30,15,5,.92);display:none;align-items:center;justify-content:center;padding:10px}
+#lightbox.on{display:flex}
+#lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+#lightbox .close{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;color:#fff;font-size:13px;font-weight:700;
+  background:rgba(255,255,255,.18);border-radius:999px;padding:4px 14px}
+
+/* ---------- 正解演出 ---------- */
+#seikai{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;
+  background:radial-gradient(circle at 50% 50%,#fff7d6 0%,#ffd28a 40%,#f59a3c 75%,#e0563a 100%)}
+#seikai.on{display:flex;animation:bgin .25s ease-out}
+@keyframes bgin{from{opacity:0}to{opacity:1}}
+#seikai .rays{position:absolute;left:50%;top:50%;width:260vmax;height:260vmax;margin:-130vmax 0 0 -130vmax;
+  background:repeating-conic-gradient(rgba(255,255,255,.38) 0 9deg,rgba(255,255,255,0) 9deg 18deg);
+  animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#seikai .word{position:relative;z-index:2;--stroke:14px;font-size:min(30vw,190px);letter-spacing:.02em;
+  animation:pop .7s cubic-bezier(.2,1.6,.4,1) both}
+#seikai .word.logo{filter:drop-shadow(0 8px 0 rgba(150,50,20,.4))}
+@keyframes pop{0%{transform:scale(.2) rotate(-12deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(-4deg)}}
+#seikai .sub{position:relative;z-index:2;margin-top:10px;font-family:var(--round);font-weight:900;font-size:20px;color:#fff;
+  background:var(--pink);border:3px solid #fff;border-radius:999px;padding:4px 22px;
+  animation:rise .5s .35s ease-out both;box-shadow:0 4px 10px -4px rgba(150,30,60,.6)}
+@keyframes rise{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+#seikai .tap{position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));z-index:2;font-size:12px;color:#fff;font-weight:700;opacity:0;animation:rise .4s 1.2s both}
+.burst{position:absolute;left:50%;top:50%;z-index:1;font-size:34px;line-height:1;will-change:transform,opacity;
+  animation:fly 1.4s cubic-bezier(.15,.7,.35,1) forwards}
+@keyframes fly{0%{transform:translate(-50%,-50%) scale(.3) rotate(0);opacity:1}
+  80%{opacity:1}100%{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.1) rotate(var(--r));opacity:0}}
+
+/* ---------- 達成 ---------- */
+.clear{text-align:center;padding:20px 16px 24px;background:linear-gradient(180deg,#fffaf0 0%,#ffe9d2 100%)}
+.clear .basket{font-size:40px;line-height:1;margin:0 0 6px;letter-spacing:2px}
+.clear .player{font-family:var(--round);font-weight:900;font-size:26px;color:var(--wood-deep);margin:0 0 2px;word-break:break-all}
+.clear .congrats{font-size:19px;font-weight:700;margin:4px 0 10px}
+.clear .big{--stroke:7px;font-size:27px;line-height:1.35;margin:4px 0 12px}
+.clear .show{display:block;margin-top:14px;padding:10px 14px;border-radius:16px;color:#fff;font-weight:700;
+  background:linear-gradient(90deg,var(--orange),var(--pink));border:3px solid #fff;box-shadow:0 6px 14px -8px rgba(196,42,102,.7)}
+.clear .stamp{margin-top:12px;font-size:13px;color:var(--ink-soft)}
+.clear-hero{margin:12px -14px 14px}
+.clear-hero img{display:block;width:100%;height:auto}
+@media (min-width:748px){.clear-hero{margin:16px 0}.clear-hero img{border-radius:18px;border:4px solid #fff}}
+
+
+/* 秋の味覚の飾り */
+.card .deco{position:absolute;top:-18px;right:-8px;width:46px;height:46px;transform:rotate(14deg);filter:drop-shadow(0 3px 2px rgba(90,40,10,.25))}
+.card .deco.deco-l{right:auto;left:-8px;transform:rotate(-16deg)}
+.harvest-row{display:flex;justify-content:center;gap:10px;margin:10px 0 0}
+.harvest-row svg{width:34px;height:34px;filter:drop-shadow(0 2px 1px rgba(90,40,10,.2))}
+.harvest-row svg:nth-child(2n){transform:translateY(4px) rotate(-8deg)}
+.harvest-row svg:nth-child(2n+1){transform:rotate(8deg)}
+.shelf{margin:22px 4px 0}
+.shelf-items{display:flex;justify-content:space-around;align-items:flex-end;padding:0 8px;margin-bottom:-6px;position:relative;z-index:1}
+.shelf-items svg{filter:drop-shadow(0 3px 1px rgba(70,30,10,.25))}
+.shelf-items svg:nth-child(3n){transform:rotate(-10deg)}
+.shelf-items svg:nth-child(3n+1){transform:rotate(8deg)}
+.plank{height:14px;border-radius:7px;background:linear-gradient(180deg,#b07a4c 0%,#8a5a36 55%,#6d4428 100%);
+  box-shadow:0 6px 10px -6px rgba(70,30,10,.6),inset 0 2px 0 rgba(255,255,255,.25)}
+.clear-img{display:block;width:100%;max-width:420px;height:auto;margin:0 auto 14px;border-radius:14px;border:4px solid #fff;box-shadow:0 8px 18px -10px rgba(120,50,20,.55)}
+footer{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:16px}
+.fade-in{animation:fadein .45s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="bg" aria-hidden="true"></div>
+<div id="leaves" aria-hidden="true"></div>
+<main class="wrap" id="app"></main>
+<div id="lightbox" role="dialog" aria-label="画像の拡大表示"><span class="close">× 閉じる</span><img alt=""></div>
+<div id="seikai" role="alert" aria-live="assertive">
+  <div class="rays"></div>
+  <div class="word logo" data-text="正解！">正解！</div>
+  <div class="sub">カードを収穫しました！</div>
+  <div class="tap">タップで次へ</div>
+</div>
+<noscript><p style="text-align:center;padding:20px">このページはJavaScriptを有効にしてご覧ください。</p></noscript>
+
+<script>
+/* 公開データ：問題本文は暗号化済み。答えそのものはこのページに含まれていません。 */
+const DATA = {"id":"i/fsRA0u","iter":30000,"placeholder":"例：PL!SP-bp1-001-R","recordUrl":"https://script.google.com/macros/s/AKfycbxFTx-wBIsMO8DNpLTU_RkOAIVZblQg9yfCb_bcUv0Wc7K5YddE88XwN1tTI1_RWs1J/exec","titleImage":"images/title.jpg","bgImage":"images/bg.jpg","firstKey":"JK4TcIKCIoOH1H9X4LOpkNbj35TOUp5S+McVqfZ/FPo=","stages":[{"iv":"ve4CncOQN0n2zXt9","ct":"s2vTFa9GiAWvuEiOvgnQbMZnQX52lOv2caKfV8JbFSUsp6nX7X9oqnRwhshf2EeReQSu2j/zs/8sdGA2kB+e8c3OlGYy7ss+o7A0ONpx85ySL1idhMEEoRjlf2cqfSr27JZX9Ut2zVX67pw5Z8QnzbhJrPfRznlwHR2BURHt1mOB+Y5aSX7DLhVEYx0+oMKYeOBvEedmm0hxWMOCxH6kKVsX5jD4l2ioQzI4OOhCsph0EzywJCofjzMhGyjvqI2c8L8sVhzb+DX3KMXYtrMXv7RsgmM6p50045Xy234dewYxe9/PRrFMZMRm6F8l0hx9X8mMASBqaGf+QgmxNOKjWki0bWsqLrzv1VlNu7SOfd7M+sUbfqDHcuacY49lI8/YzU6sQ1pDunWEny7t/ZZrcxL03KQPs6+ytYNR29ErjPOW4H7sPYIPxY5+wRaGyIHqNl+QrqQlFog=","wraps":[]},{"iv":"qWUci2Eyu+qe59gz","ct":"TarwnAGXHqMwTzd+kfVDW/4qYZJKWgB9S3h/X/t404POkfw9euOvGISwy62QV8MmONADGzDcHB3XccF8BiM4ouVyg7honXw/36c/LAtFVtuiXg7yJ2dg4Nx2RKuh1blTUXxBK9GhPFf85UGucxF9WlOyVpZfsSPFaw8LSkr+d2TwqbW4O1pzijCN4E0sbUej22n/AT1ozRC161blQZzM6b+KT6ZqVjep8fLgIVD+Ea+4YvPm5yqlM/bFKVHpndGhkMhn+9C/G9alW8+P1epZ6p0jtXyWtZGe0HpGj5CM52MyD2Yh5FU5uaNGJC0IRbIdtrJDEkq5BRSaY0RsPEh5E7t13uYPbjT27RmmY35bWSXAOsOBf9ECESJ7+4gYxa/zKp65G99W/cI0OLXl5h5OcYek5HtDxstg96eb10LMnnhgwTp0RSXKjakgExc=","wraps":[{"salt":"zS4+00CBMbWZgNVe1M+xLA==","iv":"8EK3QjJreCFfViMX","ct":"ae2nOuTRWsjS4h89SfitfsWgSUVe/SvbPR3ZZPltTxPVrWM8qHtaNu5V02tNHUgk","len":10,"hy":2}]},{"iv":"5eD9CTGa/gT5s3Jf","ct":"+yxdiQpSeJ5eIL/lsb1r4apRtNNHMIJosoEVBFUl/f5eWVWHcNtNN23IzbsAOaoxIhaNWdjHPJTdNY4o/y+PTuHDb7LNZIkPeSvUmBijEnFVpVjwIDw8ZJMZ/ZkPH7mBcDq3bYwT5jSs3I9I6tTkRKCWJr/Vp8TTVKqGzYNq+gOovvUirkaQs1k4fErL410Ygq+Kec+UAacNYZYprfbOnFnLowQc3Z60l5VXmCCgm1oTSOh4EorjB3NrxWtMeRFiXJbOFrrthtz1M1k9eyKr3lTOJLH3cvEDNHoGqnUVc0Z/T+1xoQ9tm/wu+zXIegMzI3HmIJUuaA/xZ7pJNU/eEKpHiH7Vm9FfAzIcdz0R8UpyEQ6FZDL6a7ThRoEcinqopDBM1lhFpVletzx8v8y4q2RBmYj/LnhotdbmLcmh052PurBQlY+u+dY=","wraps":[{"salt":"LOdKpSgMh4ccucw7a/XGyw==","iv":"inn05iGFOyu6+A2w","ct":"xrR+TLnWzxqlo9v2HBwHJpIbEU+NBSHZBdHqGtDISgfGRWz9FJultK75yqMfQd1f","len":9,"hy":2}]},{"iv":"Tufm19ZrjxvsZBY2","ct":"ZovOE8qyLlb7C6b8OpjUALBtF5Zhymuqjv77HfGsikxcE0MxLfYmgCewcXSmc/V4tqsRD/2nOSjXL7iW+v/apUr+annZ4fIzlWmYrxbtDdFFz3oBEv6+kzaxbX89i/+MLwJt4u2O9rvovFRjHgIt/ePbZbJZzkMennDxyKepPP3IK+qyDOsEFDaGovfm7FMuVKMy5cW3FRnC0GE4J/2oEBodu+xPVow/8bHYMW5LgmpKZIPdmV3Wd+fMbl2qk5Zm/+ISLQIca/nVZDwL7CXAabL0wu9GblV6sMT1XkxixZk1gA//GOXLHu68dC6spPBBDQTyRWylTmj8QAKROx958FvennLgjnhkgHukqdPtxPYqeOrUlbOc6js96E5C3DYlKa+I/o9Ty1zwMMNW28PUHEUfxa9AqHrzRNdJiFm5t0sOqwRhhCL3e8rJwJzo0TGA4kO1NA9cdlBeyeNF2P49Ta8xk002U/Y3Kq9tvm3uNmVbFiJC+IMaWWeVO0umlMMT1pyiFsOtnx7TbBQOhmyG9SoSRs75AjAfItJOV+i8XgchmiER7DtvgsrRjhfxml7fIgZDlETz4t8B5wpumCu5+z9a3IuHHZMY9ZuWxksotZgb9K9EMzCEHie50ZXPQ4jv6bnbe1DyHHFVUtVnE0u7yHTZskCYZWaAu4OL2t55n1nR73R78WT5ST/ChoYPsMAE/p3icJSoULxYTrNJuBBERL3J","wraps":[{"salt":"Bi+3KAKdB/+m9KtvoGa0Aw==","iv":"Kpn0YbXn1H2vCuNt","ct":"e7RADsmJiYdJF1k0C2hIfk5vmDFQDr47OY0d9Z4MBcB91YeMJox8IVZGJ7kr3lgz","len":10,"hy":2}]},{"iv":"pKQa5OuiQB+sTq+p","ct":"RoT38Zj/lMesu6nw72fVw/0/lcsdvs8vmTo+I2XT7Zwu5P1q+loNAx3FqXPWcdWlCVouPyZg7kYdczEPcYJX0GBWI7DG+zbN2aofWtdvitklde2Dk+BudNGXZ1lpaIRfCTdEZOJ7xkrFisyqQuyk1ZQc+qffnupwu7/EFNBzWYKuwI8sls9IQ/ZEIgwA5BwM2MQ8CJKqvrtF8WYqNUfyABGrcmOJirIIysCjHA+Qui7KxfvP/8G1hBgJljVhHMB4BKnWitNQb/aclbAKEeAVj1z/7Op0Rte9szJPQdjIeJgcJOazTA1bE4YvIS40xZJLTAub5+/m7cscXcSu6DPVD+2ABRYfjMXV2OdK0i5itrTcjoptjRUh7DeKNgqRuXL4cg5QauEjws6SGDJt2w2FQ6U2EvDjHA+OBgXeERq/QWRiER9aetf1zI1K0ojr5wD6UauW/CuCZXXaEWQ=","wraps":[{"salt":"8jvYZ3Xpm5eGKfRyXVuWGw==","iv":"HYef79FS6mTjCcrq","ct":"JNrbsFjLwhdukMnD0Of0HKTQO7fnj5DpCJomFaIZbzRqWoQFv5pMxbNPIRJLBKrx","len":11,"hy":2},{"salt":"/8AXlmaEWX5hXCoJ76OkNA==","iv":"8sh4WFzcZ83YTcEB","ct":"4tDJxDElpXWL0LjkNO4jysfIlkXYNSzyhg0SCcPt7Qffxlo6umvyG82maRZBvM+f","len":9,"hy":2}]},{"iv":"fWdRshPZ/nhnhTFn","ct":"bAJkraHdR+iW5qp+1Vrp1AymQteJioBKPBSY94RD5gbvMF0Bz9iGgDUqNLm2CR9b5uHlXeaIOxYunysweaMzL0dxGsBA2hSU5f3Xs6lYe0bjrqB99ncXXZQEe770jkaZRq2sDk0JRzqaBGRBdKf2V5fYPkusElPTKltt+gV2r/V4M802vrGZlx69umonSqQAqGQNuNa6lWRJFZ8CU+LpeqqaKlGbOYG1+SCGT9qauvh9TGjfxQNxPcH6SpWpIh8SkW57sPgvg25miuF2wcEQeRxbkgxapOGunXKfbJyTHzCaAEG/Bw+5/clXRlRnhNuhGn454b8S/nK0pwPimNjOv70iOADzPOS2m+1RLvCnQXDok59Q2L4dPgxE0R1MKU25d6ca5zOOfG71EX1Qmi/IcrTFSxKyS5utX9d498Z+xwrbu4sIXjWpHrAf846KasiUaBuD42PoSrGxnvfOS3tEtPetpAI7oA4owKp4WZbg8fd32NDIdxrlmTy1B6tAH1ivjSSO3y0J3ZKj/LPrR+qvWD0+Mr/ZNu4yF3NI/4Amo1Ai+0QzRaNbKJzFHiMxXSiaak9v0RdGDPnwOTFwcruabnqKmaaPdoswrYNqCxqn1lLi/7pi17fVjicuk79wNrmq3rwGV66X6H3B/JmHXMRLpLAmteA+O0BfkmBZnNYINrXkl5AdZvsgPPinQrAm1lyeRRcINxBc4q2rMkD0OI9ug7uhv+sHhekEtQAy+gUtN3OMXetj3lmPNCpQ1lEVM8lgzzc03saqdZRBs1UrRiPBObn1vPEs","wraps":[{"salt":"sklUuROlq5706MANFGUyjw==","iv":"ETWrsw9sWPERYit/","ct":"ZCcZ/K7iaMmOMwWehKFo3q2ZkRmbitA8m9faSgplMViY6Wt6AzpIt8A9hCMLsKyn","len":14,"hy":3}]},{"iv":"nqw+Q9BV1pD/mV7X","ct":"pspmWZ6+FEMceNNBDb1M9mxA3OyRMh1Q1i5vuOOdOAdQehdQCW6B5sEnlAQ7skEa78fB+cZhg8la2FC/UqepUM4WA5/p5nnBKGQDPkVmNh5fV/97ZfQmK4qODciv8V+7UKA0UJWvZ4EenYhwPcmjhelve4jZC7saixtxzoQkVOnDsYBNuzL6lp6RNQA+yyMgKgLYGLKNxTKqmqB6","wraps":[{"salt":"o/p+7PA7EmmcAYY8CdsHSw==","iv":"hzKzkaF24C/x5Nfj","ct":"vd+BepsNVZXgRiEbP0+qw1nJM7RYJgpoAtU4QXMJpCrFo4Jm8NHph0huKz5D7uEz","len":12,"hy":3},{"salt":"Pq4rAwlGYLEz/de5Lq1uXQ==","iv":"Q0hBEFjLJY4ajuvH","ct":"pBzscyxEGSwzjpVO26CjXUaOhqmekBV3tuL9GadmL6U8BDBLhmXWxwvXRht/l+qr","len":12,"hy":3}]}]};
+</script>
+<script>
+(() => {
+"use strict";
+
+// ---------- もみじ形 ----------
+const MAPLE_PATH = "M50 4 C53 16 56 22 60 26 L66 16 L68 32 C74 30 82 24 92 22 C88 32 84 38 78 44 L88 50 C80 54 72 56 66 58 L72 70 C64 68 58 66 54 64 L52 80 L54 96 L50 96 L48 80 L46 64 C42 66 36 68 28 70 L34 58 C28 56 20 54 12 50 L22 44 C16 38 12 32 8 22 C18 24 26 30 32 32 L34 16 L40 26 C44 22 47 16 50 4 Z";
+const maskSvg = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='${MAPLE_PATH}'/></svg>`)}")`;
+document.documentElement.style.setProperty("--maple-mask", maskSvg);
+const leafSvg = (c, size) => `<svg width="${size}" height="${size}" viewBox="0 0 100 100"><path d="${MAPLE_PATH}" fill="${c}"/></svg>`;
+const ICON_LEAF = c => `<svg class="ic" viewBox="0 0 100 100"><path d="${MAPLE_PATH}" fill="${c}"/></svg>`;
+
+
+// ---------- 秋の味覚（SVG） ----------
+const FOODS = {
+  kuri: `<path d="M50 10C60 22 86 40 86 63C86 81 70 91 50 91C30 91 14 81 14 63C14 40 40 22 50 10Z" fill="#8b4a22"/><path d="M15 68C32 76 68 76 85 68C82 83 68 91 50 91C32 91 18 83 15 68Z" fill="#e2bd86"/><ellipse cx="37" cy="42" rx="6" ry="13" transform="rotate(25 37 42)" fill="#fff" opacity=".3"/><path d="M47 11L50 3L53 11Z" fill="#5e3a20"/>`,
+  budou: `<path d="M50 20C50 14 52 10 56 5" stroke="#6b4a2a" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M54 16C64 4 82 6 86 14C76 20 64 21 54 16Z" fill="#7d9b3a"/>` +
+    [[27,34],[50,32],[73,34],[38,54],[62,54],[50,74]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="13" fill="#7a3c8e"/><circle cx="${x-4}" cy="${y-5}" r="3.5" fill="#fff" opacity=".45"/>`).join(""),
+  ringo: `<path d="M50 28C40 18 14 20 14 50C14 76 32 92 44 90C48 89 52 89 56 90C68 92 86 76 86 50C86 20 60 18 50 28Z" fill="#d93a2e"/><path d="M50 28C50 18 52 12 56 6" stroke="#6b4a2a" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M54 18C62 6 78 8 80 14C72 22 62 22 54 18Z" fill="#6f9a35"/><ellipse cx="31" cy="47" rx="6" ry="12" fill="#fff" opacity=".3"/>`,
+  kaki: `<ellipse cx="50" cy="60" rx="38" ry="31" fill="#f08a2a"/><ellipse cx="36" cy="54" rx="7" ry="10" fill="#fff" opacity=".28"/><path d="M50 36L36 27L42 38L27 42L44 44L50 52L56 44L73 42L58 38L64 27Z" fill="#5d7a2b"/><rect x="47" y="20" width="6" height="12" rx="3" fill="#5e3a20"/>`,
+  kinoko: `<path d="M38 52L62 52L60 88C58 93 42 93 40 88Z" fill="#f3e3c4"/><path d="M8 54C8 22 92 22 92 54C92 60 8 60 8 54Z" fill="#9a5a2e"/><circle cx="32" cy="38" r="5" fill="#fff" opacity=".5"/><circle cx="58" cy="32" r="4" fill="#fff" opacity=".5"/><circle cx="72" cy="44" r="3.5" fill="#fff" opacity=".5"/>`,
+  donguri: `<path d="M24 46L76 46C76 72 62 90 50 93C38 90 24 72 24 46Z" fill="#c9873a"/><ellipse cx="38" cy="62" rx="5" ry="10" fill="#fff" opacity=".28"/><path d="M16 46C16 24 84 24 84 46Z" fill="#7a4e2c"/><path d="M50 26L50 12" stroke="#5e3a20" stroke-width="6" stroke-linecap="round"/>`,
+  satsumaimo: `<path d="M12 62C8 44 30 30 54 32C76 34 94 44 90 60C86 76 64 80 44 78C26 76 14 72 12 62Z" fill="#b5446e"/><path d="M50 40C58 42 66 44 72 50" stroke="#fff" stroke-width="3" opacity=".35" fill="none" stroke-linecap="round"/><path d="M90 58L98 56" stroke="#7a2f4c" stroke-width="4" stroke-linecap="round"/>`,
+};
+const FOOD_KEYS = Object.keys(FOODS);
+const food = (k, cls = "", size) => `<svg class="${cls}" viewBox="0 0 100 100"${size ? ` width="${size}" height="${size}"` : ""} aria-hidden="true">${FOODS[k]}</svg>`;
+const ICON_FOOD = k => food(k, "ic");
+// 本棚風の「収穫だな」
+const SHELF = `<div class="shelf" aria-hidden="true"><div class="shelf-items">${["kuri","budou","kaki","ringo","kinoko","donguri","satsumaimo"].map((k,i)=>food(k,"",(i%2?34:40))).join("")}</div><div class="plank"></div></div>`;
+
+if (DATA.bgImage) document.getElementById("bg").style.backgroundImage = `url("${DATA.bgImage}")`;
+
+(function leaves(){
+  const box = document.getElementById("leaves");
+  const colors = ["#e8553a","#f08a2a","#f2b33d","#d9472b","#e86a2c","#c9a227"];
+  const n = window.innerWidth < 600 ? 14 : 22;
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement("div");
+    d.className = "leaf";
+    const size = 16 + Math.random() * 18;
+    d.style.left = (Math.random() * 100) + "vw";
+    d.style.opacity = (.55 + Math.random() * .4).toFixed(2);
+    d.style.setProperty("--drift", ((Math.random() - .5) * 180) + "px");
+    d.style.animationDuration = (10 + Math.random() * 10) + "s";
+    d.style.animationDelay = (-Math.random() * 20) + "s";
+    d.innerHTML = (i % 3 === 2) ? food(FOOD_KEYS[(i / 3 | 0) % FOOD_KEYS.length], "", size * .9) : leafSvg(colors[i % colors.length], size);
+    d.firstChild.style.animationDuration = (2 + Math.random() * 2) + "s";
+    box.appendChild(d);
+  }
+})();
+
+// ---------- 暗号ユーティリティ ----------
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const b64e = u => btoa(String.fromCharCode(...u));
+
+function norm(s) {
+  return s.normalize("NFKC").toUpperCase().replace(/[ー－−‐‑‒–—―ｰ]/g, "-");
+}
+// 入力から「カード番号らしき部分文字列」をすべて取り出す（含まれていれば正解、を実現するため）
+// 「入力の中に答えの文字列が含まれているか」を判定するため、
+// 入力から答えと同じ長さの部分文字列をすべて切り出して候補にする（区切り位置は問わない）。
+function windows(s, len, hy) {
+  const out = new Set();
+  for (let i = 0; i + len <= s.length; i++) {
+    const w = s.slice(i, i + len);
+    if (w.split("-").length - 1 === hy) out.add(w); // ハイフンの数が答えと違うものは試すまでもなく不一致
+  }
+  return [...out];
+}
+async function deriveKey(pass, saltB64) {
+  const base = await crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: b64d(saltB64), iterations: DATA.iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+}
+async function aesDecrypt(key, ivB64, ctB64) {
+  return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(ivB64) }, key, b64d(ctB64)));
+}
+async function openStage(idx, rawKey) {
+  const st = DATA.stages[idx];
+  const key = await crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
+  return JSON.parse(dec.decode(await aesDecrypt(key, st.iv, st.ct)));
+}
+async function tryUnlock(nextIdx, input) {
+  const st = DATA.stages[nextIdx];
+  const s = norm(input).slice(0, 200);
+  for (const w of st.wraps) {
+    for (const cand of windows(s, w.len, w.hy)) {
+      try { return await aesDecrypt(await deriveKey(cand, w.salt), w.iv, w.ct); } catch (_) {}
+    }
+  }
+  return null;
+}
+
+// ---------- 進行状況 ----------
+const SKEY = "hirameki-harvest-v1-" + DATA.id;
+function load() { try { return JSON.parse(localStorage.getItem(SKEY)) || null; } catch (_) { return null; } }
+function save(o) { try { localStorage.setItem(SKEY, JSON.stringify(o)); } catch (_) {} }
+function clearSave() { try { localStorage.removeItem(SKEY); } catch (_) {} }
+let state = load();
+
+
+// ---------- クリア者の自動記録（Googleスプレッドシートへ送信） ----------
+// 送れなかった記録は端末に残し、通信が戻ったら再送する
+function queueRecord(item) {
+  if (!DATA.recordUrl) return;
+  state.outbox = state.outbox || [];
+  state.outbox.push(item);
+  save(state);
+  flushRecords();
+}
+let flushing = false;
+async function flushRecords() {
+  if (!DATA.recordUrl || flushing || !state || !state.outbox || !state.outbox.length) return;
+  flushing = true;
+  try {
+    while (state.outbox.length) {
+      const item = state.outbox[0];
+      let res;
+      try {
+        const r = await fetch(DATA.recordUrl, {
+          method: "POST", redirect: "follow",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ ...item, name: state.name, cid: state.cid }),
+        });
+        res = await r.json();
+      } catch (_) { break; } // 通信失敗 → あとで再送
+      if (!(res && res.ok) && !(res && res.error === "bad token")) {
+        break; // サーバー側の一時的なエラー → あとで再送
+      }
+      state.outbox.shift();
+      save(state);
+    }
+  } finally {
+    flushing = false;
+  }
+}
+setInterval(flushRecords, 15000);
+window.addEventListener("online", flushRecords);
+
+// ---------- 画面部品 ----------
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const totalQ = DATA.stages.length - 1;
+
+function show(html) {
+  app.innerHTML = html;
+  app.firstElementChild && app.firstElementChild.classList.add("fade-in");
+  window.scrollTo(0, 0);
+}
+function progressDots(idx) {
+  let h = "";
+  for (let i = 0; i < totalQ; i++) h += `<span class="${i < idx ? "done" : i === idx ? "now" : ""}"></span>`;
+  return `<div class="progress" aria-label="${Math.min(idx + 1, totalQ)} / ${totalQ}">${h}</div>`;
+}
+const topbar = idx => `<div class="topbar"><div class="mini logo" data-text="ひらめき収穫祭">ひらめき収穫祭</div>${progressDots(idx)}</div>`;
+
+// 画像の拡大
+const lb = document.getElementById("lightbox");
+lb.addEventListener("click", () => lb.classList.remove("on"));
+function zoom(src) { lb.querySelector("img").src = src; lb.classList.add("on"); }
+
+// 正解演出
+const seikai = document.getElementById("seikai");
+function celebrate() {
+  return new Promise(resolve => {
+    seikai.querySelectorAll(".burst").forEach(e => e.remove());
+    const word = seikai.querySelector(".word"), sub = seikai.querySelector(".sub"), tap = seikai.querySelector(".tap");
+    [word, sub, tap].forEach(el => { el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; });
+    const leafCols = ["#e8553a","#f08a2a","#f2b33d","#d9472b"];
+    const n = 26;
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement("span");
+      s.className = "burst";
+      const px = 30 + Math.random() * 26;
+      s.innerHTML = (i % 2) ? food(FOOD_KEYS[i % FOOD_KEYS.length], "", px) : leafSvg(leafCols[i % leafCols.length], px);
+      const a = (i / n) * Math.PI * 2 + Math.random() * .3;
+      const r = 38 + Math.random() * 30;
+      s.style.setProperty("--x", Math.cos(a) * r + "vmax");
+      s.style.setProperty("--y", Math.sin(a) * r + "vmax");
+      s.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+      s.style.animationDelay = (Math.random() * .15) + "s";
+      seikai.appendChild(s);
+    }
+    seikai.classList.add("on");
+    if (navigator.vibrate) { try { navigator.vibrate([60, 40, 120]); } catch (_) {} }
+    let done = false;
+    const finish = () => { if (done) return; done = true; seikai.classList.remove("on"); resolve(); };
+    setTimeout(() => seikai.addEventListener("click", finish, { once: true }), 400);
+    setTimeout(finish, 2600);
+  });
+}
+
+// ---------- 各画面 ----------
+function renderTitle() {
+  show(`<div>
+    <div class="hero">${DATA.titleImage ? `<img src="${esc(DATA.titleImage)}" alt="ラブカライフ！CUP ひらめき収穫祭">` : ""}</div>
+    <div class="welcome">
+      <span class="sub">ラブカライフ！CUP サブイベント</span><br>
+      <span class="big logo" data-text="「ひらめき収穫祭」へようこそ！">「ひらめき収穫祭」へようこそ！</span>
+      <div class="harvest-row">${["kuri","budou","kaki","ringo","kinoko"].map(k=>food(k)).join("")}</div>
+    </div>
+    <section class="card">
+      <p>ここでは、さまざまな謎を解きながら、<strong>答えとなるカード</strong>を見つけていただきます。</p>
+      <p>ひらめきとラブカの知識を頼りに、謎に隠されたカードを見つけ出してください！</p>
+      <p>ぜひ、「謎解きの秋」をお楽しみください！</p>
+    </section>
+    <section class="card prize">${food("kaki","deco")}
+      <h2>${ICON_FOOD("ringo")}景品</h2>
+      <p>すべての謎をクリアした方のうち、<strong>先着5名の方にはお好きなPRパックをプレゼント！</strong></p>
+      <p>6人目以降の方も、謎解き達成者として<strong>noteにお名前を掲載</strong>させていただきます。</p>
+    </section>
+    <section class="card">
+      <h2>${ICON_FOOD("kuri")}ルール</h2>
+      <ul class="rules">
+        <li>各問題の指示に従って、答えを入力してください。</li>
+        <li>ネット検索はもちろんOKです。デッキログやLL-Fans、その他のイベントページなども自由にご利用ください。</li>
+        <li>カードの名前や効果など、<strong>ラブカに関する知識が謎を解くヒント</strong>になる場合があります。</li>
+        <li>SNSなどで、問題の答えやネタバレを公開することはお控えください。</li>
+      </ul>
+    </section>
+    <section class="card">${food("donguri","deco deco-l")}
+      <form id="f" autocomplete="off">
+        <label class="lbl" for="pname">プレイヤー名</label>
+        <input type="text" id="pname" maxlength="30" placeholder="お名前を入力" required>
+        <button class="btn" type="submit">謎解きをはじめる</button>
+        <p class="msg ng" id="m"></p>
+      </form>
+    </section>
+    ${SHELF}<footer>ラブカライフ！CUP</footer>
+  </div>`);
+  document.getElementById("f").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("pname").value.trim();
+    if (!name) { document.getElementById("m").textContent = "プレイヤー名を入力してください"; return; }
+    state = { name, idx: 0, key: DATA.firstKey, cid: b64e(crypto.getRandomValues(new Uint8Array(9))).replace(/[+/=]/g, "") };
+    save(state);
+    route();
+  });
+}
+
+async function renderStage() {
+  let p;
+  try { p = await openStage(state.idx, b64d(state.key)); }
+  catch (_) { clearSave(); state = null; return renderTitle(); }
+  if (p.kind === "clear") return renderClear(p);
+
+  show(`<div>
+    ${topbar(state.idx)}
+    <div class="q-head"><span class="q-badge">${esc(p.label)}</span><h1 class="q-title">${esc(p.title)}</h1></div>
+    ${p.lead ? `<section class="card"><p>${p.lead}</p></section>` : ""}
+    ${p.image ? `<figure class="q-figure" style="margin-top:0"><img id="qimg" src="${esc(p.image)}" alt="${esc(p.label)} 問題画像"></figure>
+      <p class="q-tip">画像をタップすると拡大表示／横向きにすると大きく見られます</p>` : ""}
+    <section class="card">
+      <h2>${ICON_FOOD("budou")}回答方法</h2>
+      <p class="howto">${p.howto}</p>
+      <form id="f" autocomplete="off">
+        <label class="lbl" for="ans" style="margin-top:12px">カード番号</label>
+        <input type="text" id="ans" placeholder="${esc(DATA.placeholder || "")}" autocapitalize="characters" spellcheck="false">
+        <button class="btn" type="submit" id="b">答えを送る</button>
+        <p class="msg" id="m"></p>
+      </form>
+    </section>
+    ${SHELF}<footer>${esc(state.name)} さん 挑戦中</footer>
+  </div>`);
+
+  const qimg = document.getElementById("qimg");
+  if (qimg) qimg.addEventListener("click", () => zoom(qimg.src));
+
+  const f = document.getElementById("f"), b = document.getElementById("b"), m = document.getElementById("m"), inp = document.getElementById("ans");
+  f.addEventListener("submit", async e => {
+    e.preventDefault();
+    const v = inp.value.trim();
+    if (!v) { m.className = "msg ng"; m.textContent = "答えを入力してください"; return; }
+    b.disabled = true; m.className = "msg"; m.textContent = "判定中…";
+    const raw = await tryUnlock(state.idx + 1, v);
+    b.disabled = false;
+    if (!raw) {
+      m.className = "msg ng"; m.textContent = "ざんねん…ちがうようです";
+      f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+      return;
+    }
+    inp.blur();
+    m.textContent = "";
+    state.idx += 1; state.key = b64e(raw);
+    const isClear = state.idx === DATA.stages.length - 1;
+    if (isClear && !state.clearedAt) state.clearedAt = Date.now();
+    save(state);
+    if (isClear) try {
+      const np = await openStage(state.idx, raw);
+      if (isClear && np.rt) queueRecord({ token: np.rt, at: Date.now() });
+    } catch (_) {}
+    await celebrate();
+    route();
+  });
+}
+
+function renderClear(p) {
+  const t = new Date(state.clearedAt || Date.now());
+  const pad = n => String(n).padStart(2, "0");
+  const stamp = `${t.getMonth() + 1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
+  show(`<div>
+    ${topbar(totalQ)}
+    ${DATA.titleImage ? `<div class="clear-hero"><img src="${esc(DATA.titleImage)}" alt=""></div>` : ""}
+    <section class="card clear">
+      <p class="player">${esc(state.name)} さん</p>
+      <p class="congrats">おめでとうございます！</p>
+      <p class="big"><span class="logo" data-text="すべてのカードを">すべてのカードを</span><br><span class="logo" data-text="収穫できました！">収穫できました！</span></p>
+      <p>${p.message}</p>
+      <div class="show">この画面を運営スタッフまでお見せください！</div>
+      <p class="stamp">クリア時刻 ${stamp}</p>
+    </section>
+    ${SHELF}
+  </div>`);
+}
+
+function route() {
+  if (/[?&]reset\b/.test(location.search)) { clearSave(); state = null; history.replaceState(null, "", location.pathname); }
+  if (!state || !state.key) return renderTitle();
+  renderStage();
+}
+
+if (!window.crypto || !crypto.subtle) {
+  app.innerHTML = `<div class="card" style="margin-top:40px">このブラウザでは動作しません。最新のブラウザで <strong>https://</strong> のURLから開いてください。</div>`;
+} else {
+  route();
+  flushRecords();
+}
+})();
+</script>
+</body>
+</html>
