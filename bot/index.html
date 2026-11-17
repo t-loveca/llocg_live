@@ -200,7 +200,7 @@ p.note{font-size:calc(1.8*var(--u));color:var(--muted);margin:calc(.6*var(--u)) 
 <div class="toast" id="toast"></div>
 
 <script>
-const DECK = [{"no": "PL!SP-bp1-005-P", "n": 4, "name": "葉月 恋", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【登場】手札を1枚控え室に置いてもよい：自分のデッキの上からカードを5枚見る。その中から『Liella!』のカードを1枚まで公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP01/PL!SP-bp1-005-P.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-pb1-014-N", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 2, "blade": 2, "heart": {"heart06": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP/PL!SP-pb1-014-N.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-sd1-020-RM", "n": 1, "name": "鬼塚夏美", "type": "メンバー", "cost": 2, "blade": 2, "heart": {"heart02": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP05/PL!SP-sd1-020-RM.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!-bp3-012-N", "n": 4, "name": "南ことり", "type": "メンバー", "cost": 2, "blade": 2, "heart": {}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[heart01]か[heart03]か[heart06]のうち、1つを選ぶ。ライブ終了時まで、自分の成功ライブカード置き場にあるカード1枚につき、選んだハートを1つ得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP03/PL!-bp3-N-012-N.png", "unit": "Printemps", "liella": false}, {"no": "PL!-bp5-011-N", "n": 4, "name": "絢瀬絵里", "type": "メンバー", "cost": 2, "blade": 2, "heart": {}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[heart04]か[heart05]か[heart06]のうち、1つを選ぶ。ライブ終了時まで、自分の成功ライブカード置き場にあるカード1枚につき、選んだハートを1つ得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP05/PL!-bp5-011-N.png", "unit": "BiBi", "liella": false}, {"no": "PL!SP-bp7-010-R", "n": 4, "name": "ウィーン・マルガレーテ", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分のエネルギー置き場にあるエネルギー1枚をエネルギーデッキに置く。その後、自分の控え室からカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-010-R.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-bp1-011-R", "n": 4, "name": "鬼塚冬毬", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分の控え室からライブカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP01/PL!SP-bp1-011-R.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-sd2-014-SD2", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分の控え室からメンバーカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-014-SD2.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-bp2-002-R", "n": 1, "name": "唐 可可", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【登場】自分のデッキの上からカードを3枚見る。その中からコスト11以上のカードを1枚公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP02/PL!SP-bp2-002-R.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-pb2-037-N", "n": 4, "name": "平安名すみれ", "type": "メンバー", "cost": 5, "blade": 2, "heart": {"heart02": 1, "heart06": 1}, "bh": {}, "score": null, "need": {}, "sp": {}, "ability": "【登場】【左サイド】カードを2枚引き、手札を2枚控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP02/PL!SP-pb2-037-N.png", "unit": "CatChu!", "liella": true}, {"no": "PL!SP-bp2-007-R", "n": 2, "name": "米女メイ", "type": "メンバー", "cost": 5, "blade": 2, "heart": {"heart02": 1, "heart03": 1}, "bh": {}, "score": null, "need": {}, "sp": {}, "ability": "【登場】手札を1枚控え室に置いてもよい：自分のデッキの上からカードを5枚見る。その中から『Liella!』のメンバーカードを1枚公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP02/PL!SP-bp2-007-R.png", "unit": "CatChu!", "liella": true}, {"no": "PL!SP-pb1-001-R", "n": 4, "name": "澁谷かのん", "type": "メンバー", "cost": 11, "blade": 4, "heart": {"heart02": 4, "heart03": 1, "heart06": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[E][E]支払わないかぎり、自分の手札を2枚控え室に置く。\n【ライブ成功時】[E][E][E][E][E][E]支払ってもよい：ライブの合計スコアを＋１する。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP/PL!SP-pb1-001-R.png", "unit": "CatChu!", "liella": true}, {"no": "PL!SP-pb2-010-R", "n": 4, "name": "ウィーン・マルガレーテ", "type": "メンバー", "cost": 11, "blade": 5, "heart": {"heart02": 1, "heart03": 1, "heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】手札を1枚控え室に置かないかぎり、自分のエネルギー1枚をエネルギーデッキに置く。\n【ライブ成功時】以下から1つを選ぶ。\n・カードを2枚引く。\n・自分のエネルギーデッキから、エネルギーカードを1枚ウェイト状態で置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP02/PL!SP-pb2-010-R.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-sd1-003-SD", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 15, "blade": 3, "heart": {"heart02": 3, "heart06": 3}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】手札を2枚控え室に置いてもよい：ライブ終了時まで、[ブレード][ブレード][ブレード][ブレード][ブレード]を得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD01/PL!SP-sd1-003-SD.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-bp7-023-L", "n": 3, "name": "START!! True dreams", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 1, "need": {"heart03": 1, "heart0": 2}, "sp": {}, "ability": "【ライブ成功時】エールにより公開された自分のカードの中から、『Liella!』のカードを1枚デッキの一番上に置いてもよい。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-023-L.png", "unit": null, "liella": true}, {"no": "PL!SP-sd2-023-SD2", "n": 4, "name": "始まりは君の空", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {}, "score": 1, "need": {"heart03": 1, "heart0": 2}, "sp": {"score": 1}, "ability": "【ライブ開始時】自分の成功ライブカード置き場にカードが2枚以上ある場合、このカードのスコアを＋５し、必要ハートは[heart02][heart02][heart02][heart03][heart03][heart03][heart06][heart06][heart06][heart0][heart0][heart0]になる。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-023-SD2.png", "unit": null, "liella": true}, {"no": "PL!SP-sd2-024-SD2", "n": 4, "name": "アイコトバ！", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 3, "need": {"heart02": 1, "heart03": 1, "heart06": 1, "heart0": 4}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-024-SD2.png", "unit": null, "liella": true}, {"no": "PL!SP-bp7-025-L", "n": 1, "name": "Memories", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 3, "need": {"heart02": 2, "heart03": 1, "heart06": 2, "heart0": 2}, "sp": {}, "ability": "【ライブ開始時】ライブ終了時まで、自分のステージにいる「嵐 千砂都」1人は[ブレード]を得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-025-L.png", "unit": null, "liella": true}];
+const DECK = [{"no": "PL!SP-bp1-005-P", "n": 4, "name": "葉月 恋", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【登場】手札を1枚控え室に置いてもよい：自分のデッキの上からカードを5枚見る。その中から『Liella!』のカードを1枚まで公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP01/PL!SP-bp1-005-P.png", "unit": "KALEIDOSCORE", "liella": true, "alts": ["PL!SP-bp1-005-R.png"]}, {"no": "PL!SP-pb1-014-N", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 2, "blade": 2, "heart": {"heart06": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP/PL!SP-pb1-014-N.png", "unit": "5yncri5e!", "liella": true, "alts": ["PL!SP-pb1-014-PR.png"]}, {"no": "PL!SP-sd1-020-RM", "n": 1, "name": "鬼塚夏美", "type": "メンバー", "cost": 2, "blade": 2, "heart": {"heart02": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP05/PL!SP-sd1-020-RM.png", "unit": "5yncri5e!", "liella": true, "alts": ["PL!SP-sd1-020-P.png", "PL!SP-sd1-020-SD.png", "PL!SP-sd1-020-SD2.png"]}, {"no": "PL!-bp3-012-N", "n": 4, "name": "南ことり", "type": "メンバー", "cost": 2, "blade": 2, "heart": {}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[heart01]か[heart03]か[heart06]のうち、1つを選ぶ。ライブ終了時まで、自分の成功ライブカード置き場にあるカード1枚につき、選んだハートを1つ得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP03/PL!-bp3-N-012-N.png", "unit": "Printemps", "liella": false, "alts": ["PL!-bp3-012-RM.png", "PL!-bp3-012-PR.png"]}, {"no": "PL!-bp5-011-N", "n": 4, "name": "絢瀬絵里", "type": "メンバー", "cost": 2, "blade": 2, "heart": {}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[heart04]か[heart05]か[heart06]のうち、1つを選ぶ。ライブ終了時まで、自分の成功ライブカード置き場にあるカード1枚につき、選んだハートを1つ得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP05/PL!-bp5-011-N.png", "unit": "BiBi", "liella": false, "alts": []}, {"no": "PL!SP-bp7-010-R", "n": 4, "name": "ウィーン・マルガレーテ", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分のエネルギー置き場にあるエネルギー1枚をエネルギーデッキに置く。その後、自分の控え室からカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-010-R.png", "unit": "KALEIDOSCORE", "liella": true, "alts": ["PL!SP-bp7-010-P.png"]}, {"no": "PL!SP-bp1-011-R", "n": 4, "name": "鬼塚冬毬", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分の控え室からライブカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP01/PL!SP-bp1-011-R.png", "unit": "5yncri5e!", "liella": true, "alts": ["PL!SP-bp1-011-P.png"]}, {"no": "PL!SP-sd2-014-SD2", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分の控え室からメンバーカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-014-SD2.png", "unit": "5yncri5e!", "liella": true, "alts": []}, {"no": "PL!SP-bp2-002-R", "n": 1, "name": "唐 可可", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【登場】自分のデッキの上からカードを3枚見る。その中からコスト11以上のカードを1枚公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP02/PL!SP-bp2-002-R.png", "unit": "KALEIDOSCORE", "liella": true, "alts": ["PL!SP-bp2-002-P.png"]}, {"no": "PL!SP-pb2-037-N", "n": 4, "name": "平安名すみれ", "type": "メンバー", "cost": 5, "blade": 2, "heart": {"heart02": 1, "heart06": 1}, "bh": {}, "score": null, "need": {}, "sp": {}, "ability": "【登場】【左サイド】カードを2枚引き、手札を2枚控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP02/PL!SP-pb2-037-N.png", "unit": "CatChu!", "liella": true, "alts": []}, {"no": "PL!SP-bp2-007-R", "n": 2, "name": "米女メイ", "type": "メンバー", "cost": 5, "blade": 2, "heart": {"heart02": 1, "heart03": 1}, "bh": {}, "score": null, "need": {}, "sp": {}, "ability": "【登場】手札を1枚控え室に置いてもよい：自分のデッキの上からカードを5枚見る。その中から『Liella!』のメンバーカードを1枚公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP02/PL!SP-bp2-007-R.png", "unit": "CatChu!", "liella": true, "alts": ["PL!SP-bp2-007-P.png"]}, {"no": "PL!SP-pb1-001-R", "n": 4, "name": "澁谷かのん", "type": "メンバー", "cost": 11, "blade": 4, "heart": {"heart02": 4, "heart03": 1, "heart06": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[E][E]支払わないかぎり、自分の手札を2枚控え室に置く。\n【ライブ成功時】[E][E][E][E][E][E]支払ってもよい：ライブの合計スコアを＋１する。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP/PL!SP-pb1-001-R.png", "unit": "CatChu!", "liella": true, "alts": ["PL!SP-pb1-001-P2.png", "PL!SP-pb1-001-PR.png"]}, {"no": "PL!SP-pb2-010-R", "n": 4, "name": "ウィーン・マルガレーテ", "type": "メンバー", "cost": 11, "blade": 5, "heart": {"heart02": 1, "heart03": 1, "heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】手札を1枚控え室に置かないかぎり、自分のエネルギー1枚をエネルギーデッキに置く。\n【ライブ成功時】以下から1つを選ぶ。\n・カードを2枚引く。\n・自分のエネルギーデッキから、エネルギーカードを1枚ウェイト状態で置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP02/PL!SP-pb2-010-R.png", "unit": "KALEIDOSCORE", "liella": true, "alts": ["PL!SP-pb2-010-PP.png"]}, {"no": "PL!SP-sd1-003-SD", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 15, "blade": 3, "heart": {"heart02": 3, "heart06": 3}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】手札を2枚控え室に置いてもよい：ライブ終了時まで、[ブレード][ブレード][ブレード][ブレード][ブレード]を得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD01/PL!SP-sd1-003-SD.png", "unit": "5yncri5e!", "liella": true, "alts": ["PL!SP-sd1-003-P.png", "PL!SP-sd1-003-SD2.png"]}, {"no": "PL!SP-bp7-023-L", "n": 3, "name": "START!! True dreams", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 1, "need": {"heart03": 1, "heart0": 2}, "sp": {}, "ability": "【ライブ成功時】エールにより公開された自分のカードの中から、『Liella!』のカードを1枚デッキの一番上に置いてもよい。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-023-L.png", "unit": null, "liella": true, "alts": ["PL!SP-bp7-023-SECL.png"]}, {"no": "PL!SP-sd2-023-SD2", "n": 4, "name": "始まりは君の空", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {}, "score": 1, "need": {"heart03": 1, "heart0": 2}, "sp": {"score": 1}, "ability": "【ライブ開始時】自分の成功ライブカード置き場にカードが2枚以上ある場合、このカードのスコアを＋５し、必要ハートは[heart02][heart02][heart02][heart03][heart03][heart03][heart06][heart06][heart06][heart0][heart0][heart0]になる。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-023-SD2.png", "unit": null, "liella": true, "alts": ["PL!SP-sd2-023-P.png"]}, {"no": "PL!SP-sd2-024-SD2", "n": 4, "name": "アイコトバ！", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 3, "need": {"heart02": 1, "heart03": 1, "heart06": 1, "heart0": 4}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-024-SD2.png", "unit": null, "liella": true, "alts": ["PL!SP-sd2-024-P.png"]}, {"no": "PL!SP-bp7-025-L", "n": 1, "name": "Memories", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 3, "need": {"heart02": 2, "heart03": 1, "heart06": 2, "heart0": 2}, "sp": {}, "ability": "【ライブ開始時】ライブ終了時まで、自分のステージにいる「嵐 千砂都」1人は[ブレード]を得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-025-L.png", "unit": null, "liella": true, "alts": []}];
 </script>
 <script>
 // ===== ラブカ スパーリングbot エンジン（金太郎飴 アグロLiella!）=====
@@ -294,7 +294,7 @@ class Engine {
     if (this.mode === 'swapOld') return this.keepList(this.hand, 4).junk.length ? { keep: this.keepList(this.hand, 4).keep, junk: this.keepList(this.hand, 4).junk } : { keep: this.hand.slice(), junk: [] };
     if (from <= 1) { take(['REN', 'TOMARI', 'CHISA2']); take(['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI']); take(['START', 'HAJI']); }
     if (this.mode === 'aggr' || this.mode === 'aggrMax' || this.mode === 'aggrK') {
-      const last = this.mode === 'aggrMax' ? from : 4;   // aggrMax：次のターンの分だけ残す
+      const last = this.mode === 'aggrMax' ? from : Math.min(4, from + (this.horizon ?? 2) - 1);   // 何ターン先まで確保するか
       for (let k = Math.max(2, from); k <= last; k++) {
         if (k === 2) { if (!on(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) take(['SUMI', 'MEI']); take(['AIKO', 'MEM']); }
         if (k === 3) { if (!on(['KAN', 'M11', 'C15'])) take(['KAN', 'M11']); if (!take(['HAJI'])) { take(['AIKO', 'MEM']); take(['TOMARI', 'MARG7']); } }
@@ -316,6 +316,7 @@ class Engine {
           if (k === 3 && !have(['HAJI']) && inDisc(['HAJI'])) wants.push('live');
           if (k === 4 && !have(['C15']) && inDisc(['C15'])) wants.push('mem');
           if (k === 4 && !have(['HAJI', 'AIKO', 'MEM']) && inDisc(['HAJI', 'AIKO', 'MEM'])) wants.push('live');
+          wants.sort((a, b) => (a === 'mem' ? 0 : 1) - (b === 'mem' ? 0 : 1));
           for (const w of wants) {
             const tags = w === 'mem' ? ['CHISA2', 'MARG7'] : ['TOMARI', 'MARG7'];
             if (!recOn(tags) && !keep.some(x => tags.includes(x.tag))) take(tags);
@@ -462,7 +463,14 @@ class Engine {
     const h = ['KOT', 'ERI'].includes(c.tag) ? this.succ : Object.values(c.d.heart || {}).reduce((a, b) => a + b, 0);
     return h + 0.83 * (c.d.blade || 0);
   }
+  // 予定しているライブ（目標に届く組み合わせで成功確率が最大のもの）の成功確率
+  plannedP() {
+    const lives = this.hand.filter(x => x.type === 'ライブ'); let best = -1;
+    for (const comb of combos(lives, 3)) if (comb.reduce((s, l) => s + this.needOf(l).score, 0) >= this.target()) best = Math.max(best, this.probSuccess(comb, 300));
+    return best;
+  }
   boostBatons() {
+    const P_ENOUGH = this.boostEnough ?? 0.9, P_GAIN = this.boostGain ?? 0.03;
     for (let i = 0; i < 2; i++) {
       const handC2 = this.hand.filter(c => c.type === 'メンバー' && c.cost === 2);
       if (!handC2.length) return;
@@ -470,9 +478,17 @@ class Engine {
       const targets = ['C', 'R', 'L'].filter(a => this.stage[a] && !this.entered.has(a) && this.stage[a].card.cost === 2);
       if (!targets.length) return;
       const weakest = targets.slice().sort((a, b) => this.memberValue(this.stage[a].card) - this.memberValue(this.stage[b].card))[0];
-      const gain = this.memberValue(best) - this.memberValue(this.stage[weakest].card);
-      if (gain <= 0.01) return;
-      this.log(`（思考）3回目のライブに向けて盤面強化：「${this.name(this.stage[weakest].card)}」→「${this.name(best)}」`, 'think');
+      if (this.memberValue(best) - this.memberValue(this.stage[weakest].card) <= 0.01) return;
+      if (this.boostCheck !== false) {
+        const p0 = this.plannedP();
+        if (p0 < 0) return;                          // 目標に届くライブが無ければ盤面強化しない
+        if (p0 >= P_ENOUGH) { this.log(`（思考）成功見込み${Math.round(p0 * 100)}%で十分→置き換えはしない`, 'think'); return; }
+        // 置き換えた場合の成功確率を試算
+        const keep = this.stage[weakest]; this.stage[weakest] = { card: best, wait: false };
+        const p1 = this.plannedP(); this.stage[weakest] = keep;
+        if (p1 - p0 < P_GAIN) return;
+        this.log(`（思考）盤面強化：「${this.name(keep.card)}」→「${this.name(best)}」（成功見込み${Math.round(p0 * 100)}%→${Math.round(p1 * 100)}%）`, 'think');
+      }
       if (!this.play(best, weakest, true)) return;
     }
   }
@@ -487,6 +503,7 @@ class Engine {
     let tg = null; for (const w of wantTags) { tg = pool.find(x => x.tag === w); if (tg) break; }
     if (!tg) return null;
     this.stage[area] = null; this.disc.push(m.card);
+    if (this.fixEntered !== false) this.entered.delete(area);   // メンバーがいなくなったエリアは再び登場先にできる
     if (t === 'MARG7') { const i = this.energy.findIndex(e => e.wait); this.energy.splice(i >= 0 ? i : 0, 1); this.energyDeck++; }
     this.removeFrom(this.disc, tg); this.hand.push(tg);
     this.log(`「${this.name(m.card)}」【起動】自身を控え室へ${t === 'MARG7' ? '・エネルギー1枚をエネルギーデッキへ' : ''}→控え室の「${this.name(tg)}」を手札へ`, 'act');
@@ -511,7 +528,7 @@ class Engine {
   fill() {
     for (const a of ['L', 'C', 'R']) {
       if (!this.stage[a] && !this.entered.has(a) && this.activeEnergy() >= 2) {
-        const c = this.find(['KOT', 'ERI', 'V2', 'KUKU', 'TOMARI', 'CHISA2', 'MARG7', 'REN']);
+        const c = this.hand.filter(x => x.type === 'メンバー' && x.cost === 2).sort((x, y) => this.memberValue(y) - this.memberValue(x))[0];
         if (c) this.play(c, a, false);
       }
     }
@@ -525,9 +542,9 @@ class Engine {
     // マリガン：スコア1ライブ・恋(2枚まで)・コスト5・スコア3ライブ、恋が無ければ黄ハートのコスト2
     const h = this.hand.slice(); const k = [];
     const tk = tags => { for (const t of tags) { const i = h.findIndex(x => x.tag === t); if (i >= 0) { k.push(h.splice(i, 1)[0]); return; } } };
-    tk(['START', 'HAJI']); tk(['REN']); tk(['SUMI', 'MEI']); tk(['REN']);
+    tk(['START', 'HAJI']); tk(['REN']); tk(['SUMI', 'MEI']); if ((this.mullRen ?? 1) >= 2) tk(['REN']);
     if (!k.some(c => c.tag === 'REN')) tk(['TOMARI', 'CHISA2']);
-    tk(['AIKO', 'MEM']);
+    if (this.mullAiko !== false) tk(['AIKO', 'MEM']);
     const ret = h;
     if (ret.length) {
       for (const c of ret) this.removeFrom(this.hand, c);
@@ -556,8 +573,10 @@ class Engine {
     this.changed();
   }
   main1() {
+    // 1ターン目は葉月 恋を優先（2枚あれば2枚とも出して、2回のサーチで必要なカードを集める）
     const y = this.find(['REN', 'TOMARI', 'CHISA2']); if (y) this.play(y, 'C', false);
-    const o = this.find(['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI']); if (o) this.play(o, this.stage.C ? 'R' : 'C', false);
+    const order2 = this.t1Ren === false ? ['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI'] : ['REN', 'V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'KOT', 'ERI'];
+    const o = this.find(order2); if (o) this.play(o, this.stage.C ? 'R' : 'C', false);
     const o2 = !this.stage.R ? this.find(['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI']) : null;
     if (o2) this.play(o2, 'R', false);
   }
@@ -582,7 +601,7 @@ class Engine {
     else if (this.stage.L.card.cost === 2) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', true); }
     this.fill();
     // かのんなら、ライブ回収を挟んでスコア6を作る
-    if (this.stage.L && this.stage.L.card.tag === 'KAN') {
+    if (this.stage.L && this.stage.L.card.tag === 'KAN') {   // 進行（コスト11）ができている場合だけライブ回収
       const lv = this.hand.filter(x => x.type === 'ライブ');
       const tgt = this.target();
       if (!this.hasSet(lv, tgt)) {
@@ -610,12 +629,25 @@ class Engine {
     else if (L && L.card.cost === 2) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', true); }
     else if (!L) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', false); }
     // 回収→空いたエリアにコスト2を出し直す、をエネルギーが続く限り（中央・右サイドで最大2回）
-    for (let i = 0; i < 2; i++) {
+    // 進行（千砂都15）ができていなければ、回収カードはライブ回収に使わない
+    const progOK = this.progFirst === false || (this.stage.L && this.stage.L.card.tag === 'C15') || !this.data.some(d => TAG[baseNo(d.no)] === 'C15');
+    if (!progOK) this.log('（思考）進行（千砂都15）が遅れているため、ライブカードの回収は行わない', 'think');
+    for (let i = 0; i < 2 && progOK; i++) {
       const lv = this.hand.filter(x => x.type === 'ライブ');
       const needLive = !this.hasSet(lv, this.target());
       if (!needLive && this.hand.length >= 4) break;
       if (this.activeEnergy() < 2) break;              // 出し直しの2が無ければ盤面を減らさない
-      const want = needLive ? ['HAJI', 'AIKO', 'MEM', 'START'] : ['KOT', 'ERI', 'V2', 'HAJI', 'AIKO'];
+      let want;
+      if (needLive) {
+        // 目標に届く組み合わせになるライブだけを回収対象にする（1枚で届くもの→2枚で届くものの順）
+        const dl = this.disc.filter(x => x.type === 'ライブ');
+        const one = dl.filter(x => this.hasSet(lv.concat([x]), this.target()));
+        let two = [];
+        if (!one.length && this.succTargetOnly !== false) for (const x of dl) for (const y of dl) if (x !== y && this.hasSet(lv.concat([x, y]), this.target())) two.push(x);
+        const cand = one.length ? one : (this.succTargetOnly === false ? dl : two);
+        want = [...new Set(cand.sort((a, b) => this.needOf(b).score - this.needOf(a).score).map(x => x.tag))];
+        if (!want.length) break;
+      } else want = ['KOT', 'ERI', 'V2'];
       const avail = this.disc.some(x => want.includes(x.tag));
       if (!avail) break;
       let area = ['C', 'R'].find(a => this.stage[a] && !this.entered.has(a) && (needLive ? ['TOMARI', 'MARG7'] : ['TOMARI', 'MARG7', 'CHISA2']).includes(this.stage[a].card.tag));
@@ -625,42 +657,67 @@ class Engine {
       }
       if (!area) break;
       if (!this.activateRecovery(area, want)) break;
-      this.log(`4ターン目：回収${i + 1}回目→空いたエリアを出し直す`, 'think');
+      this.log(`4ターン目：回収${i + 1}回目→空いたエリアにメンバーを出し直す`, 'think');
       const c2 = this.find(['KOT', 'ERI', 'V2', 'KUKU', 'REN', 'TOMARI', 'CHISA2', 'MARG7']);
       if (c2) this.play(c2, area, false);
     }
-    this.fill(); this.upgradeBatons();
+    this.spendEnergy();
+    this.upgradeBatons();
+  }
+  // 残りエネルギーでメンバーを置く：空きエリア→コスト2、余ればコスト2からコスト5へバトンタッチ
+  spendEnergy() {
+    this.fill();
+    for (let k = 0; k < 2; k++) {
+      const c5 = this.find(['SUMI', 'MEI']);
+      if (!c5 || this.activeEnergy() < 3) break;
+      const src = ['C', 'R'].filter(a => this.stage[a] && !this.entered.has(a) && this.stage[a].card.cost === 2 && !['KOT', 'ERI'].includes(this.stage[a].card.tag))
+        .sort((a, b) => this.memberValue(this.stage[a].card) - this.memberValue(this.stage[b].card))[0];
+      if (!src) break;
+      this.play(c5, src, true);
+    }
   }
 
-  // ---------- 成功確率（デッキ残りからエールを試行） ----------
-  probSuccess(comb, samples) {
+
+  // ことり・絵里の色選択を含めた成功確率。残りデッキのブレードハート分布からエールを試行し、
+  // 色の組み合わせごとに成功回数を数えて、最も成功しやすい色を返す
+  evalWithChoices(need, base, blades, flexMs, samples) {
     samples = samples || this.samples || 200;
-    const need = {}; for (const l of comb) for (const [k, v] of Object.entries(this.needOf(l).need)) need[k] = (need[k] || 0) + v;
-    const ms = this.members();
-    const base = {}; for (const m of ms) for (const [k, v] of Object.entries(m.card.d.heart)) base[k] = (base[k] || 0) + v;
-    for (const m of ms) {
-      if (!['KOT', 'ERI'].includes(m.card.tag) || this.succ === 0) continue;
-      const opts = m.card.tag === 'KOT' ? ['heart01', 'heart03', 'heart06'] : ['heart04', 'heart05', 'heart06'];
-      const def = k => (need[k] || 0) - (base[k] || 0);
-      const pick = opts.slice().sort((a, b) => (def(b) - def(a)) || ((need[b] || 0) - (need[a] || 0)))[0];
-      base[pick] = (base[pick] || 0) + this.succ;
-    }
-    let blades = ms.filter(m => !m.wait).reduce((s, m) => s + (m.card.d.blade || 0), 0);
-    if (ms.some(m => m.card.tag === 'C15' && !m.wait) && this.hand.length >= 2) blades += 5;
-    if (comb.some(l => l.tag === 'MEM') && ms.some(m => m.card.d.name.includes('千砂都') && !m.wait)) blades += 1;
+    // 同じ成功確率なら必要ハートに含まれる色を選ぶよう、必要な色を先に並べる
+    const optsOf = m => (m.card.tag === 'KOT' ? ['heart03', 'heart06', 'heart01'] : ['heart06', 'heart04', 'heart05']).slice().sort((a, b) => (need[b] || 0) - (need[a] || 0));
+    const flex = this.succ > 0 ? flexMs : [];
+    let choices = [[]];
+    for (const m of flex) { const nx = []; for (const c of choices) for (const o of optsOf(m)) nx.push(c.concat([o])); choices = nx; }
+    // 必要ハートに無い色（緑・青など）は「無」としてしか働かないので1つにまとめる
+    const sig = c => c.map(o => need[o] ? o : 'x').join(',');
+    const seen = new Map(); for (const c of choices) if (!seen.has(sig(c))) seen.set(sig(c), c);
+    choices = [...seen.values()];
     const pool = this.deck.length >= blades ? this.deck.slice() : this.deck.concat(this.disc);
     const n = Math.min(blades, pool.length);
-    let ok = 0;
+    const cnt = new Array(choices.length).fill(0);
     for (let s = 0; s < samples; s++) {
       const h = Object.assign({}, base); let alls = 0;
       for (let i = 0; i < n; i++) {
         const j = i + Math.floor(this.rng() * (pool.length - i)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
-        const bh = pool[i].bhKey;
-        if (bh === 'ALL') alls++; else if (bh) h[bh] = (h[bh] || 0) + 1;
+        const bh = pool[i].bhKey; if (bh === 'ALL') alls++; else if (bh) h[bh] = (h[bh] || 0) + 1;
       }
-      if (feasible(h, alls, need)) ok++;
+      for (let ci = 0; ci < choices.length; ci++) {
+        const hh = Object.assign({}, h);
+        for (const o of choices[ci]) hh[o] = (hh[o] || 0) + this.succ;
+        if (feasible(hh, alls, need)) cnt[ci]++;
+      }
     }
-    return ok / samples;
+    let bi = 0; for (let i = 1; i < cnt.length; i++) if (cnt[i] > cnt[bi]) bi = i;
+    return { p: cnt[bi] / samples, choice: choices[bi] || [] };
+  }
+  // ---------- 成功確率（デッキ残りからエールを試行） ----------
+  probSuccess(comb, samples) {
+    const need = {}; for (const l of comb) for (const [k, v] of Object.entries(this.needOf(l).need)) need[k] = (need[k] || 0) + v;
+    const ms = this.members();
+    const base = {}; for (const m of ms) for (const [k, v] of Object.entries(m.card.d.heart)) base[k] = (base[k] || 0) + v;
+    let blades = ms.filter(m => !m.wait).reduce((s, m) => s + (m.card.d.blade || 0), 0);
+    if (ms.some(m => m.card.tag === 'C15' && !m.wait) && this.hand.length >= 2) blades += 5;
+    if (comb.some(l => l.tag === 'MEM') && ms.some(m => m.card.d.name.includes('千砂都') && !m.wait)) blades += 1;
+    return this.evalWithChoices(need, base, blades, ms.filter(m => ['KOT', 'ERI'].includes(m.card.tag)), samples).p;
   }
 
   // ---------- ライブカードセット ----------
@@ -784,17 +841,28 @@ class Engine {
     const need = {}; for (const l of lives) for (const [k, v] of Object.entries(this.needOf(l).need)) need[k] = (need[k] || 0) + v;
     // ステージのハート
     const hearts = {}; for (const m of ms) for (const [k, v] of Object.entries(m.card.d.heart)) hearts[k] = (hearts[k] || 0) + v;
-    // ことり・絵里：不足色を選ぶ（ライブ開始時に選択）
-    for (const m of ms) {
-      if (!['KOT', 'ERI'].includes(m.card.tag) || this.succ === 0) continue;
-      const opts = m.card.tag === 'KOT' ? ['heart01', 'heart03', 'heart06'] : ['heart04', 'heart05', 'heart06'];
-      const def = k => (need[k] || 0) - (hearts[k] || 0);
-      const pick = opts.slice().sort((a, b) => (def(b) - def(a)) || ((need[b] || 0) - (need[a] || 0)))[0];
-      hearts[pick] = (hearts[pick] || 0) + this.succ;
-      this.log(`${this.name(m.card)}【ライブ開始時】${COLORS[pick]}ハートを選択→+${this.succ}`);
+    // エール枚数（色選択の評価にも使う）
+    const blades = ms.filter(m => !m.wait).reduce((s, m) => s + (m.card.d.blade || 0), 0) + extraB;
+    // ことり・絵里：残りデッキのブレードハート分布から、成功確率が最大になる色を選ぶ（ライブ開始時＝エール前）
+    const flexMs = ms.filter(m => ['KOT', 'ERI'].includes(m.card.tag));
+    if (flexMs.length && this.succ > 0) {
+      let choice;
+      if (this.colorMode === 'heuristic') {
+        choice = flexMs.map(m => { const opts = m.card.tag === 'KOT' ? ['heart01', 'heart03', 'heart06'] : ['heart04', 'heart05', 'heart06'];
+          const def = k => (need[k] || 0) - (hearts[k] || 0); return opts.slice().sort((a, b) => (def(b) - def(a)) || ((need[b] || 0) - (need[a] || 0)))[0]; });
+      } else {
+        const ev = this.evalWithChoices(need, Object.assign({}, hearts), blades, flexMs, 400);
+        choice = ev.choice;
+        const cnt = {}; for (const c of this.deck) if (c.bhKey) cnt[c.bhKey] = (cnt[c.bhKey] || 0) + 1;
+        this.log(`（思考）残りデッキのブレードハート：${Object.entries(cnt).map(([k, v]) => `${k === 'ALL' ? 'ALL' : COLORS[k]}${v}`).join(' ')}（${this.deck.length}枚中）→成功見込み${Math.round(ev.p * 100)}%の色を選択`, 'think');
+      }
+      flexMs.forEach((m, i) => {
+        const pick = choice[i] && choice[i] !== 'x' ? choice[i] : (m.card.tag === 'KOT' ? 'heart03' : 'heart06');
+        hearts[pick] = (hearts[pick] || 0) + this.succ;
+        this.log(`${this.name(m.card)}【ライブ開始時】${COLORS[pick]}ハートを選択→+${this.succ}`);
+      });
     }
     // エール
-    const blades = ms.filter(m => !m.wait).reduce((s, m) => s + (m.card.d.blade || 0), 0) + extraB;
     const waited = ms.filter(m => m.wait).length;
     this.log(`エール：アクティブなメンバーのブレード合計${blades}${waited ? `（ウェイト中${waited}人は除外）` : ''}`, 'act');
     const yell = []; for (let i = 0; i < blades; i++) { const c = this.popDeck(); if (c) yell.push(c); }
@@ -835,6 +903,11 @@ class Engine {
     const on = tags => this.onStage(tags);
     const want = [];
     const add = (tags, why) => { for (const t of tags) want.push({ t, why }); };
+    // 次ターンの進行カードが手札か盤面にあれば（進行確定）、ずっと使う始まりは君の空を最優先
+    const progSecured = nt === 2 ? (has(['SUMI', 'MEI']) || on(['SUMI', 'MEI', 'KAN', 'M11', 'C15']))
+      : nt === 3 ? (has(['KAN', 'M11']) || on(['KAN', 'M11', 'C15']))
+      : (has(['C15']) || on(['C15']));
+    if (this.startHaji !== false && progSecured) add(['HAJI'], '次ターンの進行は確定→始まりは君の空');
     if (nt <= 2) {
       if (!has(['SUMI', 'MEI']) && !on(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) add(['SUMI', 'MEI'], '2ターン目のコスト5');
       if (!has(['AIKO', 'MEM'])) add(['AIKO', 'MEM'], '2ターン目のスコア3ライブ');
@@ -912,7 +985,11 @@ class Engine {
     if (botWin) {
       if (botWin && oppWin && this.liveZone.length === 2) this.log('同点：ライブカード置き場に2枚あるため移動しない', 'sys');
       else {
-        const z = this.liveZone.slice().sort((a, b) => (b.card.d.score || 0) - (a.card.d.score || 0))[0];
+        // 置き場に移さなかったライブは控え室へ行き、後で回収できる。回収価値の低いものを成功ライブ置き場へ
+        const recVal = c => ({ HAJI: 3, AIKO: 2, MEM: 2, START: 1 })[c.tag] ?? 0;
+        const z = this.succSmart === false
+          ? this.liveZone.slice().sort((a, b) => (b.card.d.score || 0) - (a.card.d.score || 0))[0]
+          : this.liveZone.slice().sort((a, b) => recVal(a.card) - recVal(b.card))[0];
         this.removeFrom(this.liveZone, z); this.success.push(z.card); botMoved = true;
         this.log(`ライブ勝利！「${this.name(z.card)}」を成功ライブカード置き場へ（${this.succ}枚目）`, 'good');
       }
@@ -1058,7 +1135,7 @@ function detailHtml(d, extraBtns = '') {
     <div style="margin-top:.6vh">${hearts}</div><div>ブレードハート ${heartsHtml(d.bh) || 'なし'}${d.sp && d.sp.score ? '　[スコア]' : ''}</div>
     <div class="ab">${d.ability === '-' ? '（効果なし）' : d.ability}</div>
     <div class="btns">${extraBtns}<a class="btn sub small" href="${d.img}" target="_blank" rel="noopener">公式画像を開く</a><button class="btn small" onclick="closeModal()">閉じる</button></div>
-    ${imgMap[d.no] ? '' : '<p class="note">cards フォルダにこのカードの画像が見つかりません</p>'}
+    ${imgMap[d.no] ? '' : `<p class="note">cards フォルダに画像が見つかりません（探したファイル名：cards/${d.img.split('/').pop()} ほか別レアリティ）</p>`}
   </div></div>`;
 }
 function showDetail(d) { openModal(detailHtml(d)); }
@@ -1084,7 +1161,8 @@ function showMenu() {
       <button class="btn sub" onclick="confirmReset()">新しいゲーム</button>
       <button class="btn sub" onclick="closeModal()">閉じる</button>
     </div>
-    <p class="note">カード画像：${Object.keys(imgMap).length}／${DECK.length}種を読み込み済み（ページと同じ場所の cards フォルダから自動で読み込みます）</p>`);
+    <p class="note">カード画像：${Object.keys(imgMap).length}／${DECK.length}種を読み込み済み（HTMLと同じ場所の cards フォルダから自動で読み込みます）</p>
+    ${Object.keys(imgMissing).length ? `<p class="note">見つからない画像：${Object.entries(imgMissing).map(([no, f]) => `${DECK.find(x => x.no === no).name}（cards/${f}）`).join('、')}</p>` : ''}`);
 }
 function showDeckList() {
   const cards = DECK.map(d => ({ d }));
@@ -1104,13 +1182,23 @@ document.querySelector('[data-act="oppPlus"]').onclick = () => { if (G) { G.oppS
 document.querySelector('[data-act="oppMinus"]').onclick = () => { if (G && G.oppSucc > 0) { G.oppSucc--; render(); } };
 $('#discZone').onclick = () => E && showDisc();
 
-// 画像の自動読み込み（ページと同じ場所の img フォルダ）
+// 画像の自動読み込み（HTMLと同じ場所の cards フォルダ）
+// 通常の画像名 → 同じカードの別レアリティ → 拡張子 .jpg の順に探す
+const imgMissing = {};
 function autoLoadImages() {
   for (const d of DECK) {
-    const im = new Image();
-    const src = 'cards/' + encodeURIComponent(d.img.split('/').pop());   // 公式画像と同じファイル名
-    im.onload = () => { imgMap[d.no] = src; render(); };
-    im.src = src;
+    const names = [d.img.split('/').pop(), ...(d.alts || [])];
+    const tries = [...names, ...names.map(n => n.replace(/\.png$/i, '.jpg'))];
+    let i = 0;
+    const next = () => {
+      if (i >= tries.length) { imgMissing[d.no] = names[0]; return; }
+      const src = 'cards/' + encodeURIComponent(tries[i++]);
+      const im = new Image();
+      im.onload = () => { imgMap[d.no] = src; delete imgMissing[d.no]; render(); };
+      im.onerror = next;
+      im.src = src;
+    };
+    next();
   }
 }
 autoLoadImages();
@@ -1174,36 +1262,27 @@ function next() {
 function judgeDialog() {
   const b = E.prepareJudge(); render();
   const r = E.lastLive;
-  const botTxt = !r || !r.lives.length ? 'ライブカードなし' : (b.has ? `ライブ成功／合計スコア` : 'ライブ失敗（ライブカードなし）');
+  const botTxt = !r || !r.lives.length ? 'ライブカードなし' : (b.has ? 'ライブ成功／合計スコア' : 'ライブ失敗');
   openModal(`<h2>ライブ勝敗判定</h2>
     <div style="display:flex;align-items:baseline;gap:calc(2*var(--u));font-size:calc(2.4*var(--u))">ボット：${botTxt}${b.has ? `<b style="font-size:calc(6*var(--u));color:var(--pink)">${b.score}</b>` : ''}</div>
     <p class="note">あなたのスコアと比べて、結果を選んでください。</p>
     <div class="btns">
       <button class="btn" ${b.has ? '' : 'disabled'} onclick="doJudge(true,false)">ボットの勝ち</button>
       <button class="btn" onclick="doJudge(false,true)">あなたの勝ち</button>
-      <button class="btn sub" ${b.has ? '' : 'disabled'} onclick="judgeTie()">同点（両者勝利）</button>
+      <button class="btn sub" ${b.has ? '' : 'disabled'} onclick="doJudge(true,true)">同点</button>
       <button class="btn sub" onclick="doJudge(false,false)">勝者なし</button>
-    </div>`);
+    </div>
+    <p class="note">同点は両者の勝利です。ライブカード置き場に2枚あるプレイヤーは成功ライブを置けません（8.4.7.1）。ボット側は自動で処理し、あなたの成功ライブは＋1します（置けなかった場合は「あなたの成功」の−で直してください）。</p>`);
 }
-function judgeTie() {
-  openModal(`<h2>同点（両者勝利）</h2>
-    <p class="note">ライブカード置き場に2枚あるプレイヤーは、成功ライブカード置き場に置けません（8.4.7.1）。ボット側は自動で判定します。</p>
-    <div class="btns">
-      <button class="btn" onclick="doJudge(true,true,false)">あなたは成功ライブを置いた</button>
-      <button class="btn sub" onclick="doJudge(true,true,true)">あなたは置けない（2枚）</button>
-      <button class="btn sub" onclick="judgeDialog()">戻る</button>
-    </div>`);
-}
-function doJudge(botWin, oppWin, oppTwo) {
+function doJudge(botWin, oppWin) {
   closeModal();
   const res = E.settle(botWin, oppWin);
-  let oppMoved = false;
-  if (oppWin && !(botWin && oppTwo)) { G.oppSucc++; oppMoved = true; E.log('あなた：ライブ勝利（成功ライブ+1）', 'opp'); }
+  if (oppWin) { G.oppSucc++; E.log('あなた：ライブ勝利（成功ライブ+1）', 'opp'); }
   render();
   toast(botWin && oppWin ? '同点（両者勝利）' : botWin ? 'ボットのライブ勝利' : oppWin ? 'あなたのライブ勝利' : '勝者なし');
   if (checkEnd()) return;
-  // 先攻の決定（8.4.13）
-  if (res.botMoved !== oppMoved) {
+  // 先攻の決定（8.4.13）：片方だけが成功ライブを置いた場合、そのプレイヤーが先攻
+  if (res.botMoved !== oppWin) {
     const nb = res.botMoved;
     if (nb !== G.botFirst) E.log(`次のターンはボットが${nb ? '先攻' : '後攻'}`, 'sys');
     G.botFirst = nb;
