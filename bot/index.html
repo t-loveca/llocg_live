@@ -31,6 +31,9 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 .card{position:relative;aspect-ratio:63/88;border-radius:calc(.9*var(--u));background:#fff;border:1px solid #d9a9bf;overflow:hidden;box-shadow:0 calc(.3*var(--u)) calc(.8*var(--u)) rgba(160,60,100,.18);transition:transform .25s;cursor:pointer;flex:none}
 .card img{width:100%;height:100%;object-fit:cover;display:block}
 .card.land{aspect-ratio:88/63}
+.card.failed>*:not(.badge){filter:grayscale(.7) brightness(.85)}
+#mat.flip .card .badge{transform:translate(-50%,-50%) rotate(180deg)}
+.card .badge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(200,40,60,.9);color:#fff;font-weight:800;font-size:calc(2.6*var(--u));padding:calc(.4*var(--u)) calc(1.4*var(--u));border-radius:calc(.8*var(--u))}
 .live .card.land{height:auto;width:92%;max-height:88%}
 .card.wait{transform:rotate(90deg)}
 .stage .card{height:92%}
@@ -298,6 +301,9 @@ class Engine {
         if (k === 4) { if (!on(['C15'])) take(['C15']); if (from === 4) take(['HAJI']); take(['AIKO', 'MEM']); }
       }
       if (this.mode === 'aggrK' && from <= 3) take(['KOT', 'ERI']);
+      // 3回目のライブに向けて、成功ライブ1枚以上ならことり・絵里を残す（keepKE枚まで）
+      const keN = this.keepKE ?? 1;
+      if (this.succ >= 1) for (let i = 0; i < keN; i++) take(['KOT', 'ERI']);
       // 次ターン（とその次）に必要なカードが手札に無く控え室にあるなら、取り戻せる回収カードを残す
       if (this.recoverKeep !== false) {
         const inDisc = tags => this.disc.some(x => tags.includes(x.tag));
@@ -442,9 +448,32 @@ class Engine {
     }
   }
   upgradeBatons() {
+    // ことり・絵里への置き換えは、3回目のライブ（成功ライブ2枚）を行うターンだけ
+    if ((this.upgradePolicy || 'third') === 'third' && this.succ < 2) return;
+    if (this.succ >= 2 && this.boost !== false) return this.boostBatons();
     for (let i = 0; i < 2; i++) {
       const u = this.find(['KOT', 'ERI']); if (!u) return;
       if (!this.freeBaton(u)) return;
+    }
+  }
+
+  // 3回目のライブ（成功ライブ2枚）：手札のコスト2で盤面を強化する0コストバトン
+  memberValue(c) {
+    const h = ['KOT', 'ERI'].includes(c.tag) ? this.succ : Object.values(c.d.heart || {}).reduce((a, b) => a + b, 0);
+    return h + 0.83 * (c.d.blade || 0);
+  }
+  boostBatons() {
+    for (let i = 0; i < 2; i++) {
+      const handC2 = this.hand.filter(c => c.type === 'メンバー' && c.cost === 2);
+      if (!handC2.length) return;
+      const best = handC2.slice().sort((a, b) => this.memberValue(b) - this.memberValue(a))[0];
+      const targets = ['C', 'R', 'L'].filter(a => this.stage[a] && !this.entered.has(a) && this.stage[a].card.cost === 2);
+      if (!targets.length) return;
+      const weakest = targets.slice().sort((a, b) => this.memberValue(this.stage[a].card) - this.memberValue(this.stage[b].card))[0];
+      const gain = this.memberValue(best) - this.memberValue(this.stage[weakest].card);
+      if (gain <= 0.01) return;
+      this.log(`（思考）3回目のライブに向けて盤面強化：「${this.name(this.stage[weakest].card)}」→「${this.name(best)}」`, 'think');
+      if (!this.play(best, weakest, true)) return;
     }
   }
   // 回収カードの起動
@@ -539,7 +568,8 @@ class Engine {
     if (c5 && !this.stage.L) this.play(c5, 'L', false);
     else if (c5 && this.stage.L && this.stage.L.card.cost === 2) this.play(c5, 'L', true);
     this.fill();
-    this.searchBatons(2, false); this.upgradeBatons();
+    if (this.succ < 2) this.searchBatons(2, false);
+    this.upgradeBatons();
   }
   main3() {
     const can6 = this.hasSet(this.hand.filter(x => x.type === 'ライブ'), 6);
@@ -567,7 +597,8 @@ class Engine {
         }
       }
     }
-    this.searchBatons(3, false); this.upgradeBatons();
+    if (this.succ < 2) this.searchBatons(3, false);
+    this.upgradeBatons();
   }
   main4() {
     this.searchBatons(4, true);
@@ -781,9 +812,9 @@ class Engine {
     res.hearts = hearts; res.alls = alls; res.need = need; res.yell = yell;
     this.log(`所有ハート：${fmtHearts(hearts)}${alls ? ` ALL×${alls}` : ''}／必要：${fmtHearts(need)}`);
     if (!ok) {
-      this.log('ライブ失敗：ライブカードを控え室へ', 'bad');
-      for (const l of lives) this.disc.push(l);
-      this.liveZone = [];
+      // 失敗したライブカードは表向きのままライブカード置き場に残し、勝敗判定の片付けで控え室へ
+      this.log('ライブ失敗：必要ハートを満たせなかった（ライブカードは勝敗判定後に控え室へ）', 'bad');
+      for (const z of this.liveZone) z.failed = true;
       res.success = false; this.lastLive = res; this.changed(); return res;
     }
     let score = lives.reduce((s, l) => s + this.needOf(l).score, 0) + scoreIcons;
@@ -796,6 +827,33 @@ class Engine {
 
   // ---------- 勝敗判定 ----------
   // opp: {hasLive:bool, score:number, success:bool}
+
+  // START!!：次ターン（とその次）に必要で、手札・盤面に無いカードをエールから選ぶ
+  startPick() {
+    const nt = this.botTurn + 1;
+    const has = tags => this.hand.some(c => tags.includes(c.tag));
+    const on = tags => this.onStage(tags);
+    const want = [];
+    const add = (tags, why) => { for (const t of tags) want.push({ t, why }); };
+    if (nt <= 2) {
+      if (!has(['SUMI', 'MEI']) && !on(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) add(['SUMI', 'MEI'], '2ターン目のコスト5');
+      if (!has(['AIKO', 'MEM'])) add(['AIKO', 'MEM'], '2ターン目のスコア3ライブ');
+    }
+    if (nt <= 3) {
+      if (!has(['KAN', 'M11']) && !on(['KAN', 'M11', 'C15'])) add(['KAN', 'M11'], '3ターン目のコスト11');
+      if (!has(['HAJI'])) add(['HAJI'], '3ターン目の始まりは君の空');
+    }
+    if (nt <= 4) {
+      if (!has(['C15']) && !on(['C15'])) add(['C15'], '4ターン目の千砂都15');
+      if (!has(['HAJI'])) add(['HAJI'], '始まりは君の空');
+      if (!has(['AIKO', 'MEM'])) add(['AIKO', 'MEM'], 'スコア3ライブ');
+    }
+    for (const w of want) {
+      const c = this.yell.find(x => x.tag === w.t && x.liella);
+      if (c) return { card: c, why: w.why };
+    }
+    return null;
+  }
   // 8.4.4 ライブが成功した事象（勝敗判定の前に処理）
   successEffects() {
     const me = this.lastLive;
@@ -803,9 +861,9 @@ class Engine {
     this.log('―― ライブ勝敗判定フェイズ：ボットのライブ成功時 ――', 'phase');
     const lives = this.liveZone.map(z => z.card), ms = this.members();
     if (lives.some(l => l.tag === 'START')) {
-      const pri = this.missingPri(); let pick = null;
-      for (const t of pri) { pick = this.yell.find(c => c.tag === t && c.liella); if (pick) break; }
-      if (pick) { this.removeFrom(this.yell, pick); this.deck.push(pick); this.log(`START!!【ライブ成功時】エールの「${this.name(pick)}」をデッキの一番上へ`); }
+      const pr = this.startPick();
+      if (pr) { this.removeFrom(this.yell, pr.card); this.deck.push(pr.card); this.log(`START!!【ライブ成功時】エールの「${this.name(pr.card)}」をデッキの一番上へ（${pr.why}）`); }
+      else this.log('START!!【ライブ成功時】次ターンに必要なカードがエールに無いため置かない', 'think');
     }
     if (ms.some(m => m.card.tag === 'M11')) {
       const ch = this.m11Choice || 'smart2';
@@ -950,7 +1008,11 @@ function render() {
   document.querySelectorAll('[data-live]').forEach((z, i) => {
     z.querySelectorAll('.card').forEach(c => c.remove());
     const lz = E.liveZone[i];
-    if (lz) z.appendChild(cardEl(lz.card, lz.faceUp ? {} : { back: true, land: true }));
+    if (lz) {
+      const el = cardEl(lz.card, lz.faceUp ? {} : { back: true, land: true });
+      if (lz.failed) { el.classList.add('failed'); el.insertAdjacentHTML('beforeend', '<div class="badge">失敗</div>'); }
+      z.appendChild(el);
+    }
   });
   // ステージ
   document.querySelectorAll('[data-area]').forEach(z => {
