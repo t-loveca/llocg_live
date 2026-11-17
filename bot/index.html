@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ハイド郎bot</title>
+<style>
+:root{
+  --pink:#e5338b; --pink2:#f7c6dc; --bg:#fdf0f4; --zone:#fff7f9; --ink:#4a2a3a; --muted:#a8798f;
+  --r:#e8443a; --y:#e9b400; --p:#8a52d6; --g:#2fa84f; --b:#2f7be0; --m:#f06fa8; --o:#f08a24;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;overflow:hidden;user-select:none}
+#app{position:fixed;inset:0;display:grid;grid-template-columns:1fr 21%;gap:1.2vh;padding:1.2vh;height:100dvh}
+#mat{display:grid;grid-template-columns:15% 1fr 12%;gap:1.2vh;min-height:0;min-width:0;transition:transform .4s}
+#mat.flip{transform:rotate(180deg)}
+#side{display:flex;flex-direction:column;gap:1.2vh;min-height:0;min-width:0}
+.col{display:flex;flex-direction:column;gap:1.2vh;min-height:0;min-width:0}
+.zone{position:relative;background:var(--zone);border:1.5px solid var(--pink);border-radius:1.4vh;min-height:0}
+.zlabel{position:absolute;left:.8vh;top:.4vh;font-size:1.9vh;color:var(--pink);opacity:.85;pointer-events:none;letter-spacing:.02em}
+.zcount{position:absolute;right:.8vh;top:.3vh;font-size:2.1vh;color:var(--pink);font-weight:700}
+/* center */
+#center{display:grid;grid-template-rows:27% 1fr 22%;gap:1.2vh;min-height:0;min-width:0}
+#liveRow>.zone,#stageRow>.zone{min-width:0;overflow:hidden}
+#liveRow,#stageRow{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vh;min-height:0}
+.slot{display:flex;align-items:center;justify-content:center;padding-top:2.4vh}
+#energyRow{display:flex;align-items:center;gap:.3vh;padding:2.6vh 1vh .6vh}
+/* cards */
+.card{position:relative;aspect-ratio:63/88;border-radius:.9vh;background:#fff;border:1px solid #d9a9bf;overflow:hidden;box-shadow:0 .3vh .8vh rgba(160,60,100,.18);transition:transform .25s;cursor:pointer;flex:none}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.card.land{aspect-ratio:88/63}
+.live .card.land{height:auto;width:92%;max-height:88%}
+.card.wait{transform:rotate(90deg)}
+.stage .card{height:92%}
+.live .card{height:88%}
+.face{position:absolute;inset:0;display:flex;flex-direction:column;padding:.5vh;font-size:1.6vh;line-height:1.15}
+.face .nm{font-weight:700;font-size:1.75vh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.face .cost{position:absolute;right:.5vh;top:.5vh;background:var(--pink);color:#fff;border-radius:50%;width:2.8vh;height:2.8vh;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.6vh}
+.face .row{display:flex;flex-wrap:wrap;gap:.25vh;margin-top:.4vh;align-items:center}
+.ht{display:inline-flex;align-items:center;justify-content:center;width:2.2vh;height:2.2vh;border-radius:50%;color:#fff;font-size:1.3vh;font-weight:700}
+.h01{background:var(--m)}.h02{background:var(--r)}.h03{background:var(--y)}.h04{background:var(--g)}.h05{background:var(--b)}.h06{background:var(--p)}.h0{background:#9b9b9b}.hall{background:linear-gradient(135deg,var(--m),var(--y),var(--b),var(--p))}.h07{background:var(--o)}
+.face .bl{font-size:1.5vh;color:#555}
+.face .ab{margin-top:auto;font-size:1.25vh;color:#7a5868;max-height:40%;overflow:hidden}
+.face.live{background:linear-gradient(#fff,#fff5d9)}
+.face.member{background:linear-gradient(#fff,#ffeef6)}
+.face .sc{font-size:2.4vh;font-weight:800;color:var(--pink)}
+.back{position:absolute;inset:0;background:#1d5fc4 url(img/back.jpg) center/cover no-repeat}
+.card.land .back{background:#1d5fc4}
+.card.land .back::after{content:"";position:absolute;left:50%;top:50%;width:71.6%;height:139.7%;transform:translate(-50%,-50%) rotate(90deg);background:url(img/back.jpg) center/cover no-repeat}
+.pile{position:relative;height:72%;aspect-ratio:63/88;border-radius:.9vh;overflow:hidden;box-shadow:0 .3vh .8vh rgba(40,60,120,.3)}
+.pile .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:4vh;font-weight:800;color:#fff;text-shadow:0 0 1vh rgba(0,0,0,.6)}
+#energyRow{justify-content:center;gap:3vh}
+.enum{display:flex;align-items:baseline;gap:.8vh;font-size:2.2vh;color:var(--ink)}
+.enum b{font-size:5vh;color:var(--pink);line-height:1}
+.enum.sub b{font-size:3.6vh;color:#9a7a8a}
+.ecard{height:100%;aspect-ratio:63/88;border-radius:.6vh;background:linear-gradient(#ffe3ef,#ffc7de);border:1px solid #e79bbd;flex:none;transition:transform .25s;display:flex;align-items:center;justify-content:center;color:#c2306f;font-size:1.5vh;font-weight:700}
+.ecard.wait{transform:rotate(90deg) scale(.8);opacity:.75}
+.ecard.empty{background:transparent;border:1px dashed #ebbcd0;color:transparent}
+#energyRow{overflow:hidden;min-width:0}
+#energyRow .ecard{height:90%;flex:1 1 0;min-width:0;aspect-ratio:auto;max-width:6.6vh}
+/* left */
+#successZone{flex:0 0 52%;display:flex;align-items:flex-start;justify-content:center;padding-top:3vh}
+#successZone .stack{position:relative;width:92%;height:90%}
+#successZone .stack .card{position:absolute;left:0;top:0;width:100%;height:auto}
+#yellZone{flex:1;padding:3vh .6vh .6vh;display:flex;flex-wrap:wrap;align-content:flex-start;gap:.4vh;overflow:hidden}
+#yellZone .card{height:7.5vh}
+#yellZone .card.land{height:5.4vh}
+#yellZone .card .face{font-size:.9vh}#yellZone .card .face .nm{font-size:1vh}#yellZone .card .ab{display:none}
+#yellZone .card .ht{width:1.3vh;height:1.3vh;font-size:.8vh}
+#flow{flex:none;padding:2.4vh .8vh .8vh;font-size:1.7vh}
+#flow .info{display:flex;justify-content:space-between;align-items:center;gap:.6vh;flex-wrap:wrap}
+#flow .step{margin:.6vh 0;font-weight:700;color:var(--pink);font-size:1.9vh;min-height:2.3vh}
+.btn{appearance:none;border:none;background:var(--pink);color:#fff;font-weight:700;border-radius:1vh;padding:1.1vh 1.4vh;font-size:2vh;cursor:pointer;font-family:inherit}
+.btn.sub{background:#fff;color:var(--pink);border:1.5px solid var(--pink)}
+.btn.small{padding:.6vh 1vh;font-size:1.7vh}
+.btn:disabled{opacity:.4}
+#nextBtn{width:100%;font-size:2.2vh;padding:1.4vh}
+.opp{display:flex;align-items:center;gap:.5vh}
+.opp b{font-size:2.3vh;color:var(--pink);min-width:2vh;text-align:center}
+#log{flex:1 1 auto;overflow:auto;padding:2.4vh .8vh .6vh;font-size:1.55vh;line-height:1.35}
+#log div{border-bottom:1px dotted #f1cfdc;padding:.25vh 0}
+#log .phase{color:#fff;background:var(--pink);border-radius:.5vh;padding:.2vh .5vh;margin-top:.4vh}
+#log .think{color:#7f5ab0}
+#log .good{color:#1f8a43;font-weight:700}
+#log .bad{color:#c73232;font-weight:700}
+#log .opp{color:#d26b00}
+#log .sys{color:var(--muted)}
+#log .act{color:var(--ink)}
+/* right */
+#matRight .zone{flex:1;display:flex;align-items:center;justify-content:center;padding-top:2.4vh}
+#matRight .card{height:80%}
+#discTop{height:100%;width:100%;display:flex;align-items:center;justify-content:center}
+#discTop .card{height:84%}
+#discTop .card.land{height:auto;width:92%}
+#matRight .big{font-size:3.4vh;font-weight:800;color:var(--pink)}
+#panelBtns{display:flex;gap:.6vh;flex-wrap:wrap}#panelBtns .btn{flex:1}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(60,20,40,.55);display:none;align-items:center;justify-content:center;z-index:50}
+.modal.on{display:flex}
+.panel{background:#fff;border-radius:1.6vh;padding:2vh;max-width:92vw;max-height:92vh;overflow:auto;box-shadow:0 1vh 4vh rgba(0,0,0,.3)}
+.detail{display:flex;gap:2.4vh;align-items:flex-start}
+.detail .card{height:72vh;cursor:default}
+.detail .card.land{height:auto;width:min(46vw,640px)}
+.detail .card .face{font-size:2.4vh}.detail .card .face .nm{font-size:2.6vh}.detail .card .face .ab{font-size:1.9vh;max-height:55%}
+.detail .card .ht{width:3.2vh;height:3.2vh;font-size:1.8vh}
+.detail .txt{width:min(48vw,520px);font-size:2.1vh;line-height:1.5}
+.detail .txt h3{margin:0 0 .6vh;font-size:2.8vh;color:var(--pink)}
+.detail .txt .ab{white-space:pre-wrap;background:var(--bg);border-radius:1vh;padding:1vh;margin:1vh 0}
+.btns{display:flex;flex-wrap:wrap;gap:1vh;margin-top:1.2vh}
+.grid{display:flex;flex-wrap:wrap;gap:1vh;max-width:86vw}
+.grid .card{height:26vh}
+.grid .card.land{height:19vh}
+label.chk{display:flex;align-items:center;gap:1vh;font-size:2.2vh;margin:1vh 0}
+label.chk input{width:3vh;height:3vh}
+.num{display:flex;align-items:center;gap:1vh;font-size:2.4vh;margin:1vh 0}
+.num b{min-width:4vh;text-align:center;font-size:3.4vh;color:var(--pink)}
+h2{margin:0 0 1vh;color:var(--pink);font-size:3vh}
+p.note{font-size:1.8vh;color:var(--muted);margin:.6vh 0}
+#rotate{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;text-align:center;z-index:100;font-size:5vw;color:var(--pink);padding:8vw}
+@media (orientation:portrait){#rotate{display:flex}}
+.toast{position:fixed;left:50%;top:3vh;transform:translateX(-50%);background:var(--ink);color:#fff;padding:1vh 2vh;border-radius:1vh;font-size:2.2vh;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.on{opacity:.92}
+</style>
+</head>
+<body>
+<div id="rotate">スマートフォンを横向きにしてください<br>📱↻</div>
+<div id="app">
+  <!-- ボットの盤面（対面向きに180°回転） -->
+  <div id="mat" class="flip">
+    <div class="col" id="matLeft">
+      <div class="zone" id="successZone"><span class="zlabel">成功ライブカード置き場</span><span class="zcount" id="succCount">0</span><div class="stack" id="succStack"></div></div>
+      <div class="zone" id="yellZone"><span class="zlabel">エール（直近）</span></div>
+    </div>
+    <div id="center">
+      <div id="liveRow">
+        <div class="zone slot live" data-live="0"><span class="zlabel">ライブカード置き場</span></div>
+        <div class="zone slot live" data-live="1"><span class="zlabel">ライブカード置き場</span></div>
+        <div class="zone slot live" data-live="2"><span class="zlabel">ライブカード置き場</span></div>
+      </div>
+      <div id="stageRow">
+        <div class="zone slot stage" data-area="L"><span class="zlabel">左サイドエリア</span></div>
+        <div class="zone slot stage" data-area="C"><span class="zlabel">センターエリア</span></div>
+        <div class="zone slot stage" data-area="R"><span class="zlabel">右サイドエリア</span></div>
+      </div>
+      <div class="zone" id="energyRow"><span class="zlabel">エネルギー置き場</span><span class="zcount" id="energyCount"></span></div>
+    </div>
+    <div class="col" id="matRight">
+      <div class="zone" id="deckZone"><span class="zlabel">メインデッキ</span><div class="pile"><div class="back"></div><div class="num" id="deckCount">0</div></div></div>
+      <div class="zone" id="discZone"><span class="zlabel">控え室</span><span class="zcount" id="discCount">0</span><div id="discTop"></div></div>
+      <div class="zone" id="eDeckZone"><span class="zlabel">エネルギーデッキ</span><div class="pile"><div class="back"></div><div class="num" id="eDeckCount">12</div></div></div>
+    </div>
+  </div>
+  <!-- 操作パネル（あなた向き） -->
+  <div id="side">
+    <div class="zone" id="flow">
+      <span class="zlabel">ゲームの流れ</span>
+      <div class="info"><span id="turnInfo">準備中</span></div>
+      <div class="info"><span class="opp">あなたの成功<button class="btn small sub" data-act="oppMinus">−</button><b id="oppSucc">0</b><button class="btn small sub" data-act="oppPlus">＋</button></span></div>
+      <div class="step" id="stepLabel">ゲームを開始してください</div>
+      <button class="btn" id="nextBtn">ゲーム開始</button>
+    </div>
+    <div class="zone" id="log"><span class="zlabel">ログ</span></div>
+    <div id="panelBtns">
+      <button class="btn small sub" data-act="hand">手札 <span id="handCount">0</span></button>
+      <button class="btn small sub" data-act="flip">向き</button>
+      <button class="btn small sub" data-act="menu">メニュー</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル -->
+<div class="modal" id="modal"><div class="panel" id="panel"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DECK = [{"no": "PL!SP-bp1-005-P", "n": 4, "name": "葉月 恋", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【登場】手札を1枚控え室に置いてもよい：自分のデッキの上からカードを5枚見る。その中から『Liella!』のカードを1枚まで公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP01/PL!SP-bp1-005-P.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-pb1-014-N", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 2, "blade": 2, "heart": {"heart06": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP/PL!SP-pb1-014-N.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-sd1-020-RM", "n": 1, "name": "鬼塚夏美", "type": "メンバー", "cost": 2, "blade": 2, "heart": {"heart02": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP05/PL!SP-sd1-020-RM.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!-bp3-012-N", "n": 4, "name": "南ことり", "type": "メンバー", "cost": 2, "blade": 2, "heart": {}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[heart01]か[heart03]か[heart06]のうち、1つを選ぶ。ライブ終了時まで、自分の成功ライブカード置き場にあるカード1枚につき、選んだハートを1つ得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP03/PL!-bp3-N-012-N.png", "unit": "Printemps", "liella": false}, {"no": "PL!-bp5-011-N", "n": 4, "name": "絢瀬絵里", "type": "メンバー", "cost": 2, "blade": 2, "heart": {}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[heart04]か[heart05]か[heart06]のうち、1つを選ぶ。ライブ終了時まで、自分の成功ライブカード置き場にあるカード1枚につき、選んだハートを1つ得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP05/PL!-bp5-011-N.png", "unit": "BiBi", "liella": false}, {"no": "PL!SP-bp7-010-R", "n": 4, "name": "ウィーン・マルガレーテ", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分のエネルギー置き場にあるエネルギー1枚をエネルギーデッキに置く。その後、自分の控え室からカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-010-R.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-bp1-011-R", "n": 4, "name": "鬼塚冬毬", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分の控え室からライブカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP01/PL!SP-bp1-011-R.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-sd2-014-SD2", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart03": 1}, "bh": {"b_heart03": 1}, "score": null, "need": {}, "sp": {}, "ability": "【起動】このメンバーをステージから控え室に置く：自分の控え室からメンバーカードを1枚手札に加える。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-014-SD2.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-bp2-002-R", "n": 1, "name": "唐 可可", "type": "メンバー", "cost": 2, "blade": 1, "heart": {"heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【登場】自分のデッキの上からカードを3枚見る。その中からコスト11以上のカードを1枚公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP02/PL!SP-bp2-002-R.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-pb2-037-N", "n": 4, "name": "平安名すみれ", "type": "メンバー", "cost": 5, "blade": 2, "heart": {"heart02": 1, "heart06": 1}, "bh": {}, "score": null, "need": {}, "sp": {}, "ability": "【登場】【左サイド】カードを2枚引き、手札を2枚控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP02/PL!SP-pb2-037-N.png", "unit": "CatChu!", "liella": true}, {"no": "PL!SP-bp2-007-R", "n": 2, "name": "米女メイ", "type": "メンバー", "cost": 5, "blade": 2, "heart": {"heart02": 1, "heart03": 1}, "bh": {}, "score": null, "need": {}, "sp": {}, "ability": "【登場】手札を1枚控え室に置いてもよい：自分のデッキの上からカードを5枚見る。その中から『Liella!』のメンバーカードを1枚公開して手札に加えてもよい。残りを控え室に置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP02/PL!SP-bp2-007-R.png", "unit": "CatChu!", "liella": true}, {"no": "PL!SP-pb1-001-R", "n": 4, "name": "澁谷かのん", "type": "メンバー", "cost": 11, "blade": 4, "heart": {"heart02": 4, "heart03": 1, "heart06": 1}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】[E][E]支払わないかぎり、自分の手札を2枚控え室に置く。\n【ライブ成功時】[E][E][E][E][E][E]支払ってもよい：ライブの合計スコアを＋１する。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP/PL!SP-pb1-001-R.png", "unit": "CatChu!", "liella": true}, {"no": "PL!SP-pb2-010-R", "n": 4, "name": "ウィーン・マルガレーテ", "type": "メンバー", "cost": 11, "blade": 5, "heart": {"heart02": 1, "heart03": 1, "heart06": 1}, "bh": {"b_heart06": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】手札を1枚控え室に置かないかぎり、自分のエネルギー1枚をエネルギーデッキに置く。\n【ライブ成功時】以下から1つを選ぶ。\n・カードを2枚引く。\n・自分のエネルギーデッキから、エネルギーカードを1枚ウェイト状態で置く。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/PBSP02/PL!SP-pb2-010-R.png", "unit": "KALEIDOSCORE", "liella": true}, {"no": "PL!SP-sd1-003-SD", "n": 4, "name": "嵐 千砂都", "type": "メンバー", "cost": 15, "blade": 3, "heart": {"heart02": 3, "heart06": 3}, "bh": {"b_heart02": 1}, "score": null, "need": {}, "sp": {}, "ability": "【ライブ開始時】手札を2枚控え室に置いてもよい：ライブ終了時まで、[ブレード][ブレード][ブレード][ブレード][ブレード]を得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD01/PL!SP-sd1-003-SD.png", "unit": "5yncri5e!", "liella": true}, {"no": "PL!SP-bp7-023-L", "n": 3, "name": "START!! True dreams", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 1, "need": {"heart03": 1, "heart0": 2}, "sp": {}, "ability": "【ライブ成功時】エールにより公開された自分のカードの中から、『Liella!』のカードを1枚デッキの一番上に置いてもよい。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-023-L.png", "unit": null, "liella": true}, {"no": "PL!SP-sd2-023-SD2", "n": 4, "name": "始まりは君の空", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {}, "score": 1, "need": {"heart03": 1, "heart0": 2}, "sp": {"score": 1}, "ability": "【ライブ開始時】自分の成功ライブカード置き場にカードが2枚以上ある場合、このカードのスコアを＋５し、必要ハートは[heart02][heart02][heart02][heart03][heart03][heart03][heart06][heart06][heart06][heart0][heart0][heart0]になる。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-023-SD2.png", "unit": null, "liella": true}, {"no": "PL!SP-sd2-024-SD2", "n": 4, "name": "アイコトバ！", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 3, "need": {"heart02": 1, "heart03": 1, "heart06": 1, "heart0": 4}, "sp": {}, "ability": "-", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/SPSD02/PL!SP-sd2-024-SD2.png", "unit": null, "liella": true}, {"no": "PL!SP-bp7-025-L", "n": 1, "name": "Memories", "type": "ライブ", "cost": null, "blade": 0, "heart": {}, "bh": {"b_all": 1}, "score": 3, "need": {"heart02": 2, "heart03": 1, "heart06": 2, "heart0": 2}, "sp": {}, "ability": "【ライブ開始時】ライブ終了時まで、自分のステージにいる「嵐 千砂都」1人は[ブレード]を得る。", "img": "https://llofficial-cardgame.com/wordpress/wp-content/images/cardlist/BP07/PL!SP-bp7-025-L.png", "unit": null, "liella": true}];
+</script>
+<script>
+// ===== ラブカ スパーリングbot エンジン（金太郎飴 アグロLiella!）=====
+// DOM非依存。UIは engine.on('log'|'change') を購読する。
+const COLORS = { heart01: '桃', heart02: '赤', heart03: '黄', heart04: '緑', heart05: '青', heart06: '紫', heart0: '無' };
+const TAG = {
+  'PL!SP-bp1-005': 'REN', 'PL!SP-pb1-014': 'V2', 'PL!SP-sd1-020': 'V2', 'PL!-bp3-012': 'KOT', 'PL!-bp5-011': 'ERI',
+  'PL!SP-bp7-010': 'MARG7', 'PL!SP-bp1-011': 'TOMARI', 'PL!SP-sd2-014': 'CHISA2', 'PL!SP-bp2-002': 'KUKU',
+  'PL!SP-pb2-037': 'SUMI', 'PL!SP-bp2-007': 'MEI', 'PL!SP-pb1-001': 'KAN', 'PL!SP-pb2-010': 'M11', 'PL!SP-sd1-003': 'C15',
+  'PL!SP-bp7-023': 'START', 'PL!SP-sd2-023': 'HAJI', 'PL!SP-sd2-024': 'AIKO', 'PL!SP-bp7-025': 'MEM'
+};
+const YEL2 = new Set(['REN', 'TOMARI', 'CHISA2']);
+const REC = new Set(['TOMARI', 'CHISA2', 'MARG7']);
+const TARGETS = [1, 3, 6, 9];
+
+function baseNo(no) { return no.replace(/-[^-]+$/, ''); }
+
+class Engine {
+  constructor(deckData, rng) {
+    this.data = deckData;
+    this.rng = rng || Math.random;
+    this.listeners = { log: [], change: [] };
+    this.reset();
+  }
+  on(ev, fn) { this.listeners[ev].push(fn); }
+  emit(ev, x) { for (const f of this.listeners[ev]) f(x); }
+  log(msg, cls) { this.logs.push({ msg, cls }); this.emit('log', { msg, cls }); }
+  changed() { this.emit('change'); }
+
+  reset() {
+    let uid = 0;
+    this.deck = [];
+    for (const d of this.data) {
+      for (let i = 0; i < d.n; i++) {
+        this.deck.push({ uid: uid++, no: d.no, d, tag: TAG[baseNo(d.no)] || 'X', type: d.type, cost: d.cost || 0,
+          liella: !!d.liella });
+      }
+    }
+    this.hand = []; this.disc = []; this.excluded = [];
+    this.energyDeck = 12; this.energy = [];
+    this.stage = { L: null, C: null, R: null }; // {card, wait}
+    this.liveZone = []; this.success = []; this.yell = [];
+    this.botTurn = 0; this.entered = new Set(); this.phase = 'main'; this.mode = this.mode || 'aggr';
+    this.st = {};
+    this.logs = [];
+    this.lastLive = null; // 直近のパフォーマンス結果
+  }
+
+  // ---------- 基本操作 ----------
+  shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(this.rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  refresh() {
+    if (this.deck.length === 0 && this.disc.length > 0) {
+      this.deck = this.shuffle(this.disc.splice(0));
+      this.log('リフレッシュ：控え室をシャッフルしてデッキにしました', 'sys');
+    }
+  }
+  popDeck() { this.refresh(); return this.deck.length ? this.deck.pop() : null; }
+  draw(n = 1) { let k = 0; for (let i = 0; i < n; i++) { const c = this.popDeck(); if (c) { this.hand.push(c); k++; } } return k; }
+  find(tags, src) { src = src || this.hand; for (const t of tags) { const c = src.find(x => x.tag === t); if (c) return c; } return null; }
+  removeFrom(arr, c) { const i = arr.indexOf(c); if (i >= 0) arr.splice(i, 1); return i >= 0; }
+  members() { return ['L', 'C', 'R'].filter(a => this.stage[a]).map(a => this.stage[a]); }
+  onStage(tags) { return this.members().some(m => tags.has ? tags.has(m.card.tag) : tags.includes(m.card.tag)); }
+  activeEnergy() { return this.energy.filter(e => !e.wait).length; }
+  payE(n) {
+    if (this.activeEnergy() < n) return false;
+    let k = n; for (const e of this.energy) { if (k > 0 && !e.wait) { e.wait = true; k--; } }
+    return true;
+  }
+  get succ() { return this.success.length; }
+  target() { return TARGETS[Math.min(this.botTurn, 4) - 1] || 9; }
+  name(c) { return c.d.name; }
+
+  // ---------- 必要カード判定（ジャンク判定）----------
+  keepList(hand, upto) {
+    const h = hand.slice(); const keep = [];
+    const take = tags => { for (const t of tags) { const i = h.findIndex(x => x.tag === t); if (i >= 0) { keep.push(h.splice(i, 1)[0]); return; } } };
+    take(['REN', 'TOMARI', 'CHISA2']); take(['TOMARI', 'CHISA2', 'MARG7', 'REN', 'V2', 'KOT', 'ERI', 'KUKU']);
+    take(['START', 'HAJI']);
+    if (upto >= 2) { take(['SUMI', 'MEI']); take(['KOT', 'ERI', 'V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU']); take(['AIKO', 'MEM']); }
+    if (upto >= 3) { take(['KAN', 'M11']); take(['HAJI']); }
+    if (upto >= 4) { take(['C15']); take(['SUMI', 'MEI']); take(['AIKO', 'MEM']); take(['KOT', 'ERI']); take(['KOT', 'ERI']); take(['REN']); }
+    return { keep, junk: h };
+  }
+  // これから先のターンで必要なカードだけを残し、残りを不要（入れ替え・コスト用）とする
+  neededSplit() {
+    const h = this.hand.slice(); const keep = [];
+    const take = tags => { for (const t of tags) { const i = h.findIndex(x => x.tag === t); if (i >= 0) { keep.push(h.splice(i, 1)[0]); return true; } } return false; };
+    const on = tags => this.onStage(tags);
+    const t = Math.max(1, this.botTurn);
+    const from = Math.min(4, this.phase === 'live' ? t + 1 : t);
+    if (this.mode === 'swapOld') return this.keepList(this.hand, 4).junk.length ? { keep: this.keepList(this.hand, 4).keep, junk: this.keepList(this.hand, 4).junk } : { keep: this.hand.slice(), junk: [] };
+    if (from <= 1) { take(['REN', 'TOMARI', 'CHISA2']); take(['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI']); take(['START', 'HAJI']); }
+    if (this.mode === 'aggr' || this.mode === 'aggrMax' || this.mode === 'aggrK') {
+      const last = this.mode === 'aggrMax' ? from : 4;   // aggrMax：次のターンの分だけ残す
+      for (let k = Math.max(2, from); k <= last; k++) {
+        if (k === 2) { if (!on(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) take(['SUMI', 'MEI']); take(['AIKO', 'MEM']); }
+        if (k === 3) { if (!on(['KAN', 'M11', 'C15'])) take(['KAN', 'M11']); if (!take(['HAJI'])) { take(['AIKO', 'MEM']); take(['TOMARI', 'MARG7']); } }
+        if (k === 4) { if (!on(['C15'])) take(['C15']); if (from === 4) take(['HAJI']); take(['AIKO', 'MEM']); }
+      }
+      if (this.mode === 'aggrK' && from <= 3) take(['KOT', 'ERI']);
+      return { keep, junk: h };
+    }
+    if (from <= 2) {
+      if (!on(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) take(['SUMI', 'MEI']);
+      take(['AIKO', 'MEM']); take(['KOT', 'ERI']);
+      if (!h.some(x => ['KAN', 'M11'].includes(x.tag)) || !keep.some(x => ['SUMI', 'MEI'].includes(x.tag))) take(['REN', 'KUKU']);
+    }
+    if (from <= 3) {
+      if (!on(['KAN', 'M11', 'C15'])) take(['KAN', 'M11']);
+      if (!take(['HAJI'])) { if (!take(['AIKO', 'MEM'])) {} take(['TOMARI', 'MARG7']); }
+      take(['KOT', 'ERI']);
+    }
+    if (from <= 4) {
+      if (!on(['C15'])) take(['C15']);
+      if (from === 4) take(['HAJI']);
+      take(['AIKO', 'MEM']); take(['KOT', 'ERI']);
+    }
+    return { keep, junk: h };
+  }
+  junk() { return this.neededSplit().junk; }
+  discardOne() {
+    if (!this.hand.length) return null;
+    const j = this.junk(); let x;
+    if (j.length) x = j[0];
+    else {
+      const T = this.botTurn;
+      const rank = { M11: 0, KUKU: 1, V2: 1, ERI: 1, KOT: 2, REN: 2, MARG7: 2, CHISA2: 2, TOMARI: 2, START: T >= 2 ? 3 : 9,
+        C15: T <= 2 ? 1 : 8, MEI: 4, SUMI: 5, KAN: T <= 3 ? 6 : 0, MEM: 6, AIKO: 7, HAJI: 8 };
+      x = this.hand.slice().sort((a, b) => (rank[a.tag] ?? 1) - (rank[b.tag] ?? 1))[0];
+    }
+    this.removeFrom(this.hand, x); this.disc.push(x); return x;
+  }
+  discardN(n, why) {
+    const out = []; for (let i = 0; i < n; i++) { const x = this.discardOne(); if (x) out.push(x); }
+    if (out.length) this.log(`${why}：手札から「${out.map(c => this.name(c)).join('」「')}」を控え室へ`);
+    return out;
+  }
+
+  // ---------- ライブ必要ハート ----------
+  needOf(l) {
+    if (l.tag === 'HAJI' && this.succ >= 2) return { need: { heart02: 3, heart03: 3, heart06: 3, heart0: 3 }, score: 6 };
+    return { need: l.d.need, score: l.d.score || 0 };
+  }
+  hasSet(lives, tgt) {
+    for (const comb of combos(lives, 3)) if (comb.reduce((s, l) => s + this.needOf(l).score, 0) >= tgt) return true;
+    return false;
+  }
+
+  // ---------- サーチ優先度 ----------
+  missingPri() {
+    const p = []; const has = t => !!this.find(t);
+    // 1ターン目：2枚目のコスト2が手札に無ければ、恋のサーチで最優先に取る
+    if (!this.noT1Search && this.botTurn === 1 && this.phase === 'main' && !this.stage.R && !this.hand.some(c => c.type === 'メンバー' && c.cost === 2))
+      p.push('V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN');
+    if (this.succ === 0 && !has(['START', 'HAJI'])) p.push('START', 'HAJI');
+    if (this.succ <= 1 && !has(['AIKO', 'MEM'])) p.push('AIKO', 'MEM');
+    if (!has(['SUMI', 'MEI']) && !this.onStage(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) p.push('SUMI', 'MEI');
+    if (!has(['KAN', 'M11']) && !this.onStage(['KAN', 'M11', 'C15'])) p.push('KAN');
+    if (!has(['AIKO', 'MEM'])) p.push('AIKO', 'MEM');
+    if (!has(['HAJI'])) p.push('HAJI');
+    if (!has(['C15'])) p.push('C15');
+    return p.concat(['KAN', 'SUMI', 'AIKO', 'HAJI', 'C15', 'START', 'MEM']);
+  }
+  look(n, cond, pri, who) {
+    const top = []; for (let i = 0; i < n; i++) { const c = this.popDeck(); if (c) top.push(c); }
+    let pick = null;
+    for (const t of pri) { pick = top.find(x => x.tag === t && cond(x)); if (pick) break; }
+    if (!pick) pick = top.find(cond) || null;
+    if (pick) { this.removeFrom(top, pick); this.hand.push(pick); }
+    this.disc.push(...top);
+    this.log(`${who}：デッキ上${top.length + (pick ? 1 : 0)}枚を見て${pick ? `「${this.name(pick)}」を手札へ` : '該当なし'}（残り${top.length}枚は控え室）`);
+  }
+  onEnter(c, area) {
+    const t = c.tag;
+    if (t === 'REN' && this.hand.length) { this.discardN(1, '葉月 恋のコスト'); this.look(5, x => x.liella, this.missingPri(), '葉月 恋【登場】'); }
+    else if (t === 'MEI' && this.hand.length) { this.discardN(1, '米女メイのコスト'); this.look(5, x => x.liella && x.type === 'メンバー', this.missingPri().filter(x => ['KAN', 'C15', 'SUMI', 'M11'].includes(x)), '米女メイ【登場】'); }
+    else if (t === 'KUKU') this.look(3, x => x.cost >= 11, ['KAN', 'C15', 'M11'], '唐 可可【登場】');
+    else if (t === 'SUMI' && area === 'L') { this.draw(2); this.log('平安名すみれ【登場】【左サイド】：2枚引く'); this.discardN(2, '平安名すみれの効果'); }
+  }
+  play(c, area, baton) {
+    if (!this.hand.includes(c)) return false;
+    if (this.entered.has(area)) return false;
+    const prev = this.stage[area];
+    if (baton && !prev) return false;
+    if (!baton && prev) return false;
+    const cost = Math.max(0, c.cost - (baton ? prev.card.cost : 0));
+    if (!this.payE(cost)) return false;
+    this.removeFrom(this.hand, c);
+    if (baton) { this.disc.push(prev.card); }
+    this.stage[area] = { card: c, wait: false };
+    this.entered.add(area);
+    const an = { L: '左サイド', C: 'センター', R: '右サイド' }[area];
+    this.log(baton ? `「${this.name(prev.card)}」から「${this.name(c)}」へバトンタッチ（${an}・エネルギー${cost}）` : `「${this.name(c)}」を${an}に登場（エネルギー${cost}）`, 'act');
+    this.onEnter(c, area);
+    return true;
+  }
+  // 前ターンからいるコスト2へ0コストでバトンタッチ
+  freeBaton(c, allowRec = false) {
+    const cands = ['C', 'R', 'L'].filter(a => this.stage[a] && !this.entered.has(a) && this.stage[a].card.cost === 2);
+    const protect = (this.botTurn < 4 && !allowRec) ? REC : new Set();
+    const pr = a => { const m = this.stage[a].card; if (m.tag === 'KOT' || m.tag === 'ERI') return 9; if (protect.has(m.tag)) return 8; return { REN: 0, KUKU: 0, V2: 1 }[m.tag] ?? 2; };
+    const ok = cands.filter(a => pr(a) < 8).sort((a, b) => pr(a) - pr(b));
+    if (!ok.length) return null;
+    return this.play(c, ok[0], true) ? ok[0] : null;
+  }
+  missingProg(t) {
+    const need = []; const has = x => !!this.find(x);
+    const hasC15 = this.data.some(d => TAG[baseNo(d.no)] === 'C15');
+    if (t <= 2 && !has(['SUMI', 'MEI']) && !this.onStage(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) need.push('C5');
+    if (t <= 3 && !has(['KAN', 'M11']) && !this.onStage(['KAN', 'M11', 'C15'])) need.push('K');
+    if (hasC15 && t >= 2 && !has(['C15']) && !this.onStage(['C15'])) need.push('C15');
+    return need;
+  }
+  searchBatons(t, nowOnly) {
+    for (let i = 0; i < 2; i++) {
+      let mp = this.missingProg(t);
+      if (nowOnly) mp = mp.filter(x => (x === 'C5' && t === 2) || (x === 'K' && t === 3) || (x === 'C15' && t >= 4));
+      if (!mp.length) return;
+      let sc = (mp.includes('K') || mp.includes('C15')) ? this.find(['KUKU', 'REN']) : null;
+      sc = sc || this.find(['REN']);
+      if (!sc) return;
+      this.log(`進行カード不足（${mp.join('・')}）→サーチ役を0コストでバトンタッチ`, 'think');
+      if (!this.freeBaton(sc)) return;
+    }
+  }
+  upgradeBatons() {
+    for (let i = 0; i < 2; i++) {
+      const u = this.find(['KOT', 'ERI']); if (!u) return;
+      if (!this.freeBaton(u)) return;
+    }
+  }
+  // 回収カードの起動
+  activateRecovery(area, wantTags) {
+    const m = this.stage[area]; if (!m) return null;
+    const t = m.card.tag; let pool;
+    if (t === 'TOMARI') pool = this.disc.filter(x => x.type === 'ライブ');
+    else if (t === 'CHISA2') pool = this.disc.filter(x => x.type === 'メンバー');
+    else if (t === 'MARG7') pool = this.disc.slice();
+    else return null;
+    let tg = null; for (const w of wantTags) { tg = pool.find(x => x.tag === w); if (tg) break; }
+    if (!tg) return null;
+    this.stage[area] = null; this.disc.push(m.card);
+    if (t === 'MARG7') { const i = this.energy.findIndex(e => e.wait); this.energy.splice(i >= 0 ? i : 0, 1); this.energyDeck++; }
+    this.removeFrom(this.disc, tg); this.hand.push(tg);
+    this.log(`「${this.name(m.card)}」【起動】自身を控え室へ${t === 'MARG7' ? '・エネルギー1枚をエネルギーデッキへ' : ''}→控え室の「${this.name(tg)}」を手札へ`, 'act');
+    return tg;
+  }
+  useRecovery(wantTags) {
+    for (const a of ['C', 'R', 'L']) {
+      const m = this.stage[a]; if (!m || !REC.has(m.card.tag)) continue;
+      if (this.activateRecovery(a, wantTags)) return a;
+    }
+    return null;
+  }
+  fill() {
+    for (const a of ['L', 'C', 'R']) {
+      if (!this.stage[a] && !this.entered.has(a) && this.activeEnergy() >= 2) {
+        const c = this.find(['KOT', 'ERI', 'V2', 'KUKU', 'TOMARI', 'CHISA2', 'MARG7', 'REN']);
+        if (c) this.play(c, a, false);
+      }
+    }
+  }
+
+  // ---------- ゲーム開始 ----------
+  start() {
+    this.shuffle(this.deck);
+    this.draw(6);
+    this.log(`初期手札6枚：${this.hand.map(c => this.name(c)).join('、')}`, 'sys');
+    // マリガン：スコア1ライブ・恋(2枚まで)・コスト5・スコア3ライブ、恋が無ければ黄ハートのコスト2
+    const h = this.hand.slice(); const k = [];
+    const tk = tags => { for (const t of tags) { const i = h.findIndex(x => x.tag === t); if (i >= 0) { k.push(h.splice(i, 1)[0]); return; } } };
+    tk(['START', 'HAJI']); tk(['REN']); tk(['SUMI', 'MEI']); tk(['REN']);
+    if (!k.some(c => c.tag === 'REN')) tk(['TOMARI', 'CHISA2']);
+    tk(['AIKO', 'MEM']);
+    const ret = h;
+    if (ret.length) {
+      for (const c of ret) this.removeFrom(this.hand, c);
+      this.draw(ret.length);
+      this.deck.push(...ret); this.shuffle(this.deck);
+      this.log(`マリガン：${ret.length}枚戻して引き直し（戻した：${ret.map(c => this.name(c)).join('、')}）`, 'sys');
+    } else this.log('マリガン：なし', 'sys');
+    for (let i = 0; i < 3; i++) { this.energy.push({ wait: false }); this.energyDeck--; }
+    this.log('エネルギーデッキから3枚をエネルギー置き場へ', 'sys');
+    this.changed();
+  }
+
+  // ---------- 通常フェイズ ----------
+  normalPhase() {
+    this.botTurn++; const t = this.botTurn; this.entered = new Set(); this.phase = 'main';
+    this.log(`―― ボットの通常フェイズ（ボット${t}ターン目／目標スコア${this.target()}）――`, 'phase');
+    for (const e of this.energy) e.wait = false;
+    for (const m of this.members()) m.wait = false;
+    if (this.energyDeck > 0) { this.energy.push({ wait: false }); this.energyDeck--; }
+    this.draw(1);
+    this.log(`アクティブ→エネルギー+1（計${this.energy.length}）→1枚ドロー（手札${this.hand.length}枚）`);
+    if (t === 1) this.main1(); else if (t === 2) this.main2(); else if (t === 3) this.main3(); else this.main4();
+    const L = this.stage.L, ms = this.members();
+    const prog = t === 1 ? (ms.length >= 2 && ms.some(m => YEL2.has(m.card.tag))) : t === 2 ? !!(L && L.card.cost === 5) : t === 3 ? !!(L && L.card.cost === 11) : !!(L && L.card.tag === 'C15');
+    this.st[t] = { on: this.succ === t - 1, prog };
+    this.changed();
+  }
+  main1() {
+    const y = this.find(['REN', 'TOMARI', 'CHISA2']); if (y) this.play(y, 'C', false);
+    const o = this.find(['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI']); if (o) this.play(o, this.stage.C ? 'R' : 'C', false);
+    const o2 = !this.stage.R ? this.find(['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI']) : null;
+    if (o2) this.play(o2, 'R', false);
+  }
+  main2() {
+    this.searchBatons(2, true);
+    let c5 = this.find(['SUMI', 'MEI']);
+    if (!c5 && this.useRecovery(['SUMI', 'MEI'])) c5 = this.find(['SUMI', 'MEI']);
+    if (c5 && !this.stage.L) this.play(c5, 'L', false);
+    else if (c5 && this.stage.L && this.stage.L.card.cost === 2) this.play(c5, 'L', true);
+    this.fill();
+    this.searchBatons(2, false); this.upgradeBatons();
+  }
+  main3() {
+    const can6 = this.hasSet(this.hand.filter(x => x.type === 'ライブ'), 6);
+    this.searchBatons(3, true);
+    let k = this.find(can6 ? ['KAN', 'M11'] : ['M11', 'KAN']);
+    if (!can6 && k && k.tag === 'M11') this.log('スコア6の組み合わせが無い→4ターン目に備えてマルガレーテ11を優先', 'think');
+    if (!k && this.useRecovery(['KAN', 'M11'])) k = this.find(['KAN', 'M11']);
+    if (k && this.stage.L && this.stage.L.card.cost === 5) this.play(k, 'L', true);
+    else if (!this.stage.L) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', false); }
+    else if (this.stage.L.card.cost === 2) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', true); }
+    this.fill();
+    // かのんなら、ライブ回収を挟んでスコア6を作る
+    if (this.stage.L && this.stage.L.card.tag === 'KAN') {
+      const lv = this.hand.filter(x => x.type === 'ライブ');
+      const tgt = this.target();
+      if (!this.hasSet(lv, tgt)) {
+        const cand = this.disc.filter(x => x.type === 'ライブ' && this.hasSet(lv.concat([x]), tgt)).sort((a, b) => this.needOf(b).score - this.needOf(a).score);
+        if (cand.length) {
+          let rec = ['C', 'R'].find(a => this.stage[a] && ['TOMARI', 'MARG7'].includes(this.stage[a].card.tag));
+          if (!rec) {
+            const rc = this.find(['TOMARI', 'MARG7']);
+            if (rc) { const a = this.freeBaton(rc, true); if (a) rec = a; }
+          }
+          if (rec) { this.log('スコア6のライブが手札に無い→回収カードで控え室から取り戻す', 'think'); this.activateRecovery(rec, cand.map(x => x.tag)); }
+        }
+      }
+    }
+    this.searchBatons(3, false); this.upgradeBatons();
+  }
+  main4() {
+    this.searchBatons(4, true);
+    let c15 = this.find(['C15']);
+    const L = this.stage.L;
+    if (!c15 && L && L.card.cost === 11 && this.useRecovery(['C15'])) c15 = this.find(['C15']);
+    if (c15 && L && L.card.cost === 11) this.play(c15, 'L', true);
+    else if (L && L.card.cost === 5) { const k = this.find(['KAN', 'M11']); if (k) this.play(k, 'L', true); }
+    else if (L && L.card.cost === 2) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', true); }
+    else if (!L) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', false); }
+    // 回収→空いたエリアにコスト2を出し直す、をエネルギーが続く限り（中央・右サイドで最大2回）
+    for (let i = 0; i < 2; i++) {
+      const lv = this.hand.filter(x => x.type === 'ライブ');
+      const needLive = !this.hasSet(lv, this.target());
+      if (!needLive && this.hand.length >= 4) break;
+      if (this.activeEnergy() < 2) break;              // 出し直しの2が無ければ盤面を減らさない
+      const want = needLive ? ['HAJI', 'AIKO', 'MEM', 'START'] : ['KOT', 'ERI', 'V2', 'HAJI', 'AIKO'];
+      const avail = this.disc.some(x => want.includes(x.tag));
+      if (!avail) break;
+      let area = ['C', 'R'].find(a => this.stage[a] && !this.entered.has(a) && (needLive ? ['TOMARI', 'MARG7'] : ['TOMARI', 'MARG7', 'CHISA2']).includes(this.stage[a].card.tag));
+      if (!area) {
+        const rc = this.find(needLive ? ['TOMARI', 'MARG7'] : ['TOMARI', 'CHISA2', 'MARG7']);
+        if (rc) area = this.freeBaton(rc, true);
+      }
+      if (!area) break;
+      if (!this.activateRecovery(area, want)) break;
+      this.log(`4ターン目：回収${i + 1}回目→空いたエリアを出し直す`, 'think');
+      const c2 = this.find(['KOT', 'ERI', 'V2', 'KUKU', 'REN', 'TOMARI', 'CHISA2', 'MARG7']);
+      if (c2) this.play(c2, area, false);
+    }
+    this.fill(); this.upgradeBatons();
+  }
+
+  // ---------- ライブカードセット ----------
+  estimate() {
+    const ms = this.members();
+    let h = 0, bl = 0;
+    for (const m of ms) { for (const v of Object.values(m.card.d.heart)) h += v; if (!m.wait) bl += m.card.d.blade; }
+    const flex = ms.filter(m => ['KOT', 'ERI'].includes(m.card.tag)).length * this.succ;
+    const c15 = ms.some(m => m.card.tag === 'C15' && !m.wait) && this.hand.length >= 4 ? 5 : 0;
+    return h + flex + 0.8 * (bl + c15);
+  }
+  liveSet() {
+    this.phase = 'live';
+    const lives = this.hand.filter(x => x.type === 'ライブ');
+    const tgt = this.target(); const est = this.estimate();
+    const chisato = this.members().some(m => m.card.d.name.includes('千砂都'));
+    let best = null;
+    for (const comb of combos(lives, 3)) {
+      const sc = comb.reduce((s, l) => s + this.needOf(l).score, 0);
+      const nd = comb.reduce((s, l) => s + sumv(this.needOf(l).need), 0);
+      const bonus = chisato && comb.some(l => l.tag === 'MEM') ? 0.8 : 0;
+      if (nd > est + bonus + 2) continue;
+      if (sc >= tgt) { if (!best || nd < best.nd || (nd === best.nd && sc > best.sc)) best = { comb, nd, sc }; }
+    }
+    // 今ターン目標に届かない場合：次ターンの目標に届くライブを温存する
+    let reserve = [];
+    if (!best && this.botTurn < 4) {
+      reserve = this.reserveForNext(lives);
+      if (reserve.length) this.log(`（思考）今ターンは目標${tgt}点に届かない→次ターン（目標${TARGETS[Math.min(this.botTurn + 1, 4) - 1]}点）用に「${reserve.map(c => this.name(c)).join('」「')}」を温存`, 'think');
+    }
+    let fallback = null;
+    if (!best) {
+      const rest = lives.filter(l => !reserve.includes(l));
+      for (const comb of combos(rest, 3)) {
+        const sc = comb.reduce((s, l) => s + this.needOf(l).score, 0);
+        const nd = comb.reduce((s, l) => s + sumv(this.needOf(l).need), 0);
+        const bonus = chisato && comb.some(l => l.tag === 'MEM') ? 0.8 : 0;
+        if (sc > 0 && nd <= est + bonus) { if (!fallback || sc > fallback.sc || (sc === fallback.sc && nd < fallback.nd)) fallback = { comb, nd, sc }; }
+      }
+    }
+    let chosen = best || fallback;
+    if (this.st[this.botTurn]) this.st[this.botTurn].acq = !!best;
+    let note = best ? `目標${tgt}点に届く組み合わせ` : (fallback ? `目標${tgt}点には届かないため、温存分を除いて成功見込みのある最大スコアの組み合わせ` : '');
+    // 3ターン目：目標不可でマルガレーテ11がいれば成功時効果のための捨てライブ
+    if (!best && this.botTurn === 3 && this.onStage(['M11']) && !chosen) {
+      const hj = this.find(['HAJI']); const a3 = this.find(['AIKO', 'MEM']);
+      const spare = lives.filter(x => x !== hj && x !== a3 && !reserve.includes(x) && sumv(this.needOf(x).need) <= est + 2).sort((a, b) => sumv(a.d.need) - sumv(b.d.need));
+      if (spare.length) { chosen = { comb: [spare[0]] }; note = 'マルガレーテ11の成功時効果を狙う捨てライブ'; }
+    }
+    const placed = [];
+    if (chosen) for (const l of chosen.comb) { this.removeFrom(this.hand, l); placed.push(l); }
+    // 入れ替えに使えるのはライブ以外のカードだけ（置いたライブカードはすべてライブとして判定されるため）
+    const junk = this.junk().filter(c => c.type !== 'ライブ').slice(0, 3 - placed.length);
+    for (const j of junk) { this.removeFrom(this.hand, j); placed.push(j); }
+    this.liveZone = placed.map(c => ({ card: c, faceUp: false }));
+    this.draw(placed.length);
+    this.log(`ライブカードセット：${placed.length}枚を裏向きで置き、${placed.length}枚引く`, 'act');
+    if (this.st[this.botTurn]) this.st[this.botTurn].swap = junk.length;
+    if (chosen) this.log(`（思考）${note}：${chosen.comb.map(c => this.name(c)).join('＋')}${junk.length ? `／手札入れ替え用に${junk.length}枚` : ''}`, 'think');
+    else if (placed.length) this.log(`（思考）成功見込みのあるライブが無い→手札入れ替えのみ`, 'think');
+    this.changed();
+  }
+
+  // 次ターンの目標に届く見込みのあるライブ（手札のみ、または回収カードで控え室から1枚補える）
+  reserveForNext(lives) {
+    const nextTgt = TARGETS[Math.min(this.botTurn + 1, 4) - 1];
+    const ndOf = comb => comb.reduce((s, l) => s + sumv(this.needOf(l).need), 0);
+    let bestSet = null;
+    for (const comb of combos(lives, 3)) {
+      if (comb.reduce((s, l) => s + this.needOf(l).score, 0) >= nextTgt && (!bestSet || ndOf(comb) < ndOf(bestSet))) bestSet = comb;
+    }
+    if (bestSet) return bestSet;
+    const canRecover = this.onStage(['TOMARI', 'MARG7']) || !!this.find(['TOMARI', 'MARG7']);
+    if (!canRecover) return [];
+    const discLives = this.disc.filter(x => x.type === 'ライブ');
+    for (const d of discLives) {
+      for (const comb of combos(lives, 2)) {
+        if (comb.concat([d]).reduce((s, l) => s + this.needOf(l).score, 0) >= nextTgt) return comb;
+      }
+      if (this.needOf(d).score >= nextTgt) return [];
+    }
+    return [];
+  }
+
+  // ---------- パフォーマンス ----------
+  performance() {
+    this.log('―― ボットのパフォーマンスフェイズ ――', 'phase');
+    for (const z of this.liveZone) z.faceUp = true;
+    const nonLive = this.liveZone.filter(z => z.card.type !== 'ライブ');
+    for (const z of nonLive) this.disc.push(z.card);
+    this.liveZone = this.liveZone.filter(z => z.card.type === 'ライブ');
+    if (nonLive.length) this.log(`公開：ライブ以外の${nonLive.length}枚を控え室へ`);
+    const res = { lives: this.liveZone.map(z => z.card), success: false, score: 0, yell: [], hearts: {}, need: {} };
+    if (!this.liveZone.length) { this.log('ライブカードなし→ライブは行わない'); this.lastLive = res; this.changed(); return res; }
+    const lives = this.liveZone.map(z => z.card);
+    this.log(`ライブ：${lives.map(c => this.name(c)).join('、')}`, 'act');
+    // ライブ開始時
+    let extraB = 0;
+    const ms = this.members();
+    for (const m of ms) {
+      const t = m.card.tag;
+      if (t === 'KAN') {
+        if (this.activeEnergy() >= 2) { this.payE(2); this.log('澁谷かのん【ライブ開始時】エネルギー2を支払う'); }
+        else this.discardN(2, '澁谷かのん【ライブ開始時】（エネルギー不足）');
+      } else if (t === 'M11') {
+        if (this.hand.length) this.discardN(1, 'ウィーン・マルガレーテ【ライブ開始時】');
+        else { const i = this.energy.findIndex(e => e.wait); this.energy.splice(i >= 0 ? i : 0, 1); this.energyDeck++; this.log('ウィーン・マルガレーテ【ライブ開始時】手札なし→エネルギー1枚をエネルギーデッキへ'); }
+      } else if (t === 'C15' && !m.wait && this.hand.length >= 2) {
+        this.discardN(2, '嵐 千砂都(15)【ライブ開始時】'); extraB += 5; this.log('→ライブ終了時まで[ブレード]×5を得る');
+      }
+    }
+    const transformed = lives.some(l => l.tag === 'HAJI') && this.succ >= 2;
+    if (transformed) this.log('始まりは君の空【ライブ開始時】成功ライブ2枚以上→スコア+5、必要ハート変化');
+    if (lives.some(l => l.tag === 'MEM')) {
+      const ch = ms.find(m => m.card.d.name.includes('千砂都') && !m.wait);
+      if (ch) { extraB += 1; this.log('Memories【ライブ開始時】嵐 千砂都が[ブレード]を得る'); }
+    }
+    // 必要ハート合計
+    const need = {}; for (const l of lives) for (const [k, v] of Object.entries(this.needOf(l).need)) need[k] = (need[k] || 0) + v;
+    // ステージのハート
+    const hearts = {}; for (const m of ms) for (const [k, v] of Object.entries(m.card.d.heart)) hearts[k] = (hearts[k] || 0) + v;
+    // ことり・絵里：不足色を選ぶ（ライブ開始時に選択）
+    for (const m of ms) {
+      if (!['KOT', 'ERI'].includes(m.card.tag) || this.succ === 0) continue;
+      const opts = m.card.tag === 'KOT' ? ['heart01', 'heart03', 'heart06'] : ['heart04', 'heart05', 'heart06'];
+      const def = k => (need[k] || 0) - (hearts[k] || 0);
+      const pick = opts.slice().sort((a, b) => (def(b) - def(a)) || ((need[b] || 0) - (need[a] || 0)))[0];
+      hearts[pick] = (hearts[pick] || 0) + this.succ;
+      this.log(`${this.name(m.card)}【ライブ開始時】${COLORS[pick]}ハートを選択→+${this.succ}`);
+    }
+    // エール
+    const blades = ms.filter(m => !m.wait).reduce((s, m) => s + (m.card.d.blade || 0), 0) + extraB;
+    const waited = ms.filter(m => m.wait).length;
+    this.log(`エール：アクティブなメンバーのブレード合計${blades}${waited ? `（ウェイト中${waited}人は除外）` : ''}`, 'act');
+    const yell = []; for (let i = 0; i < blades; i++) { const c = this.popDeck(); if (c) yell.push(c); }
+    this.yell = yell;
+    let alls = 0, scoreIcons = 0;
+    for (const c of yell) {
+      const bh = Object.keys(c.d.bh)[0];
+      if (bh === 'b_all') alls++;
+      else if (bh) { const k = 'heart' + bh.slice(-2); hearts[k] = (hearts[k] || 0) + 1; }
+      if (c.d.sp && c.d.sp.score) scoreIcons += c.d.sp.score;
+    }
+    this.log(`公開：${yell.map(c => this.name(c)).join('、') || 'なし'}`);
+    const ok = feasible(hearts, alls, need);
+    res.hearts = hearts; res.alls = alls; res.need = need; res.yell = yell;
+    this.log(`所有ハート：${fmtHearts(hearts)}${alls ? ` ALL×${alls}` : ''}／必要：${fmtHearts(need)}`);
+    if (!ok) {
+      this.log('ライブ失敗：ライブカードを控え室へ', 'bad');
+      for (const l of lives) this.disc.push(l);
+      this.liveZone = [];
+      res.success = false; this.lastLive = res; this.changed(); return res;
+    }
+    let score = lives.reduce((s, l) => s + this.needOf(l).score, 0) + scoreIcons;
+    if (scoreIcons) this.log(`[スコア]アイコン×${scoreIcons}`);
+    res.success = true; res.score = score;
+    this.log(`必要ハートを満たした（ライブカードを残す）／現在の合計スコア ${score}`, 'good');
+    this.lastLive = res; this.changed();
+    return res;
+  }
+
+  // ---------- 勝敗判定 ----------
+  // opp: {hasLive:bool, score:number, success:bool}
+  // 8.4.4 ライブが成功した事象（勝敗判定の前に処理）
+  successEffects() {
+    const me = this.lastLive;
+    if (!me || !me.success || !this.liveZone.length) return;
+    this.log('―― ライブ勝敗判定フェイズ：ボットのライブ成功時 ――', 'phase');
+    const lives = this.liveZone.map(z => z.card), ms = this.members();
+    if (lives.some(l => l.tag === 'START')) {
+      const pri = this.missingPri(); let pick = null;
+      for (const t of pri) { pick = this.yell.find(c => c.tag === t && c.liella); if (pick) break; }
+      if (pick) { this.removeFrom(this.yell, pick); this.deck.push(pick); this.log(`START!!【ライブ成功時】エールの「${this.name(pick)}」をデッキの一番上へ`); }
+    }
+    if (ms.some(m => m.card.tag === 'M11')) {
+      const ch = this.m11Choice || 'smart2';
+      // 4ターン目の千砂都15(4)＋コスト5へのバトン(3)＋空きエリア(2)に足りない、かつ手札が十分ならエネルギー
+      // smart2：4ターン目に回収を2回できる状況（回収カード2枚以上＋控え室に9点用のライブ）ならエネルギー
+      const recCount = this.members().filter(m => ['TOMARI', 'MARG7'].includes(m.card.tag)).length + this.hand.filter(c => ['TOMARI', 'MARG7'].includes(c.tag)).length;
+      const discLives = this.disc.filter(c => c.type === 'ライブ');
+      const lvAfter = this.hand.filter(c => c.type === 'ライブ');
+      const twoRecUseful = this.botTurn === 3 && recCount >= 2 && !this.hasSet(lvAfter, 9) && this.hasSet(lvAfter.concat(discLives), 9);
+      const wantE = ch === 'energy' || (ch === 'smart' && this.energyDeck > 0 && this.hand.length >= 4 && this.energy.length + 1 < 9 && this.botTurn <= 3) || (ch === 'smart2' && twoRecUseful);
+      if (wantE && this.energyDeck > 0) { this.energy.push({ wait: true }); this.energyDeck--; this.log('ウィーン・マルガレーテ【ライブ成功時】エネルギーデッキからエネルギー1枚をウェイト状態で置く'); }
+      else { this.draw(2); this.log('ウィーン・マルガレーテ【ライブ成功時】2枚引く'); }
+    }
+    if (ms.some(m => m.card.tag === 'KAN') && this.activeEnergy() >= 6) { this.payE(6); me.score += 1; this.log('澁谷かのん【ライブ成功時】エネルギー6支払い→合計スコア+1'); }
+    this.changed();
+  }
+  // 勝敗判定の前段：ライブ成功時の効果を処理し、ボットの合計スコアを確定（1回だけ）
+  prepareJudge() {
+    if (this._prepared) return this.botResult();
+    this._prepared = true; this.successEffects(); return this.botResult();
+  }
+  botResult() {
+    const me = this.lastLive || { success: false };
+    return { has: this.liveZone.length > 0 && !!me.success, score: me.success ? me.score : null };
+  }
+  judge(opp, botIsFirst) {
+    const me = this.lastLive || { success: false };
+    this.prepareJudge();
+    const meHas = this.liveZone.length > 0 && me.success;
+    const oppHas = opp.hasLive && opp.success;
+    let botWin = false, oppWin = false;
+    if (meHas && !oppHas) botWin = true;
+    else if (!meHas && oppHas) oppWin = true;
+    else if (meHas && oppHas) {
+      if (me.score > opp.score) botWin = true; else if (me.score < opp.score) oppWin = true; else { botWin = oppWin = true; }
+    }
+    return this.settle(botWin, oppWin);
+  }
+  // 勝敗の結果を反映（あなたが選んだ結果をそのまま受け取る）
+  settle(botWin, oppWin) {
+    const me = this.lastLive || { success: false };
+    this.prepareJudge();
+    const meHas = this.liveZone.length > 0 && me.success;
+    if (!meHas) botWin = false;
+    let botMoved = false;
+    if (botWin) {
+      if (botWin && oppWin && this.liveZone.length === 2) this.log('同点：ライブカード置き場に2枚あるため移動しない', 'sys');
+      else {
+        const z = this.liveZone.slice().sort((a, b) => (b.card.d.score || 0) - (a.card.d.score || 0))[0];
+        this.removeFrom(this.liveZone, z); this.success.push(z.card); botMoved = true;
+        this.log(`ライブ勝利！「${this.name(z.card)}」を成功ライブカード置き場へ（${this.succ}枚目）`, 'good');
+      }
+    }
+    if (!botWin && oppWin) this.log('ライブ敗北', 'bad');
+    if (!botWin && !oppWin) this.log('ライブの勝者なし', 'sys');
+    // 後片付け
+    if (meHas || me.success) this.log(`ボットの合計スコア ${me.score}`, 'sys');
+    for (const z of this.liveZone) this.disc.push(z.card);
+    this.liveZone = []; this.disc.push(...this.yell); this.yell = []; this.lastLive = null; this._prepared = false;
+    this.changed();
+    return { botWin, oppWin, botMoved, meScore: meHas ? me.score : null };
+  }
+
+  // ---------- 相手の効果による操作 ----------
+  toggleWait(area) { const m = this.stage[area]; if (!m) return; m.wait = !m.wait; this.log(`（相手の効果）「${this.name(m.card)}」を${m.wait ? 'ウェイト' : 'アクティブ'}にした`, 'opp'); this.changed(); }
+  toDiscard(area) { const m = this.stage[area]; if (!m) return; this.stage[area] = null; this.disc.push(m.card); this.log(`（相手の効果）「${this.name(m.card)}」を控え室に置いた`, 'opp'); this.changed(); }
+  toHand(area) { const m = this.stage[area]; if (!m) return; this.stage[area] = null; this.hand.push(m.card); this.log(`（相手の効果）「${this.name(m.card)}」を手札に戻した`, 'opp'); this.changed(); }
+}
+
+function sumv(o) { let s = 0; for (const v of Object.values(o)) s += v; return s; }
+function* combos(arr, maxR) {
+  const n = arr.length;
+  for (let r = 1; r <= Math.min(maxR, n); r++) {
+    const idx = [...Array(r).keys()];
+    while (true) {
+      yield idx.map(i => arr[i]);
+      let i = r - 1; while (i >= 0 && idx[i] === n - r + i) i--;
+      if (i < 0) break; idx[i]++; for (let j = i + 1; j < r; j++) idx[j] = idx[j - 1] + 1;
+    }
+  }
+}
+function feasible(h, alls, need) {
+  let deficit = 0, total = alls, req = 0;
+  for (const v of Object.values(h)) total += v;
+  for (const [k, v] of Object.entries(need)) { req += v; if (k === 'heart0') continue; deficit += Math.max(0, v - (h[k] || 0)); }
+  return deficit <= alls && total >= req;
+}
+function fmtHearts(h) { return Object.entries(h).filter(([, v]) => v).map(([k, v]) => `${COLORS[k] || k}${v}`).join(' ') || 'なし'; }
+
+if (typeof module !== 'undefined') module.exports = { Engine, COLORS, TAG, baseNo, fmtHearts };
+
+</script>
+<script>
+// ===================== UI =====================
+const $ = s => document.querySelector(s);
+const HCLS = { heart01:'h01', heart02:'h02', heart03:'h03', heart04:'h04', heart05:'h05', heart06:'h06', heart0:'h0', heart07:'h07' };
+const imgMap = {}; // card_no -> objectURL
+let E = null;          // Engine
+let G = null;          // 進行状態
+const AREA_NAME = { L:'左サイド', C:'センター', R:'右サイド' };
+
+function heartsHtml(obj, prefix) {
+  let s = '';
+  for (const [k, v] of Object.entries(obj || {})) {
+    const key = k.replace(/^b_/, '');
+    const cls = key === 'all' ? 'hall' : (HCLS[key] || 'h0');
+    const lbl = key === 'all' ? 'A' : (key === 'heart0' ? '無' : '');
+    for (let i = 0; i < v; i++) s += `<span class="ht ${cls}">${lbl}</span>`;
+  }
+  return s;
+}
+function faceHtml(d) {
+  const img = imgMap[d.no];
+  if (img) return `<img src="${img}" alt="${d.name}">`;
+  if (d.type === 'ライブ') {
+    const sp = d.sp && d.sp.score ? ` <span title="スコアアイコン">[スコア]</span>` : '';
+    return `<div class="face live"><div class="nm">${d.name}</div>
+      <div class="row"><span class="sc">${d.score}</span><span class="bl">スコア</span></div>
+      <div class="row">${heartsHtml(d.need)}</div>
+      <div class="row bl">BH ${heartsHtml(d.bh) || 'なし'}${sp}</div>
+      <div class="ab">${d.ability === '-' ? '' : d.ability}</div></div>`;
+  }
+  const ht = Object.keys(d.heart || {}).length ? heartsHtml(d.heart) : '<span class="bl">ハート可変</span>';
+  return `<div class="face member"><div class="nm">${d.name}</div><div class="cost">${d.cost}</div>
+    <div class="row">${ht}</div>
+    <div class="row bl">ブレード×${d.blade || 0}　BH ${heartsHtml(d.bh) || 'なし'}</div>
+    <div class="ab">${d.ability === '-' ? '' : d.ability}</div></div>`;
+}
+function cardEl(card, opts = {}) {
+  const el = document.createElement('div');
+  const land = opts.back ? !!opts.land : card.d.type === 'ライブ';
+  el.className = 'card' + (land ? ' land' : '') + (opts.wait ? ' wait' : '');
+  el.innerHTML = opts.back ? '<div class="back"></div>' : faceHtml(card.d);
+  if (!opts.back) el.onclick = e => { e.stopPropagation(); (opts.onclick || (() => showDetail(card.d)))(); };
+  return el;
+}
+
+// ---------- 描画 ----------
+function render() {
+  if (!E) return;
+  // ライブ置き場
+  document.querySelectorAll('[data-live]').forEach((z, i) => {
+    z.querySelectorAll('.card').forEach(c => c.remove());
+    const lz = E.liveZone[i];
+    if (lz) z.appendChild(cardEl(lz.card, lz.faceUp ? {} : { back: true, land: true }));
+  });
+  // ステージ
+  document.querySelectorAll('[data-area]').forEach(z => {
+    z.querySelectorAll('.card').forEach(c => c.remove());
+    const a = z.dataset.area, m = E.stage[a];
+    if (m) z.appendChild(cardEl(m.card, { wait: m.wait, onclick: () => showMember(a) }));
+  });
+  // エネルギー（数字表記）
+  const er = $('#energyRow'); er.querySelectorAll('.enum').forEach(c => c.remove());
+  const act = E.activeEnergy(), tot = E.energy.length;
+  er.insertAdjacentHTML('beforeend', `<div class="enum">アクティブ<b>${act}</b></div><div class="enum sub">ウェイト<b>${tot - act}</b></div><div class="enum sub">合計<b>${tot}</b></div>`);
+  $('#energyCount').textContent = '';
+  // 成功ライブ
+  const st = $('#succStack'); st.innerHTML = '';
+  E.success.forEach((c, i) => { const el = cardEl(c); el.style.top = `${i * 22}%`; st.appendChild(el); });
+  const yz = $('#yellZone'); yz.querySelectorAll('.card').forEach(c => c.remove());
+  ((G && G.lastYell) || []).forEach(c => yz.appendChild(cardEl(c)));
+  $('#succCount').textContent = E.succ;
+  $('#deckCount').textContent = E.deck.length;
+  $('#eDeckCount').textContent = E.energyDeck;
+  $('#discCount').textContent = E.disc.length;
+  $('#handCount').textContent = E.hand.length;
+  const dt = $('#discTop'); dt.innerHTML = '';
+  if (E.disc.length) dt.appendChild(cardEl(E.disc[E.disc.length - 1], { onclick: showDisc }));
+  $('#oppSucc').textContent = G ? G.oppSucc : 0;
+}
+function addLog({ msg, cls }) {
+  const d = document.createElement('div'); d.className = cls || ''; d.textContent = msg;
+  const lg = $('#log'); lg.appendChild(d); lg.scrollTop = lg.scrollHeight;
+}
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); }
+
+// ---------- モーダル ----------
+function openModal(html) { $('#panel').innerHTML = html; $('#modal').classList.add('on'); }
+function closeModal() { $('#modal').classList.remove('on'); }
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+function detailHtml(d, extraBtns = '') {
+  const hearts = d.type === 'ライブ'
+    ? `スコア ${d.score}／必要ハート ${heartsHtml(d.need)}`
+    : `コスト ${d.cost}／ハート ${Object.keys(d.heart || {}).length ? heartsHtml(d.heart) : '可変'}／ブレード ${d.blade || 0}`;
+  return `<div class="detail"><div class="card">${faceHtml(d)}</div><div class="txt">
+    <h3>${d.name}</h3><div>${d.no}　${d.type}${d.unit ? '　' + d.unit : ''}</div>
+    <div style="margin-top:.6vh">${hearts}</div><div>ブレードハート ${heartsHtml(d.bh) || 'なし'}${d.sp && d.sp.score ? '　[スコア]' : ''}</div>
+    <div class="ab">${d.ability === '-' ? '（効果なし）' : d.ability}</div>
+    <div class="btns">${extraBtns}<a class="btn sub small" href="${d.img}" target="_blank" rel="noopener">公式画像を開く</a><button class="btn small" onclick="closeModal()">閉じる</button></div>
+    ${imgMap[d.no] ? '' : '<p class="note">このカードの画像はまだ同梱されていません</p>'}
+  </div></div>`;
+}
+function showDetail(d) { openModal(detailHtml(d)); }
+function showMember(a) {
+  const m = E.stage[a]; if (!m) return;
+  const btns = `<button class="btn small" onclick="E.toggleWait('${a}');closeModal()">${m.wait ? 'アクティブにする' : 'ウェイトにする'}</button>
+    <button class="btn small sub" onclick="E.toDiscard('${a}');closeModal()">控え室に置く</button>
+    <button class="btn small sub" onclick="E.toHand('${a}');closeModal()">手札に戻す</button>`;
+  openModal(`<p class="note">${AREA_NAME[a]}エリア／${m.wait ? 'ウェイト状態' : 'アクティブ状態'}　※相手のカードの効果で操作するときに使います</p>` + detailHtml(m.card.d, btns));
+}
+function listModal(title, cards, note) {
+  openModal(`<h2>${title}（${cards.length}枚）</h2>${note ? `<p class="note">${note}</p>` : ''}<div class="grid" id="lm"></div>
+    <div class="btns"><button class="btn small" onclick="closeModal()">閉じる</button></div>`);
+  const g = $('#lm'); cards.forEach(c => g.appendChild(cardEl(c)));
+}
+function showDisc() { listModal('控え室', E.disc.slice().reverse()); }
+function showHand() { listModal('ボットの手札', E.hand, '※本来は非公開情報です。練習・検証用に表示しています。'); }
+function showMenu() {
+  openModal(`<h2>メニュー</h2>
+    <div class="btns" style="flex-direction:column;align-items:stretch">
+      <button class="btn sub" onclick="showDisc()">控え室を見る</button>
+      <button class="btn sub" onclick="showDeckList()">デッキリストを見る</button>
+      <button class="btn sub" onclick="confirmReset()">新しいゲーム</button>
+      <button class="btn sub" onclick="closeModal()">閉じる</button>
+    </div>
+    <p class="note">カード画像：${Object.keys(imgMap).length}／${DECK.length}種を読み込み済み（ページと同じ場所の cards フォルダから自動で読み込みます）</p>`);
+}
+function showDeckList() {
+  const cards = DECK.map(d => ({ d }));
+  openModal(`<h2>デッキリスト（60枚）</h2><div class="grid" id="lm"></div><div class="btns"><button class="btn small" onclick="closeModal()">閉じる</button></div>`);
+  const g = $('#lm');
+  cards.forEach(c => { const w = document.createElement('div'); w.style.textAlign = 'center'; w.appendChild(cardEl(c)); w.insertAdjacentHTML('beforeend', `<div style="font-size:1.8vh">×${c.d.n}</div>`); g.appendChild(w); });
+}
+function confirmReset() {
+  openModal(`<h2>新しいゲームを始めますか？</h2><div class="btns"><button class="btn" onclick="closeModal();setupGame()">はい</button><button class="btn sub" onclick="closeModal()">いいえ</button></div>`);
+}
+document.querySelector('[data-act="hand"]').onclick = () => E && showHand();
+document.querySelector('[data-act="menu"]').onclick = showMenu;
+function setFlip(on) { $('#mat').classList.toggle('flip', on); try { localStorage.setItem('llbotFlip', on ? '1' : '0'); } catch (e) {} }
+try { if (localStorage.getItem('llbotFlip') === '0') setFlip(false); } catch (e) {}
+document.querySelector('[data-act="flip"]').onclick = () => { const on = !$('#mat').classList.contains('flip'); setFlip(on); toast(on ? '対面向き（ボット側から見た向き）' : '自分側から見た向き'); };
+document.querySelector('[data-act="oppPlus"]').onclick = () => { if (G) { G.oppSucc++; render(); checkEnd(); } };
+document.querySelector('[data-act="oppMinus"]').onclick = () => { if (G && G.oppSucc > 0) { G.oppSucc--; render(); } };
+$('#discZone').onclick = () => E && showDisc();
+
+// 画像の自動読み込み（ページと同じ場所の img フォルダ）
+function autoLoadImages() {
+  for (const d of DECK) {
+    const im = new Image();
+    const src = 'cards/' + encodeURIComponent(d.img.split('/').pop());   // 公式画像と同じファイル名
+    im.onload = () => { imgMap[d.no] = src; render(); };
+    im.src = src;
+  }
+}
+autoLoadImages();
+
+// ---------- 進行 ----------
+function setupGame() {
+  $('#log').querySelectorAll('div').forEach(d => d.remove());
+  E = new Engine(DECK);
+  E.on('log', addLog); E.on('change', render);
+  G = null; render();
+  $('#turnInfo').textContent = '準備中';
+  $('#stepLabel').textContent = 'ボットは先攻？後攻？';
+  openModal(`<h2>先攻・後攻を決めてください</h2>
+    <p class="note">ハイド郎bot／デッキ：金太郎飴（アグロLiella!）。あなたは実物のデッキでプレイし、ボット側の判断はこの画面が自動で行います。盤面は対面向き（180°回転）で表示しています。「向き」ボタンで切り替えられます。</p>
+    <div class="btns"><button class="btn" onclick="beginGame(true)">ボットが先攻</button><button class="btn" onclick="beginGame(false)">ボットが後攻</button>
+    <button class="btn sub" onclick="beginGame(Math.random()<.5)">ランダム</button></div>`);
+  $('#nextBtn').textContent = 'ゲーム開始'; $('#nextBtn').onclick = setupGame;
+}
+function beginGame(botFirst) {
+  closeModal();
+  G = { botFirst, turn: 1, step: 0, oppSucc: 0, over: false };
+  E.log(`ゲーム開始：ボットは${botFirst ? '先攻' : '後攻'}`, 'sys');
+  E.start();
+  toast(`ボットは${botFirst ? '先攻' : '後攻'}です`);
+  $('#nextBtn').onclick = next;
+  updateStep();
+}
+const STEPS = ['normal1', 'normal2', 'set1', 'set2', 'perf1', 'perf2', 'judge'];
+function owner(step) { const n = step.slice(-1); if (step === 'judge') return 'both'; return (n === '1') === G.botFirst ? 'bot' : 'opp'; }
+function stepName(step) {
+  const who = s => s.slice(-1) === '1' ? '先攻' : '後攻';
+  if (step.startsWith('normal')) return `${who(step)}通常フェイズ`;
+  if (step.startsWith('set')) return `ライブカードセット（${who(step)}）`;
+  if (step.startsWith('perf')) return `${who(step)}パフォーマンス`;
+  return 'ライブ勝敗判定';
+}
+function updateStep() {
+  if (!G || G.over) return;
+  const s = STEPS[G.step], o = owner(s);
+  $('#turnInfo').textContent = `ターン${G.turn}　ボット：${G.botFirst ? '先攻' : '後攻'}`;
+  $('#stepLabel').textContent = `${stepName(s)}${o === 'bot' ? '（ボット）' : o === 'opp' ? '（あなた）' : ''}`;
+  $('#nextBtn').textContent = o === 'bot' ? '▶ ボットが実行' : o === 'opp' ? '✓ 自分の処理が終わった' : '▶ 勝敗を判定する';
+}
+function next() {
+  if (!G || G.over) return;
+  const s = STEPS[G.step], o = owner(s);
+  if (s === 'judge') return judgeDialog();
+  if (o === 'bot') {
+    if (s.startsWith('normal')) E.normalPhase();
+    else if (s.startsWith('set')) E.liveSet();
+    else if (s.startsWith('perf')) {
+      const r = E.performance();
+      G.lastYell = (r.yell || []).slice(); render();
+      if (r.lives.length) toast(r.success ? `ボット：必要ハートを満たした（スコア${r.score}）` : 'ボット：ライブ失敗');
+    }
+  } else {
+    E.log(`あなた：${stepName(s)} 完了`, 'opp');
+  }
+  G.step++; updateStep();
+}
+function judgeDialog() {
+  const b = E.prepareJudge(); render();
+  const r = E.lastLive;
+  const botTxt = !r || !r.lives.length ? 'ライブカードなし' : (b.has ? `ライブ成功／合計スコア` : 'ライブ失敗（ライブカードなし）');
+  openModal(`<h2>ライブ勝敗判定</h2>
+    <div style="display:flex;align-items:baseline;gap:2vh;font-size:2.4vh">ボット：${botTxt}${b.has ? `<b style="font-size:6vh;color:var(--pink)">${b.score}</b>` : ''}</div>
+    <p class="note">あなたのスコアと比べて、結果を選んでください。</p>
+    <div class="btns">
+      <button class="btn" ${b.has ? '' : 'disabled'} onclick="doJudge(true,false)">ボットの勝ち</button>
+      <button class="btn" onclick="doJudge(false,true)">あなたの勝ち</button>
+      <button class="btn sub" ${b.has ? '' : 'disabled'} onclick="judgeTie()">同点（両者勝利）</button>
+      <button class="btn sub" onclick="doJudge(false,false)">勝者なし</button>
+    </div>`);
+}
+function judgeTie() {
+  openModal(`<h2>同点（両者勝利）</h2>
+    <p class="note">ライブカード置き場に2枚あるプレイヤーは、成功ライブカード置き場に置けません（8.4.7.1）。ボット側は自動で判定します。</p>
+    <div class="btns">
+      <button class="btn" onclick="doJudge(true,true,false)">あなたは成功ライブを置いた</button>
+      <button class="btn sub" onclick="doJudge(true,true,true)">あなたは置けない（2枚）</button>
+      <button class="btn sub" onclick="judgeDialog()">戻る</button>
+    </div>`);
+}
+function doJudge(botWin, oppWin, oppTwo) {
+  closeModal();
+  const res = E.settle(botWin, oppWin);
+  let oppMoved = false;
+  if (oppWin && !(botWin && oppTwo)) { G.oppSucc++; oppMoved = true; E.log('あなた：ライブ勝利（成功ライブ+1）', 'opp'); }
+  render();
+  toast(botWin && oppWin ? '同点（両者勝利）' : botWin ? 'ボットのライブ勝利' : oppWin ? 'あなたのライブ勝利' : '勝者なし');
+  if (checkEnd()) return;
+  // 先攻の決定（8.4.13）
+  if (res.botMoved !== oppMoved) {
+    const nb = res.botMoved;
+    if (nb !== G.botFirst) E.log(`次のターンはボットが${nb ? '先攻' : '後攻'}`, 'sys');
+    G.botFirst = nb;
+  }
+  G.turn++; G.step = 0;
+  E.log(`===== ターン${G.turn} =====`, 'sys');
+  updateStep();
+}
+function checkEnd() {
+  if (!G || G.over) return false;
+  const b = E.succ >= 3, o = G.oppSucc >= 3;
+  if (!b && !o) return false;
+  G.over = true;
+  const msg = b && o ? '引き分け' : b ? 'ボットの勝利' : 'あなたの勝利！';
+  E.log(`ゲーム終了：${msg}（ターン${G.turn}）`, b ? 'bad' : 'good');
+  $('#stepLabel').textContent = `ゲーム終了：${msg}`;
+  $('#nextBtn').textContent = 'もう一度';
+  $('#nextBtn').onclick = setupGame;
+  openModal(`<h2>ゲーム終了</h2><div style="font-size:3vh;margin:1vh 0">${msg}</div><p class="note">ターン${G.turn}／ボットの成功ライブ ${E.succ}枚・あなた ${G.oppSucc}枚</p>
+    <div class="btns"><button class="btn" onclick="closeModal();setupGame()">もう一度</button><button class="btn sub" onclick="closeModal()">盤面を見る</button></div>`);
+  return true;
+}
+setupGame();
+</script>
+</body>
+</html>
