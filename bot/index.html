@@ -302,8 +302,9 @@ class Engine {
       }
       if (this.mode === 'aggrK' && from <= 3) take(['KOT', 'ERI']);
       // 3回目のライブに向けて、成功ライブ1枚以上ならことり・絵里を残す（keepKE枚まで）
-      const keN = this.keepKE ?? 1;
+      const keN = this.prep9Active ? (this.prep9KE ?? 2) : (this.keepKE ?? 1);
       if (this.succ >= 1) for (let i = 0; i < keN; i++) take(['KOT', 'ERI']);
+      if (this.prep9Active && this.prep9C5 !== false) take(['SUMI', 'MEI']);   // 4ターン目にコスト5へバトンタッチ（3）する分
       // 次ターン（とその次）に必要なカードが手札に無く控え室にあるなら、取り戻せる回収カードを残す
       if (this.recoverKeep !== false) {
         const inDisc = tags => this.disc.some(x => tags.includes(x.tag));
@@ -420,146 +421,76 @@ class Engine {
     return true;
   }
   // 前ターンからいるコスト2へ0コストでバトンタッチ
-  freeBaton(c, allowRec = false) {
-    const cands = ['C', 'R', 'L'].filter(a => this.stage[a] && !this.entered.has(a) && this.stage[a].card.cost === 2);
-    const protect = (this.botTurn < 4 && !allowRec) ? REC : new Set();
-    const pr = a => { const m = this.stage[a].card; if (m.tag === 'KOT' || m.tag === 'ERI') return 9; if (protect.has(m.tag)) return 8; return { REN: 0, KUKU: 0, V2: 1 }[m.tag] ?? 2; };
-    const ok = cands.filter(a => pr(a) < 8).sort((a, b) => pr(a) - pr(b));
-    if (!ok.length) return null;
-    return this.play(c, ok[0], true) ? ok[0] : null;
-  }
-  missingProg(t) {
-    const need = []; const has = x => !!this.find(x);
-    const hasC15 = this.data.some(d => TAG[baseNo(d.no)] === 'C15');
-    if (t <= 2 && !has(['SUMI', 'MEI']) && !this.onStage(['SUMI', 'MEI', 'KAN', 'M11', 'C15'])) need.push('C5');
-    if (t <= 3 && !has(['KAN', 'M11']) && !this.onStage(['KAN', 'M11', 'C15'])) need.push('K');
-    if (hasC15 && t >= 2 && !has(['C15']) && !this.onStage(['C15'])) need.push('C15');
-    return need;
-  }
-  searchBatons(t, nowOnly) {
-    for (let i = 0; i < 2; i++) {
-      let mp = this.missingProg(t);
-      if (nowOnly) mp = mp.filter(x => (x === 'C5' && t === 2) || (x === 'K' && t === 3) || (x === 'C15' && t >= 4));
-      if (!mp.length) return;
-      let sc = (mp.includes('K') || mp.includes('C15')) ? this.find(['KUKU', 'REN']) : null;
-      sc = sc || this.find(['REN']);
-      if (!sc) return;
-      this.log(`進行カード不足（${mp.join('・')}）→サーチ役を0コストでバトンタッチ`, 'think');
-      if (!this.freeBaton(sc)) return;
-    }
-  }
-  upgradeBatons() {
-    // ことり・絵里への置き換えは、3回目のライブ（成功ライブ2枚）を行うターンだけ
-    if ((this.upgradePolicy || 'third') === 'third' && this.succ < 2) return;
-    if (this.succ >= 2 && this.boost !== false) return this.boostBatons();
-    for (let i = 0; i < 2; i++) {
-      const u = this.find(['KOT', 'ERI']); if (!u) return;
-      if (!this.freeBaton(u)) return;
-    }
-  }
-
-  // 3回目のライブ（成功ライブ2枚）：手札のコスト2で盤面を強化する0コストバトン
-  memberValue(c) {
-    const h = ['KOT', 'ERI'].includes(c.tag) ? this.succ : Object.values(c.d.heart || {}).reduce((a, b) => a + b, 0);
-    return h + 0.83 * (c.d.blade || 0);
-  }
-  // 予定しているライブ（目標に届く組み合わせで成功確率が最大のもの）の成功確率
-  plannedP() {
-    const lives = this.hand.filter(x => x.type === 'ライブ'); let best = -1;
-    for (const comb of combos(lives, 3)) if (comb.reduce((s, l) => s + this.needOf(l).score, 0) >= this.target()) best = Math.max(best, this.probSuccess(comb, 300));
-    return best;
-  }
-  boostBatons() {
-    const P_ENOUGH = this.boostEnough ?? 0.9, P_GAIN = this.boostGain ?? 0.03;
-    for (let i = 0; i < 2; i++) {
-      const handC2 = this.hand.filter(c => c.type === 'メンバー' && c.cost === 2);
-      if (!handC2.length) return;
-      const best = handC2.slice().sort((a, b) => this.memberValue(b) - this.memberValue(a))[0];
-      const targets = ['C', 'R', 'L'].filter(a => this.stage[a] && !this.entered.has(a) && this.stage[a].card.cost === 2);
-      if (!targets.length) return;
-      const weakest = targets.slice().sort((a, b) => this.memberValue(this.stage[a].card) - this.memberValue(this.stage[b].card))[0];
-      if (this.memberValue(best) - this.memberValue(this.stage[weakest].card) <= 0.01) return;
-      if (this.boostCheck !== false) {
-        const p0 = this.plannedP();
-        if (p0 < 0) return;                          // 目標に届くライブが無ければ盤面強化しない
-        if (p0 >= P_ENOUGH) { this.log(`（思考）成功見込み${Math.round(p0 * 100)}%で十分→置き換えはしない`, 'think'); return; }
-        // 置き換えた場合の成功確率を試算
-        const keep = this.stage[weakest]; this.stage[weakest] = { card: best, wait: false };
-        const p1 = this.plannedP(); this.stage[weakest] = keep;
-        if (p1 - p0 < P_GAIN) return;
-        this.log(`（思考）盤面強化：「${this.name(keep.card)}」→「${this.name(best)}」（成功見込み${Math.round(p0 * 100)}%→${Math.round(p1 * 100)}%）`, 'think');
-      }
-      if (!this.play(best, weakest, true)) return;
-    }
+  recPool(t) {
+    if (t === 'TOMARI') return this.disc.filter(x => x.type === 'ライブ');
+    if (t === 'CHISA2') return this.disc.filter(x => x.type === 'メンバー');
+    if (t === 'MARG7') return this.disc.slice();
+    return null;
   }
   // 回収カードの起動
   activateRecovery(area, wantTags) {
     const m = this.stage[area]; if (!m) return null;
-    const t = m.card.tag; let pool;
-    if (t === 'TOMARI') pool = this.disc.filter(x => x.type === 'ライブ');
-    else if (t === 'CHISA2') pool = this.disc.filter(x => x.type === 'メンバー');
-    else if (t === 'MARG7') pool = this.disc.slice();
-    else return null;
+    const t = m.card.tag; const pool = this.recPool(t);
+    if (!pool) return null;
     let tg = null; for (const w of wantTags) { tg = pool.find(x => x.tag === w); if (tg) break; }
     if (!tg) return null;
     this.stage[area] = null; this.disc.push(m.card);
     if (this.fixEntered !== false) this.entered.delete(area);   // メンバーがいなくなったエリアは再び登場先にできる
-    if (t === 'MARG7') { const i = this.energy.findIndex(e => e.wait); this.energy.splice(i >= 0 ? i : 0, 1); this.energyDeck++; }
+    if (t === 'MARG7') this.returnEnergy();
     this.removeFrom(this.disc, tg); this.hand.push(tg);
     this.log(`「${this.name(m.card)}」【起動】自身を控え室へ${t === 'MARG7' ? '・エネルギー1枚をエネルギーデッキへ' : ''}→控え室の「${this.name(tg)}」を手札へ`, 'act');
     return tg;
   }
-  useRecovery(wantTags) {
-    for (const a of ['C', 'R', 'L']) {
-      const m = this.stage[a]; if (!m || !REC.has(m.card.tag)) continue;
-      if (this.activateRecovery(a, wantTags)) return a;
-    }
-    if (this.recoverFromHand === false) return null;
-    // 手札の回収カードを0コストでバトンタッチして出し、そのまま起動
-    const pool = t => t === 'TOMARI' ? this.disc.filter(x => x.type === 'ライブ') : t === 'CHISA2' ? this.disc.filter(x => x.type === 'メンバー') : this.disc;
-    for (const t of ['CHISA2', 'TOMARI', 'MARG7']) {
-      const rc = this.find([t]); if (!rc) continue;
-      if (!pool(t).some(x => wantTags.includes(x.tag))) continue;
-      const a = this.freeBaton(rc, true);
-      if (a) { this.log('回収のため手札の回収カードを0コストで登場', 'think'); if (this.activateRecovery(a, wantTags)) return a; }
-    }
-    return null;
-  }
-  fill() {
-    for (const a of ['L', 'C', 'R']) {
-      if (!this.stage[a] && !this.entered.has(a) && this.activeEnergy() >= 2) {
-        const c = this.hand.filter(x => x.type === 'メンバー' && x.cost === 2).sort((x, y) => this.memberValue(y) - this.memberValue(x))[0];
-        if (c) this.play(c, a, false);
-      }
-    }
+  // エネルギー1枚（ウェイト優先）をエネルギーデッキへ
+  returnEnergy() {
+    if (!this.energy.length) return;
+    const i = this.energy.findIndex(e => e.wait);
+    this.energy.splice(i >= 0 ? i : 0, 1); this.energyDeck++;
   }
 
-  // ---------- ゲーム開始 ----------
+  // ---------- ゲーム開始（マリガン）----------
   start() {
     this.shuffle(this.deck);
     this.draw(6);
     this.log(`初期手札6枚：${this.hand.map(c => this.name(c)).join('、')}`, 'sys');
-    // マリガン：スコア1ライブ・恋(2枚まで)・コスト5・スコア3ライブ、恋が無ければ黄ハートのコスト2
-    const h = this.hand.slice(); const k = [];
-    const tk = tags => { for (const t of tags) { const i = h.findIndex(x => x.tag === t); if (i >= 0) { k.push(h.splice(i, 1)[0]); return; } } };
-    tk(['START', 'HAJI']); tk(['REN']); tk(['SUMI', 'MEI']); if ((this.mullRen ?? 1) >= 2) tk(['REN']);
-    if (!k.some(c => c.tag === 'REN')) tk(['TOMARI', 'CHISA2']);
-    if (this.mullAiko !== false) tk(['AIKO', 'MEM']);
-    const ret = h;
-    if (ret.length) {
-      for (const c of ret) this.removeFrom(this.hand, c);
-      this.draw(ret.length);
-      this.deck.push(...ret); this.shuffle(this.deck);
-      this.log(`マリガン：${ret.length}枚戻して引き直し（戻した：${ret.map(c => this.name(c)).join('、')}）`, 'sys');
+    const keep = [];
+    const keepGroups = groups => {
+      const kept = new Set();
+      for (const card of this.hand.slice()) {
+        const g = groups[card.tag];
+        if (g !== undefined && !kept.has(g)) { keep.push(card); this.removeFrom(this.hand, card); kept.add(g); }
+      }
+    };
+    // 恋・START!!・すみれを1枚ずつ。無ければ始まりは君の空・メイで代用
+    keepGroups({ REN: 'ren', START: 'live1', SUMI: 'cost5' });
+    const alt = {};
+    if (!this.find(['START'], keep)) alt.HAJI = 'live1';
+    if (!this.find(['SUMI'], keep)) alt.MEI = 'cost5';
+    keepGroups(alt);
+    // 2枚以上残せたら2体目のコスト2（千砂都・夏美か黄ハート）
+    if (keep.length >= 2) {
+      const second = this.hand.find(c => c.cost === 2 && (c.tag === 'V2' || (c.d.heart || {}).heart03 === 1));
+      if (second) { this.removeFrom(this.hand, second); keep.push(second); }
+    }
+    // 4枚そろったらスコア3ライブも残す
+    if (keep.length === 4) {
+      const live3 = this.hand.find(c => c.tag === 'AIKO' || c.tag === 'MEM');
+      if (live3) { this.removeFrom(this.hand, live3); keep.push(live3); }
+    }
+    const returned = this.hand;
+    this.hand = keep;
+    if (returned.length) {
+      this.draw(returned.length);
+      this.deck.push(...returned); this.shuffle(this.deck);
+      this.log(`マリガン：${returned.length}枚引き直し（戻した：${returned.map(c => this.name(c)).join('、')}）`, 'sys');
     } else this.log('マリガン：なし', 'sys');
     for (let i = 0; i < 3; i++) { this.energy.push({ wait: false }); this.energyDeck--; }
-    this.log('エネルギーデッキから3枚をエネルギー置き場へ', 'sys');
     this.changed();
   }
 
   // ---------- 通常フェイズ ----------
   normalPhase() {
-    this.botTurn++; const t = this.botTurn; this.entered = new Set(); this.phase = 'main';
+    this.botTurn++; const t = this.botTurn; this.entered = new Set(); this.phase = 'main'; this.prep9Active = false;
     this.log(`―― ボットの通常フェイズ（ボット${t}ターン目／目標スコア${this.target()}）――`, 'phase');
     for (const e of this.energy) e.wait = false;
     for (const m of this.members()) m.wait = false;
@@ -573,121 +504,163 @@ class Engine {
     this.changed();
   }
   main1() {
-    // 1ターン目は葉月 恋を優先（2枚あれば2枚とも出して、2回のサーチで必要なカードを集める）
-    const y = this.find(['REN', 'TOMARI', 'CHISA2']); if (y) this.play(y, 'C', false);
-    const order2 = this.t1Ren === false ? ['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI'] : ['REN', 'V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'KOT', 'ERI'];
-    const o = this.find(order2); if (o) this.play(o, this.stage.C ? 'R' : 'C', false);
-    const o2 = !this.stage.R ? this.find(['V2', 'TOMARI', 'CHISA2', 'MARG7', 'KUKU', 'REN', 'KOT', 'ERI']) : null;
-    if (o2) this.play(o2, 'R', false);
+    for (const area of ['C', 'R']) {
+      const m = this.find(['REN', 'V2', 'KUKU', 'TOMARI', 'CHISA2', 'MARG7', 'KOT', 'ERI']);
+      if (m) this.play(m, area, false);
+    }
+  }
+  // 足りないカードがあれば、サーチ役（恋・可可）を中央・右サイドのコスト2へ0コストでバトンタッチ
+  searchBaton() {
+    const t = this.botTurn;
+    const needs11 = !this.find(['KAN', 'M11']);
+    const needs15 = !this.find(['C15']);
+    const needsHaji = !this.find(['HAJI']);
+    const needsLive3 = !this.find(['AIKO', 'MEM']);
+    const searchNeeded = t === 2 ? (needs11 || needsLive3) : t === 3 ? (needs11 || needsHaji) : (needs15 || needsHaji || needsLive3);
+    if (!searchNeeded) return;
+    let searcher = this.hand.length >= 2 ? this.find(['REN']) : null;
+    if (!searcher && (t <= 3 ? needs11 : needs15)) searcher = this.find(['KUKU']);
+    if (!searcher) return;
+    const cands = [];
+    for (const [area, other] of [['C', 'R'], ['R', 'C']]) {
+      const slot = this.stage[area];
+      if (!slot || this.entered.has(area) || slot.card.cost !== 2 || ['KOT', 'ERI'].includes(slot.card.tag)) continue;
+      const backup = this.stage[other];
+      if (REC.has(slot.card.tag) && !((backup && REC.has(backup.card.tag)) || this.find(['TOMARI', 'CHISA2', 'MARG7']))) continue;
+      cands.push(area);
+    }
+    if (cands.length) {
+      const bl = a => this.stage[a].card.d.blade || 0;
+      let area = cands[0]; for (const a of cands) if (bl(a) < bl(area)) area = a;
+      this.log('（思考）必要なカードが足りない→サーチ役を0コストでバトンタッチ', 'think');
+      this.play(searcher, area, true);
+    }
   }
   main2() {
-    this.searchBatons(2, true);
-    let c5 = this.find(['SUMI', 'MEI']);
-    if (!c5 && this.useRecovery(['SUMI', 'MEI'])) c5 = this.find(['SUMI', 'MEI']);
-    if (c5 && !this.stage.L) this.play(c5, 'L', false);
-    else if (c5 && this.stage.L && this.stage.L.card.cost === 2) this.play(c5, 'L', true);
-    this.fill();
-    if (this.succ < 2) this.searchBatons(2, false);
-    this.upgradeBatons();
+    const liveMissing = !this.find(['AIKO', 'MEM']) || !this.find(['HAJI']);
+    const needs11 = !this.find(['KAN', 'M11']);
+    const order = !liveMissing && needs11 ? ['MEI', 'SUMI'] : ['SUMI', 'MEI'];
+    const m = this.find(order);
+    if (m) this.play(m, 'L', false);
+    this.searchBaton();
+    for (const area of ['C', 'R']) {
+      const slot = this.stage[area];
+      if (slot && slot.card.d.blade === 1 && !REC.has(slot.card.tag)) {
+        const flex = this.hand.find(c => c.tag === 'KOT' || c.tag === 'ERI');
+        if (flex) this.play(flex, area, true);
+      }
+    }
+  }
+  // 3ターン目：成功ライブ2枚で始まりは君の空が手札に無く控え室にあれば、回収に使う冬毬・マルガレーテのエリア
+  t3HajiRecovery() {
+    if (this.succ < 2 || this.find(['HAJI']) || !this.find(['HAJI'], this.disc)) return null;
+    for (const tag of ['TOMARI', 'MARG7']) for (const area of ['C', 'R']) {
+      const slot = this.stage[area];
+      if (slot && slot.card.tag === tag) return area;
+    }
+    return null;
   }
   main3() {
-    const can6 = this.hasSet(this.hand.filter(x => x.type === 'ライブ'), 6);
-    this.searchBatons(3, true);
-    let k = this.find(can6 ? ['KAN', 'M11'] : ['M11', 'KAN']);
-    if (!can6 && k && k.tag === 'M11') this.log('スコア6の組み合わせが無い→4ターン目に備えてマルガレーテ11を優先', 'think');
-    if (!k && this.useRecovery(['KAN', 'M11'])) k = this.find(['KAN', 'M11']);
-    if (k && this.stage.L && this.stage.L.card.cost === 5) this.play(k, 'L', true);
-    else if (!this.stage.L) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', false); }
-    else if (this.stage.L.card.cost === 2) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', true); }
-    this.fill();
-    // かのんなら、ライブ回収を挟んでスコア6を作る
-    if (this.stage.L && this.stage.L.card.tag === 'KAN') {   // 進行（コスト11）ができている場合だけライブ回収
-      const lv = this.hand.filter(x => x.type === 'ライブ');
-      const tgt = this.target();
-      if (!this.hasSet(lv, tgt)) {
-        const cand = this.disc.filter(x => x.type === 'ライブ' && this.hasSet(lv.concat([x]), tgt)).sort((a, b) => this.needOf(b).score - this.needOf(a).score);
-        if (cand.length) {
-          let rec = ['C', 'R'].find(a => this.stage[a] && ['TOMARI', 'MARG7'].includes(this.stage[a].card.tag));
-          if (!rec) {
-            const rc = this.find(['TOMARI', 'MARG7']);
-            if (rc) { const a = this.freeBaton(rc, true); if (a) rec = a; }
-          }
-          if (rec) { this.log('スコア6のライブが手札に無い→回収カードで控え室から取り戻す', 'think'); this.activateRecovery(rec, cand.map(x => x.tag)); }
-        }
+    if (!this.find(['KAN', 'M11'])) this.searchBaton();
+    let left = this.stage.L;
+    if (left && left.card.cost === 5) {
+      const order = ['KAN', 'M11'];
+      if (this.t3HajiRecovery() === null && (this.find(['KOT', 'ERI']) || this.onStage(['KOT', 'ERI']))) order.reverse();
+      const m = this.find(order);
+      if (m) this.play(m, 'L', true);
+    }
+    left = this.stage.L;
+    if (left && left.card.tag === 'KAN') {
+      const ra = this.t3HajiRecovery();
+      if (ra) { this.log('（思考）始まりは君の空を控え室から回収', 'think'); this.activateRecovery(ra, ['HAJI']); }
+    }
+    this.searchBaton();
+    for (const [area, other] of [['C', 'R'], ['R', 'C']]) {
+      const slot = this.stage[area];
+      if (!slot || slot.card.cost !== 2 || ['KOT', 'ERI'].includes(slot.card.tag)) continue;
+      const backup = this.stage[other];
+      if (REC.has(slot.card.tag) && !((backup && REC.has(backup.card.tag)) || this.find(['TOMARI', 'CHISA2', 'MARG7']))) continue;
+      const flex = this.find(['KOT', 'ERI']);
+      if (flex) this.play(flex, area, true);
+    }
+  }
+  fillCost2(area) {
+    if (this.stage[area] || this.activeEnergy() < 2) return;
+    const cands = this.hand.filter(c => c.type === 'メンバー' && c.cost === 2);
+    if (cands.length) this.play(cands.find(c => ['KOT', 'ERI'].includes(c.tag)) || cands[0], area, false);
+  }
+  // 4ターン目：千砂都15・始まりは君の空・スコア3ライブ（無ければことり・絵里）を回収（エネルギー8以上で2回）
+  recoverFinalPieces() {
+    const maxRec = this.activeEnergy() >= 8 ? 2 : 1;
+    let recovered = 0;
+    const pri = a => (this.stage[a] && ['TOMARI', 'CHISA2'].includes(this.stage[a].card.tag)) ? 0 : 1;
+    const areas = ['C', 'R'].slice().sort((a, b) => pri(a) - pri(b));
+    for (const area of areas) {
+      if (recovered >= maxRec) break;
+      const slot = this.stage[area];
+      if (!slot || !REC.has(slot.card.tag)) continue;
+      const pool = this.recPool(slot.card.tag);
+      const needs15 = !this.find(['C15']);
+      const needsHaji = !this.find(['HAJI']);
+      const needsLive3 = !this.find(['AIKO', 'MEM']);
+      if (!(needs15 || needsHaji || needsLive3)) break;
+      let target = needs15 ? this.find(['C15'], pool) : null;
+      if (!target && needsHaji) target = this.find(['HAJI'], pool);
+      if (!target && needsLive3) target = pool.find(c => c.tag === 'AIKO' || c.tag === 'MEM') || null;
+      if (!target && !this.find(['KOT', 'ERI'])) target = pool.find(c => c.tag === 'KOT' || c.tag === 'ERI') || null;
+      if (target && this.activateRecovery(area, [target.tag])) {
+        recovered++;
+        const left = this.stage.L;
+        if (this.activeEnergy() >= 6 || (left && left.card.tag === 'C15')) this.fillCost2(area);
       }
     }
-    if (this.succ < 2) this.searchBatons(3, false);
-    this.upgradeBatons();
+  }
+  // 4ターン目の盤面仕上げ：ことり・絵里→コスト5→千砂都・夏美の順に置き換え
+  upgradeFinalBoard() {
+    for (const area of ['C', 'R']) {
+      const slot = this.stage[area];
+      if (slot && slot.card.cost === 2 && slot.card.tag !== 'KOT') {
+        const flex = this.find(slot.card.tag === 'ERI' ? ['KOT'] : ['KOT', 'ERI']);
+        if (flex) this.play(flex, area, true);
+      }
+    }
+    for (const area of ['C', 'R']) {
+      const slot = this.stage[area];
+      if (slot && slot.card.cost === 2 && slot.card.d.blade === 1) {
+        const c5 = this.find(['MEI', 'SUMI']);
+        if (c5 && this.play(c5, area, true)) break;
+      }
+    }
+    for (const area of ['C', 'R']) {
+      const slot = this.stage[area];
+      if (slot && slot.card.cost === 2 && slot.card.d.blade === 1) {
+        const m = this.find(['V2']);
+        if (m) this.play(m, area, true);
+      }
+    }
   }
   main4() {
-    this.searchBatons(4, true);
-    let c15 = this.find(['C15']);
-    const L = this.stage.L;
-    if (!c15 && L && L.card.cost === 11 && this.useRecovery(['C15'])) c15 = this.find(['C15']);
-    if (c15 && L && L.card.cost === 11) this.play(c15, 'L', true);
-    else if (L && L.card.cost === 5) { const k = this.find(['KAN', 'M11']); if (k) this.play(k, 'L', true); }
-    else if (L && L.card.cost === 2) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', true); }
-    else if (!L) { const c5 = this.find(['SUMI', 'MEI']); if (c5) this.play(c5, 'L', false); }
-    // 回収→空いたエリアにコスト2を出し直す、をエネルギーが続く限り（中央・右サイドで最大2回）
-    // 進行（千砂都15）ができていなければ、回収カードはライブ回収に使わない
-    const progOK = this.progFirst === false || (this.stage.L && this.stage.L.card.tag === 'C15') || !this.data.some(d => TAG[baseNo(d.no)] === 'C15');
-    if (!progOK) this.log('（思考）進行（千砂都15）が遅れているため、ライブカードの回収は行わない', 'think');
-    for (let i = 0; i < 2 && progOK; i++) {
-      const lv = this.hand.filter(x => x.type === 'ライブ');
-      const needLive = !this.hasSet(lv, this.target());
-      if (!needLive && this.hand.length >= 4) break;
-      if (this.activeEnergy() < 2) break;              // 出し直しの2が無ければ盤面を減らさない
-      let want;
-      if (needLive) {
-        // 目標に届く組み合わせになるライブだけを回収対象にする（1枚で届くもの→2枚で届くものの順）
-        const dl = this.disc.filter(x => x.type === 'ライブ');
-        const one = dl.filter(x => this.hasSet(lv.concat([x]), this.target()));
-        let two = [];
-        if (!one.length && this.succTargetOnly !== false) for (const x of dl) for (const y of dl) if (x !== y && this.hasSet(lv.concat([x, y]), this.target())) two.push(x);
-        const cand = one.length ? one : (this.succTargetOnly === false ? dl : two);
-        want = [...new Set(cand.sort((a, b) => this.needOf(b).score - this.needOf(a).score).map(x => x.tag))];
-        if (!want.length) break;
-      } else want = ['KOT', 'ERI', 'V2'];
-      const avail = this.disc.some(x => want.includes(x.tag));
-      if (!avail) break;
-      let area = ['C', 'R'].find(a => this.stage[a] && !this.entered.has(a) && (needLive ? ['TOMARI', 'MARG7'] : ['TOMARI', 'MARG7', 'CHISA2']).includes(this.stage[a].card.tag));
-      if (!area) {
-        const rc = this.find(needLive ? ['TOMARI', 'MARG7'] : ['TOMARI', 'CHISA2', 'MARG7']);
-        if (rc) area = this.freeBaton(rc, true);
-      }
-      if (!area) break;
-      if (!this.activateRecovery(area, want)) break;
-      this.log(`4ターン目：回収${i + 1}回目→空いたエリアにメンバーを出し直す`, 'think');
-      const c2 = this.find(['KOT', 'ERI', 'V2', 'KUKU', 'REN', 'TOMARI', 'CHISA2', 'MARG7']);
-      if (c2) this.play(c2, area, false);
-    }
-    this.spendEnergy();
-    this.upgradeBatons();
-  }
-  // 残りエネルギーでメンバーを置く：空きエリア→コスト2、余ればコスト2からコスト5へバトンタッチ
-  spendEnergy() {
-    this.fill();
-    for (let k = 0; k < 2; k++) {
-      const c5 = this.find(['SUMI', 'MEI']);
-      if (!c5 || this.activeEnergy() < 3) break;
-      const src = ['C', 'R'].filter(a => this.stage[a] && !this.entered.has(a) && this.stage[a].card.cost === 2 && !['KOT', 'ERI'].includes(this.stage[a].card.tag))
-        .sort((a, b) => this.memberValue(this.stage[a].card) - this.memberValue(this.stage[b].card))[0];
-      if (!src) break;
-      this.play(c5, src, true);
-    }
+    this.recoverFinalPieces();
+    this.searchBaton();
+    const left = this.stage.L;
+    const m = this.find(['C15']);
+    if (m && left && left.card.cost === 11) this.play(m, 'L', true);
+    for (const area of ['C', 'R']) this.fillCost2(area);
+    this.upgradeFinalBoard();
   }
 
-
-  // ことり・絵里の色選択を含めた成功確率。残りデッキのブレードハート分布からエールを試行し、
+  effectColors(tag, heuristic) {
+    if (tag === 'KOT') return heuristic ? ['heart01', 'heart03', 'heart06'] : ['heart03', 'heart06', 'heart01'];
+    return heuristic ? ['heart04', 'heart05', 'heart06'] : ['heart06', 'heart04', 'heart05'];
+  }
+  // ことり・絵里の色選択を含めた成功確率（ライブ開始時の色選び用）。残りデッキからエールを試行し、
   // 色の組み合わせごとに成功回数を数えて、最も成功しやすい色を返す
   evalWithChoices(need, base, blades, flexMs, samples) {
     samples = samples || this.samples || 200;
-    // 同じ成功確率なら必要ハートに含まれる色を選ぶよう、必要な色を先に並べる
-    const optsOf = m => (m.card.tag === 'KOT' ? ['heart03', 'heart06', 'heart01'] : ['heart06', 'heart04', 'heart05']).slice().sort((a, b) => (need[b] || 0) - (need[a] || 0));
+    const optsOf = m => this.effectColors(m.card.tag, false).slice().sort((a, b) => (need[b] || 0) - (need[a] || 0));
     const flex = this.succ > 0 ? flexMs : [];
     let choices = [[]];
     for (const m of flex) { const nx = []; for (const c of choices) for (const o of optsOf(m)) nx.push(c.concat([o])); choices = nx; }
-    // 必要ハートに無い色（緑・青など）は「無」としてしか働かないので1つにまとめる
     const sig = c => c.map(o => need[o] ? o : 'x').join(',');
     const seen = new Map(); for (const c of choices) if (!seen.has(sig(c))) seen.set(sig(c), c);
     choices = [...seen.values()];
@@ -709,99 +682,132 @@ class Engine {
     let bi = 0; for (let i = 1; i < cnt.length; i++) if (cnt[i] > cnt[bi]) bi = i;
     return { p: cnt[bi] / samples, choice: choices[bi] || [] };
   }
-  // ---------- 成功確率（デッキ残りからエールを試行） ----------
-  probSuccess(comb, samples) {
-    const need = {}; for (const l of comb) for (const [k, v] of Object.entries(this.needOf(l).need)) need[k] = (need[k] || 0) + v;
+
+  printedHearts() { const h = {}; for (const m of this.members()) for (const [k, v] of Object.entries(m.card.d.heart || {})) h[k] = (h[k] || 0) + v; return h; }
+  liveRequirements(lives) { const n = {}; for (const l of lives) for (const [k, v] of Object.entries(this.needOf(l).need)) n[k] = (n[k] || 0) + v; return n; }
+  stageBlades(ms) { return ms.filter(m => !m.wait).reduce((s, m) => s + (m.card.d.blade || 0), 0); }
+  memoriesBlade(lives, ms) { return (lives.some(c => c.tag === 'MEM') && ms.some(m => m.card.d.name.includes('千砂都') && !m.wait)) ? 1 : 0; }
+
+  // ---------- 成功確率（色別の不足と山札リフレッシュを考慮した非復元抽出の厳密計算）----------
+  probSuccess(lives) {
     const ms = this.members();
-    const base = {}; for (const m of ms) for (const [k, v] of Object.entries(m.card.d.heart)) base[k] = (base[k] || 0) + v;
-    let blades = ms.filter(m => !m.wait).reduce((s, m) => s + (m.card.d.blade || 0), 0);
-    if (ms.some(m => m.card.tag === 'C15' && !m.wait) && this.hand.length >= 2) blades += 5;
-    if (comb.some(l => l.tag === 'MEM') && ms.some(m => m.card.d.name.includes('千砂都') && !m.wait)) blades += 1;
-    return this.evalWithChoices(need, base, blades, ms.filter(m => ['KOT', 'ERI'].includes(m.card.tag)), samples).p;
+    const need = this.liveRequirements(lives);
+    const hearts = this.printedHearts();
+    let blades = this.stageBlades(ms) + this.memoriesBlade(lives, ms);
+    if (this.hand.length >= 2 && ms.some(m => m.card.tag === 'C15' && !m.wait)) blades += 5;
+    const flex = this.succ ? ms.filter(m => ['KOT', 'ERI'].includes(m.card.tag)) : [];
+    const heur = this.colorMode === 'heuristic';
+    let groups = flex.map(m => this.effectColors(m.card.tag, heur));
+    if (heur) groups = groups.map(g => [g.slice().sort((a, b) => ((hearts[a] || 0) - (need[a] || 0)) - ((hearts[b] || 0) - (need[b] || 0)) || (need[b] || 0) - (need[a] || 0))[0]]);
+    let combosC = [[]];
+    for (const g of groups) { const nx = []; for (const c of combosC) for (const o of g) nx.push(c.concat([o])); combosC = nx; }
+    const seen = new Map();
+    for (const cs of combosC) {
+      const opt = Object.assign({}, hearts);
+      for (const c of cs) opt[c] = (opt[c] || 0) + this.succ;
+      const key = Object.keys(opt).sort().map(k => k + ':' + opt[k]).join(',');
+      if (!seen.has(key)) seen.set(key, opt);
+    }
+    const boards = [...seen.values()];
+    if (boards.some(b => feasible(b, 0, need))) return 1.0;
+    // 山札が足りないときは、まず山札の全カードが確実に公開される
+    const cnt = arr => { const m = {}; for (const c of arr) { const k = c.bhKey || 'NONE'; m[k] = (m[k] || 0) + 1; } return m; };
+    let guaranteed, pool, draws;
+    if (this.deck.length < blades) { guaranteed = cnt(this.deck); pool = cnt(this.disc); draws = Math.min(blades - this.deck.length, this.disc.length); }
+    else { guaranteed = {}; pool = cnt(this.deck); draws = blades; }
+    const nAll = guaranteed.ALL || 0; delete guaranteed.ALL; delete guaranteed.NONE;
+    for (const b of boards) for (const [k, v] of Object.entries(guaranteed)) b[k] = (b[k] || 0) + v;
+    const bands = Object.entries(pool);
+    const total = comb(bands.reduce((s, [, v]) => s + v, 0), draws);
+    const counts = new Array(boards.length).fill(0);
+    const drawn = {};
+    const visit = (i, remaining, weight) => {
+      if (i === bands.length) {
+        if (remaining !== 0) return;
+        const alls = nAll + (drawn.ALL || 0);
+        for (let bi = 0; bi < boards.length; bi++) {
+          const h = Object.assign({}, boards[bi]);
+          for (const [k, v] of Object.entries(drawn)) if (k !== 'ALL' && k !== 'NONE' && v > 0) h[k] = (h[k] || 0) + v;
+          if (feasible(h, alls, need)) counts[bi] += weight;
+        }
+        return;
+      }
+      const [color, avail] = bands[i];
+      for (let n = 0; n <= Math.min(avail, remaining); n++) { drawn[color] = n; visit(i + 1, remaining - n, weight * comb(avail, n)); }
+      delete drawn[color];
+    };
+    visit(0, draws, 1);
+    return Math.max(...counts) / total;
   }
 
   // ---------- ライブカードセット ----------
-  estimate() {
-    const ms = this.members();
-    let h = 0, bl = 0;
-    for (const m of ms) { for (const v of Object.values(m.card.d.heart)) h += v; if (!m.wait) bl += m.card.d.blade; }
-    const flex = ms.filter(m => ['KOT', 'ERI'].includes(m.card.tag)).length * this.succ;
-    const c15 = ms.some(m => m.card.tag === 'C15' && !m.wait) && this.hand.length >= 4 ? 5 : 0;
-    return h + flex + 0.8 * (bl + c15);
+  // 金太郎飴の候補順と成功見込みの閾値
+  selectLives() {
+    const lives = this.hand.filter(c => c.type === 'ライブ');
+    const start = this.find(['START'], lives);
+    const hajis = lives.filter(c => c.tag === 'HAJI');
+    const live3 = lives.filter(c => c.tag === 'AIKO' || c.tag === 'MEM');
+    const onePoint = lives.filter(c => c.tag === 'START' || c.tag === 'HAJI');
+    const left = this.stage.L;
+    const hasChisato = () => this.members().some(m => m.card.d.name.includes('千砂都'));
+    const P = l => this.probSuccess(l);
+    if (this.botTurn === 1) {
+      const pick = start || hajis[0] || null;
+      return pick && P([pick]) >= 0.40 ? [pick] : [];
+    }
+    if (this.botTurn === 2) {
+      if (live3.length) {
+        const base = this.printedHearts();
+        const mem = this.find(['MEM'], live3);
+        const pick = (hasChisato() && mem && base.heart02 && base.heart06) ? mem : (this.find(['AIKO'], live3) || live3[0]);
+        return live3.length >= 2 || P([pick]) >= 0.35 ? [pick] : [];
+      }
+      if (onePoint.length >= 2 && this.succ >= 1 && P(onePoint.slice(0, 2)) >= 0.50) return onePoint.slice(0, 2);
+      return [];
+    }
+    if (this.botTurn === 3) {
+      if (hajis.length && this.succ >= 2 && P(hajis.slice(0, 1)) >= 0.25) return hajis.slice(0, 1);
+      if (live3.length >= 2 && left && left.card.cost === 11 && P(live3.slice(0, 2)) >= 0.30) return live3.slice(0, 2);
+      if (this.succ < 2 && live3.length && P(live3.slice(0, 1)) >= 0.50) return live3.slice(0, 1);
+      return start ? [start] : [];
+    }
+    if (!(hajis.length && live3.length && this.succ >= 2)) return [];
+    const pick = (hasChisato() ? this.find(['MEM'], live3) : null) || live3[0];
+    const sel = [hajis[0], pick];
+    const extra = live3.find(c => c !== pick);
+    if (extra && P(sel.concat([extra])) >= 0.45) sel.push(extra);
+    return sel;
+  }
+  // 手札入れ替え用に置くメンバー
+  swapMembers(limit) {
+    const sel = [];
+    for (const c of this.hand.slice()) {
+      if (sel.length >= limit) break;
+      if (c.type !== 'メンバー') continue;
+      let use;
+      if (this.botTurn === 1) {
+        const dup = [5, 11].includes(c.cost) && this.hand.filter(x => x.cost === c.cost).length > 1;
+        use = c.tag === 'C15' || (c.cost === 2 && c.tag !== 'REN') || dup;
+      } else if (this.botTurn === 2) use = [2, 5].includes(c.cost);
+      else if (this.botTurn === 3) use = [2, 5, 11].includes(c.cost);
+      else use = true;
+      if (use) { sel.push(c); this.removeFrom(this.hand, c); }
+    }
+    return sel;
   }
   liveSet() {
     this.phase = 'live';
-    const lives = this.hand.filter(x => x.type === 'ライブ');
-    const tgt = this.target();
-    const P_TARGET = this.pTarget ?? 0.15;   // 目標に届く組み合わせを置く最低成功率
-    const P_FALL = this.pFallback ?? 0.5;   // 目標未満の組み合わせを置く最低成功率
-    const cands = [];
-    for (const comb of combos(lives, 3)) {
-      const sc = comb.reduce((s, l) => s + this.needOf(l).score, 0);
-      cands.push({ comb, sc, p: this.probSuccess(comb) });
-    }
-    let best = null;
-    for (const c of cands) if (c.sc >= tgt && c.p >= P_TARGET && (!best || c.p > best.p + 1e-9 || (Math.abs(c.p - best.p) < 1e-9 && c.sc > best.sc))) best = c;
-    // 今ターン目標に届かない場合：次ターンの目標に届くライブを温存する
-    let reserve = [];
-    if (!best && this.botTurn < 4) {
-      reserve = this.reserveForNext(lives);
-      if (reserve.length) this.log(`（思考）今ターンは目標${tgt}点に届かない→次ターン（目標${TARGETS[Math.min(this.botTurn + 1, 4) - 1]}点）用に「${reserve.map(c => this.name(c)).join('」「')}」を温存`, 'think');
-    }
-    let fallback = null;
-    if (!best) {
-      for (const c of cands) {
-        if (c.comb.some(l => reserve.includes(l))) continue;
-        if (c.sc > 0 && c.p >= P_FALL && (!fallback || c.sc > fallback.sc || (c.sc === fallback.sc && c.p > fallback.p))) fallback = c;
-      }
-    }
-    let chosen = best || fallback;
-    if (this.st[this.botTurn]) this.st[this.botTurn].acq = !!best;
-    let note = best ? `目標${tgt}点に届く組み合わせ（成功見込み${Math.round(best.p * 100)}%）` : (fallback ? `目標${tgt}点には届かないため、成功見込み${Math.round(fallback.p * 100)}%の組み合わせ` : '');
-    if (!chosen && cands.length) {
-      const top = cands.slice().sort((x, y) => y.p - x.p)[0];
-      this.log(`（思考）成功見込みが低い（最大${Math.round(top.p * 100)}%）ためライブは置かない`, 'think');
-    }
-    const est = 0;
-    // 3ターン目：目標不可でマルガレーテ11がいれば成功時効果のための捨てライブ
-    if (!best && this.botTurn === 3 && this.onStage(['M11']) && !chosen) {
-      const hj = this.find(['HAJI']); const a3 = this.find(['AIKO', 'MEM']);
-      const spare = lives.filter(x => x !== hj && x !== a3 && !reserve.includes(x)).map(x => ({ x, p: this.probSuccess([x]) })).filter(o => o.p >= P_FALL).sort((a, b) => b.p - a.p);
-      if (spare.length) { chosen = { comb: [spare[0].x] }; note = `マルガレーテ11の成功時効果を狙う捨てライブ（成功見込み${Math.round(spare[0].p * 100)}%）`; }
-    }
-    const placed = [];
-    if (chosen) for (const l of chosen.comb) { this.removeFrom(this.hand, l); placed.push(l); }
-    // 入れ替えに使えるのはライブ以外のカードだけ（置いたライブカードはすべてライブとして判定されるため）
-    const junk = this.junk().filter(c => c.type !== 'ライブ').slice(0, 3 - placed.length);
-    for (const j of junk) { this.removeFrom(this.hand, j); placed.push(j); }
+    const lives = this.selectLives();
+    for (const c of lives) this.removeFrom(this.hand, c);
+    const limit = this.botTurn >= 4 ? 1 : 3;
+    const swaps = this.swapMembers(Math.min(limit, 3 - lives.length));
+    const placed = lives.concat(swaps);
     this.liveZone = placed.map(c => ({ card: c, faceUp: false }));
     this.draw(placed.length);
+    if (this.st[this.botTurn]) { this.st[this.botTurn].acq = lives.reduce((s, l) => s + this.needOf(l).score, 0) >= this.target(); this.st[this.botTurn].swap = swaps.length; }
     this.log(`ライブカードセット：${placed.length}枚を裏向きで置き、${placed.length}枚引く`, 'act');
-    if (this.st[this.botTurn]) this.st[this.botTurn].swap = junk.length;
-    if (chosen) this.log(`（思考）${note}：${chosen.comb.map(c => this.name(c)).join('＋')}${junk.length ? `／手札入れ替え用に${junk.length}枚` : ''}`, 'think');
-    else if (placed.length) this.log(`（思考）成功見込みのあるライブが無い→手札入れ替えのみ`, 'think');
+    if (lives.length) this.log(`（思考）セットしたライブ：${lives.map(c => this.name(c)).join('＋')}`, 'think');
     this.changed();
-  }
-
-  // 次ターンの目標に届く見込みのあるライブ（手札のみ、または回収カードで控え室から1枚補える）
-  reserveForNext(lives) {
-    const nextTgt = TARGETS[Math.min(this.botTurn + 1, 4) - 1];
-    const ndOf = comb => comb.reduce((s, l) => s + sumv(this.needOf(l).need), 0);
-    let bestSet = null;
-    for (const comb of combos(lives, 3)) {
-      if (comb.reduce((s, l) => s + this.needOf(l).score, 0) >= nextTgt && (!bestSet || ndOf(comb) < ndOf(bestSet))) bestSet = comb;
-    }
-    if (bestSet) return bestSet;
-    const canRecover = this.onStage(['TOMARI', 'MARG7']) || !!this.find(['TOMARI', 'MARG7']);
-    if (!canRecover) return [];
-    const discLives = this.disc.filter(x => x.type === 'ライブ');
-    for (const d of discLives) {
-      for (const comb of combos(lives, 2)) {
-        if (comb.concat([d]).reduce((s, l) => s + this.needOf(l).score, 0) >= nextTgt) return comb;
-      }
-      if (this.needOf(d).score >= nextTgt) return [];
-    }
-    return [];
   }
 
   // ---------- パフォーマンス ----------
@@ -1010,6 +1016,7 @@ class Engine {
   toHand(area) { const m = this.stage[area]; if (!m) return; this.stage[area] = null; this.hand.push(m.card); this.log(`（相手の効果）「${this.name(m.card)}」を手札に戻した`, 'opp'); this.changed(); }
 }
 
+function comb(n, k) { if (k < 0 || k > n) return 0; let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); }
 function sumv(o) { let s = 0; for (const v of Object.values(o)) s += v; return s; }
 function* combos(arr, maxR) {
   const n = arr.length;
